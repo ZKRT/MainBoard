@@ -1,0 +1,38 @@
+dji_Betterydata: 智能电池状态信息缓存
+
+uint16_t ADC1_25_dji;
+uint16_t ADC1_5_dji;
+uint16_t ADC1_I_dji; 板载电压电流值
+
+msg_smartbat_dji_buffer：发送心跳包时，存放的data缓存。？？？
+
+
+
+TimingDelay： systick时钟管理
+
+
+发送给dji mobile的心跳包（格式符合zkrt packet）：
+800ms发送一次 温度值，温度上下限值
+800ms发送一次 dji_Betterydata
+
+
+接收毒气模块can数据，解析符合zkrt packet格式。
+
+
+
+
+用到：
+can1
+systick 系统定时器，系统里的延时和定时操作使用此定时器 TimingDelay
+开门狗 iwdg
+iic
+adc：循环采集，5通道，dma方式
+串口1 dji飞控
+串口3 调试串口
+
+dji_bat_value_send(); 发送电池数据到moblile，为什么不走zkrt packet格式。
+
+
+
+DJI:
+mobileCommandHandler: 处理molile命令函数。执行handler时，mobile数据已经在中断里接收解析完成了。这里的handler里的molile data数据已经定义了（透传数据的具体定义），但是官网也没有定义，只有代码。
