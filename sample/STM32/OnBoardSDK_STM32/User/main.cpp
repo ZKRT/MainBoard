@@ -103,7 +103,7 @@ void avoid_temp_alarm(void);
 int main()
 {
   BSPinit();
-//  delay_nms(20000);
+  delay_nms(15000);
 	ZKRT_LOG(LOG_NOTICE, "==================================================\r\n"); 
 	printf("PRODUCT_NAME: %s\r\nPRODUCT_ID: %s\r\nPRODUCT_VERSION: %s\r\nPRODUCT_TIME: %s %s\r\n",PRODUCT_NAME,PRODUCT_ID,PRODUCT_VERSION,__DATE__,__TIME__);
 	ZKRT_LOG(LOG_NOTICE, "==================================================\r\n"); 
@@ -281,8 +281,15 @@ void mobile_heardbeat_packet_control(void)
 	{
 		msg_smartbat_dji_buffer[24] &= 0XFE;			
 	}	
+	if ((phone_recv_flag-TimingDelay) >= 5000)
+	{
+		msg_smartbat_buffer[24] &= 0XFD;
+	}
+	if ((threemodeling_recv_flag-TimingDelay) >= 5000)  //从1开始算，第12位，即Device_Status的第二个字节的第4位,即与0XF7相与。
+	{
+		msg_smartbat_buffer[24] &= 0XF7;
+	}	
 /*------------------------------------------------------------------*/	
-	
 }
 /**
   * @brief  避温控制
@@ -313,7 +320,8 @@ void avoid_temp_alarm(void)
 extern "C" void sendToMobile(uint8_t *data, uint8_t len)
 {
   coreApi->sendToMobile(data,  len);//数据透传到地面站软件
-  GPIO_ResetBits(GPIOD, GPIO_Pin_0);
+//  GPIO_ResetBits(GPIOD, GPIO_Pin_0);
+	_FLIGHT_UART_TX_LED = 0;
   usart1_tx_flag = TimingDelay;
 }
 extern "C" void sendpoll()

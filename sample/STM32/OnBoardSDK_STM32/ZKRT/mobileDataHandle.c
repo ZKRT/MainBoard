@@ -102,22 +102,23 @@ void main_dji_recv(void)
     glo_tempture_low =  ((main_dji_rev.data[1])<<8)+(main_dji_rev.data[0]);
     glo_tempture_high = ((main_dji_rev.data[3])<<8)+(main_dji_rev.data[2]);
   }
-  else if (main_dji_rev.UAVID[3] == DEVICE_TYPE_BAOSHAN)/*ÉèÖÃ±¬ÉÁµÆ*/
-  {
-    ZKRT_LOG(LOG_NOTICE,"###############\r\n");
-    if (main_dji_rev.data[0] == 0X00)
-    {
-      GPIO_ResetBits(GPIOE, GPIO_Pin_2 | GPIO_Pin_9);
-      delay_ms(1000);
-      msg_smartbat_dji_buffer[24] &= 0XF7;
-    }
-    else if (main_dji_rev.data[0] == 0X01)
-    {
-      GPIO_SetBits(GPIOE, GPIO_Pin_2 | GPIO_Pin_9);
-      delay_ms(1000);
-      msg_smartbat_dji_buffer[24] |= 0X08;
-    }
-  }
+	//ÆÁ±Î±¬ÉÁµÆ£¬Ö÷Ä£¿é²»ÔÙ´îÔØ±¬ÉÁµÆ //by yanly
+//  else if (main_dji_rev.UAVID[3] == DEVICE_TYPE_BAOSHAN)/*ÉèÖÃ±¬ÉÁµÆ*/
+//  {
+//    ZKRT_LOG(LOG_NOTICE,"###############\r\n");
+//    if (main_dji_rev.data[0] == 0X00)
+//    {
+//      GPIO_ResetBits(GPIOE, GPIO_Pin_2 | GPIO_Pin_9);
+//      delay_ms(1000);
+//      msg_smartbat_dji_buffer[24] &= 0XF7;
+//    }
+//    else if (main_dji_rev.data[0] == 0X01)
+//    {
+//      GPIO_SetBits(GPIOE, GPIO_Pin_2 | GPIO_Pin_9);
+//      delay_ms(1000);
+//      msg_smartbat_dji_buffer[24] |= 0X08;
+//    }
+//  }
   else
   {
     ZKRT_LOG(LOG_NOTICE,"CAN1_send_message_fun\r\n");

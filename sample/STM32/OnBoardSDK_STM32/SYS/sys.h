@@ -143,6 +143,8 @@ extern volatile uint32_t posion_recv_flag;
 extern volatile uint32_t throw_recv_flag;
 extern volatile uint32_t camera_recv_flag;
 extern volatile uint32_t irradiate_recv_flag;
+extern volatile uint32_t phone_recv_flag;
+extern volatile uint32_t threemodeling_recv_flag;
 extern volatile uint32_t _read_count;
 extern volatile uint32_t tcp_client_init_timeout;
 

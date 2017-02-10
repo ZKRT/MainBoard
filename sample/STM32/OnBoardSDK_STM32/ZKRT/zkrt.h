@@ -56,7 +56,8 @@ extern uint16_t now_uav_num;
 #define DEVICE_TYPE_IRRADIATE   0X09
 #define DEVICE_TYPE_MEGAPHONE   0X0A
 #define DEVICE_TYPE_BATTERY     0X0B
-#define DEVICE_TYPE_BAOSHAN			0X0C
+//#define DEVICE_TYPE_BAOSHAN			0X0C	//∆¡±Œ±¨…¡µ∆£¨÷˜ƒ£øÈ≤ª‘Ÿ¥Ó‘ÿ±¨…¡µ∆ //by yanly
+#define DEVICE_TYPE_3DMODELING  0X0C
 #define DEVICE_TYPE_HEART				101
 
 

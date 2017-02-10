@@ -106,7 +106,7 @@ void led_init(void)
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA| RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOE, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE); //zkrt_todo: have to remove //yanly test
+//	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE); //zkrt_todo: have to remove //yanly test
 	
  	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -129,9 +129,9 @@ void led_init(void)
 	GPIO_SetBits(GPIOA, GPIO_Pin_4 | GPIO_Pin_5);
 	
 	//zkrt_todo: have to remove //yanly test
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_9;
-	GPIO_Init(GPIOF, &GPIO_InitStructure);
-	GPIO_ResetBits(GPIOF, GPIO_Pin_10 | GPIO_Pin_9);
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_9;
+//	GPIO_Init(GPIOF, &GPIO_InitStructure);
+//	GPIO_ResetBits(GPIOF, GPIO_Pin_10 | GPIO_Pin_9);
 }
 
 /**

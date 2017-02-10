@@ -121,16 +121,16 @@ extern "C"
 #endif //__cplusplus
 
 	
-	//void USART1_IRQHandler(void) //zkrt_todo: have to modify by yanly
-//{
-//  if (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == SET)
-//  {
-//    come_data=USART_ReceiveData(USART1);
-//    coreApi->byteHandler(come_data); //Data from M100 were committed to "byteHandler"
-//    //  if (come_data==0x55)
-//    //   printf("0x %x   ",come_data);
-//  }
-//}
+void USART1_IRQHandler(void) //zkrt_todo: have to modify by yanly
+{
+  if (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == SET)
+  {
+    come_data=USART_ReceiveData(USART1);
+    coreApi->byteHandler(come_data); //Data from M100 were committed to "byteHandler"
+    //  if (come_data==0x55)
+    //   printf("0x %x   ",come_data);
+  }
+}
 #ifdef __cplusplus
 }
 #endif //__cplusplus

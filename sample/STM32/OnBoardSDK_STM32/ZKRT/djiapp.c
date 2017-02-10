@@ -141,8 +141,13 @@ uint8_t dji_heart_ack_check(uint8_t device_id, uint8_t value)
 			}
 			else if (device_id == (DEVICE_TYPE_MEGAPHONE-1))				//如果喊话
 			{
-				msg_smartbat_dji_buffer[26] &= 0XEF;
-				msg_smartbat_dji_buffer[26] |= value<<4;						//将字26的位4清空
+				msg_smartbat_dji_buffer[26] &= 0XEF;									//将字26的位4清空
+				msg_smartbat_dji_buffer[26] |= value<<4;						
+			}
+			else if (device_id == (DEVICE_TYPE_3DMODELING-1))				//如果三维建模
+			{
+				msg_smartbat_dji_buffer[26] &= 0XDF;						//将字26的位5清空
+				msg_smartbat_dji_buffer[26] |= value<<5;						
 			}
 			heart_ack_dji_status[device_id] |= 1<<6;												
 			break;
@@ -316,6 +321,24 @@ void main_zkrt_dji_recv(void)
 			irradiate_recv_flag = TimingDelay;
 		}
 	}
+	
+	while (CAN1_rx_check(DEVICE_TYPE_MEGAPHONE) == 1)				//喊话
+	{
+		value = CAN1_rx_byte(DEVICE_TYPE_MEGAPHONE);
+		if (dji_heart_ack_check(DEVICE_TYPE_MEGAPHONE, value)==1)
+		{
+			phone_recv_flag = TimingDelay;
+		}
+	}
+	
+	while (CAN1_rx_check(DEVICE_TYPE_3DMODELING) == 1)				//三维吊舱
+	{
+		value = CAN1_rx_byte(DEVICE_TYPE_3DMODELING);
+		if (dji_heart_ack_check(DEVICE_TYPE_3DMODELING, value)==1)
+		{
+			threemodeling_recv_flag = TimingDelay;
+		}
+	}	
 }
 
 
@@ -347,8 +370,8 @@ void zkrt_dji_read_heart_tempture(void)
 		_ALARM_LED = 1;	//modify by yanly
   }
 #elif defined _TEMPTURE_ADC_
-  tempture0 = ADC1_get_value(_T1_value);
-  tempture1 = ADC1_get_value(_T1_value);
+  tempture0 = ADC1_get_value(_T2_value);
+  tempture1 = ADC1_get_value(_T2_value);
   ZKRT_LOG(LOG_NOTICE,"#######tempture0= %d   tempture1= %d!\r\n",tempture0,tempture1);
 #endif
 }
