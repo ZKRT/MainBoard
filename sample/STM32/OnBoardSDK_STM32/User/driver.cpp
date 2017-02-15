@@ -31,6 +31,7 @@ size_t STM32F4::send(const uint8_t* buf, size_t len)
 
 DJI::time_ms STM32F4::getTimeStamp()
 {
+	tick = TimingDelay; //add by yanly
   return tick; //目前代码里的tick定时没有触发，这会导致DJI SDK里用到定时的地方用不了，查看代码发现可能只有session逻辑会受影响。//by yanly
 }
 

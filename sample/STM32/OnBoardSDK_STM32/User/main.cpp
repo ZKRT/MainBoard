@@ -60,8 +60,8 @@ CoreAPI defaultAPI = CoreAPI(driver);
 CoreAPI *coreApi = &defaultAPI;
 
 Flight flight = Flight(coreApi);
-
-FlightData flightData;
+#define FLIGHTDATA_VERT_VEL_1MS	{0x48, 0, 0, 1, 0}  //垂直速度1m/s向上飞行的飞行数据 //add by yanly //The Control Model Flag 0x48 (0b 0100 1000) sets the command values to be X, Y, Z velocities in ground frame and Yaw rate.
+FlightData flightData = FLIGHTDATA_VERT_VEL_1MS;
 Camera camera=Camera(coreApi);
 GimbalSpeedData gimbalSpeedData;
 VirtualRC virtualrc = VirtualRC(coreApi);
@@ -171,6 +171,7 @@ void dji_process()
 				ZKRT_LOG(LOG_NOTICE,"setBroadcastFreq\n");
 				coreApi->setBroadcastFreq(myFreq, zkrt_setFrequencyCallback);
 				coreApi->setBroadcastCallback(myRecvCallback,(DJI::UserData)(&droneState));
+				User_Activate(); //zkrt_notice: 激活跟setBroadcastFreq一起发送，激活经常因为各种原因不成功，放在一开始可以看到飞控返回来的激活失败信息 
 				djisdk_state.cmdres_timeout = TimingDelay;
 			}	
 			break;
@@ -306,15 +307,17 @@ void avoid_temp_alarm(void)
 //	if((status1_t0 == TEMP_OVER_HIGH)||(status1_t0 == TEMP_OVER_LOW)||(status2_t1 == TEMP_OVER_HIGH)||(status2_t1 == TEMP_OVER_LOW))
 	if((status1_t0 == TEMP_OVER_HIGH)||(status2_t1 == TEMP_OVER_HIGH))
 	{
-		virtualrc.setControl(1,virtualrc.CutOff_ToRealRC);
-		myVRCdata=virtualrc.getVRCData();
-		myVRCdata.throttle=1024+200;  //速度约为0.8m/s
-		virtualrc.sendData(myVRCdata);
+//		virtualrc.setControl(1,virtualrc.CutOff_ToRealRC);
+//		myVRCdata=virtualrc.getVRCData();
+//		myVRCdata.throttle=1024+200;  //速度约为0.8m/s
+//		virtualrc.sendData(myVRCdata);
+		coreApi->setControl(1);
+		flight.setFlight(&flightData);
 		ZKRT_LOG(LOG_NOTICE, "avoid_temp_alarm open======================================\r\n");
 	}
 	else
 	{
-		virtualrc.setControl(0,virtualrc.CutOff_ToRealRC);
+//		virtualrc.setControl(0,virtualrc.CutOff_ToRealRC);
 	}	
 }	
 extern "C" void sendToMobile(uint8_t *data, uint8_t len)

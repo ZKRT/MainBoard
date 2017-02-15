@@ -11,6 +11,7 @@
 
 #include "DJI_HardDriver.h"
 #include "stm32f4xx.h"
+#include "sys.h"
 #include <time.h>
 extern uint32_t tick;
 

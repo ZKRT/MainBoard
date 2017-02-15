@@ -4,7 +4,7 @@
 #include "sys.h"
 
 //这个用于存储30个字长的心跳包数据，发送函数调用msg_msartbat_text，ID号227
-extern uint8_t msg_smartbat_buffer[30];
+//extern uint8_t msg_smartbat_buffer[30];
 
 //这个将毒气模块传上来的ZKRT包拆分后，数据保存在此缓冲区里
 extern uint8_t posion_buffer[16];
