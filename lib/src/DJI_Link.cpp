@@ -1,6 +1,6 @@
 /** @file DJI_Link.cpp
- *  @version 3.1.7
- *  @date July 1st, 2016
+ *  @version 3.1.9
+ *  @date November 10, 2016
  *
  *  @brief
  *  Implement send/read, app handling and data link layer for Core API of DJI onboardSDK library
@@ -21,12 +21,23 @@
 #include "DJI_Codec.h"
 #include "DJI_API.h"
 
+#include "DJI_Logging.h"
+
 using namespace DJI::onboardSDK;
+
+CallBack callBack = 0;
+void* data = 0;
+Header *protHeader = 0;
 
 void CoreAPI::sendData(unsigned char *buf)
 {
   size_t ans;
   Header *pHeader = (Header *)buf;
+
+#ifdef API_TRACE_DATA
+  printFrame(serialDevice, pHeader, true);
+#endif
+
   ans = serialDevice->send(buf, pHeader->length);
   if (ans == 0)
     API_LOG(serialDevice, STATUS_LOG, "Port not send");
@@ -36,16 +47,21 @@ void CoreAPI::sendData(unsigned char *buf)
 
 void CoreAPI::appHandler(Header *protocolHeader)
 {
+#ifdef API_TRACE_DATA
+    printFrame(serialDevice, protocolHeader, false);
+#endif
+
   Header *p2protocolHeader;
-  CallBack callBack = 0;
-  UserData data = 0;
+
+
   if (protocolHeader->isAck == 1)
   {
     if (protocolHeader->sessionID > 1 && protocolHeader->sessionID < 32)
     {
-      if (CMDSessionTab[protocolHeader->sessionID].usageFlag == 1)
+      serialDevice->lockMemory();
+      uint32_t usageFlag = CMDSessionTab[protocolHeader->sessionID].usageFlag;
+      if (usageFlag == 1)
       {
-        serialDevice->lockMemory();
         p2protocolHeader = (Header *)CMDSessionTab[protocolHeader->sessionID].mmu->pmem;
         if (p2protocolHeader->sessionID == protocolHeader->sessionID &&
             p2protocolHeader->sequenceNumber == protocolHeader->sequenceNumber)
@@ -57,25 +73,35 @@ void CoreAPI::appHandler(Header *protocolHeader)
           freeSession(&CMDSessionTab[protocolHeader->sessionID]);
           serialDevice->freeMemory();
 
-          // Notify caller end of ACK frame arrived
-          notifyCaller(protocolHeader);
-
           if (callBack)
           {
-            //! @todo new algorithm call in a thread
-            callBack(this, protocolHeader, data);
-
-            /**
-             * Set end of ACK frame
-             * @todo Implement proper notification mechanism
-             */
-            // setACKFrameStatus((&CMDSessionTab[protocolHeader->sessionID])->usageFlag);
+	    //! Non-blocking callback thread
+	    if (nonBlockingCBThreadEnable == true)
+	    {
+	      notifyNonBlockingCaller(protocolHeader);
+	    }
+	    else if (nonBlockingCBThreadEnable == false)
+	    {
+	      callBack(this, protocolHeader, data);
+	    }
           }
+          else
+          {
+           // Notify caller end of ACK frame arrived
+           notifyCaller(protocolHeader);
+          }
+
+          /**
+           * Set end of ACK frame
+           * @todo Implement proper notification mechanism
+           */
           setACKFrameStatus((&CMDSessionTab[protocolHeader->sessionID])->usageFlag);
         }
         else
+        {
           serialDevice->freeMemory();
-      }
+        }
+      }  
     }
   }
   else
@@ -135,25 +161,50 @@ void CoreAPI::appHandler(Header *protocolHeader)
   }
 }
 
+void CoreAPI::allocateACK(Header *protocolHeader) {
+
+  if (protocolHeader->length <= MAX_ACK_SIZE)
+  {
+    memcpy(missionACKUnion.raw_ack_array, ((unsigned char *)protocolHeader) + sizeof(Header),
+	(protocolHeader->length - EXC_DATA_SIZE));
+  }
+  else
+  {
+#ifndef STM32
+    throw std::runtime_error("Unknown ACK");
+#endif
+  }
+}
+
 void CoreAPI::notifyCaller(Header *protocolHeader)
 {
   serialDevice->lockACK();
 
-  // In case of getDroneVersion? Should be only one case.
-  if(protocolHeader->length < 64)
-  {
-    memcpy(missionACKUnion.raw_ack_array, ((unsigned char *)protocolHeader) + sizeof(Header),
-	    (protocolHeader->length - EXC_DATA_SIZE));
-  } 
-  else
-  {
-    // Special case for getDroneVersion API call
-    version_ack_data = ((unsigned char *)protocolHeader) + sizeof(Header);
-  }
+  allocateACK(protocolHeader);
 
   // Notify caller end of ACK frame arrived
   serialDevice->notify();
   serialDevice->freeACK();
+}
+
+void CoreAPI::notifyNonBlockingCaller(Header *protocolHeader)
+{
+
+    serialDevice->lockNonBlockCBAck();
+    //! This version of non-blocking can be limited in performance since the
+    //! read thread waits for the callback thread to return before the read thread continues.
+
+    allocateACK(protocolHeader);
+
+    //! Copying protocol header to a global variable - will be passed to the Callback thread.
+    //! protHeader is not thread safe and is passed to Callback for legacy purposes.
+    //! Ack is available in the callback via MissionACKUnion.
+    protHeader = protocolHeader;
+    serialDevice->freeNonBlockCBAck();
+
+    serialDevice->lockProtocolHeader();
+    serialDevice->notifyNonBlockCBAckRecv();
+    serialDevice->freeProtocolHeader();
 }
 
 void CoreAPI::sendPoll()	//判断session的逻辑，如果session是需要验证ack，那么在超时未收到ack时，执行session重发等逻辑。//by yanly
@@ -219,7 +270,15 @@ void CoreAPI::readPoll()
 }
 
 //! @todo Implement callback poll here
-void CoreAPI::callbackPoll(){}
+void CoreAPI::callbackPoll(CoreAPI *api)
+{
+  serialDevice->lockNonBlockCBAck();
+  serialDevice->nonBlockWait();
+//! The protHeader is being passed to the Callback function for legacy purposes and is not thread safe.
+//! Ack is already avaialble to you in the callback via the mission ACK Union.
+  callBack(api,protHeader,data);
+  serialDevice->freeNonBlockCBAck();
+}
 
 void CoreAPI::setup()
 {
@@ -235,10 +294,13 @@ void CoreAPI::setKey(const char *key)
 
 void CoreAPI::setActivation(bool isActivated)
 {
-  if (isActivated)
+  serialDevice->lockMSG();
+  if (isActivated) {
     broadcastData.activation = 1;
-  else
+  } else {
     broadcastData.activation = 0;
+  }
+  serialDevice->freeMSG();
 }
 
 void DJI::onboardSDK::CoreAPI::setACKFrameStatus(uint32_t usageFlag)

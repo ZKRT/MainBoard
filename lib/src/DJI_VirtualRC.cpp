@@ -25,7 +25,6 @@ void VirtualRC::setControl(bool enable, VirtualRC::CutOff cutoffType)
   VirtualRCSetting setting;
   setting.cutoff = cutoffType;
   setting.enable = enable ? 1 : 0;
-//    printf("setControl!\r\n");
   api->send(0, encrypt, SET_VIRTUALRC, CODE_VIRTUALRC_SETTINGS, &setting, sizeof(setting));
 }
 
@@ -33,7 +32,6 @@ void VirtualRC::sendData(VirtualRCData Data)
 {
   vrcData = Data; 
   //!api->send command was moved to this function from sendData(). 
-//     printf("sendData!\r\n");
   api->send(0, encrypt, SET_VIRTUALRC, CODE_VIRTUALRC_DATA, &vrcData, sizeof(vrcData));
 }
 

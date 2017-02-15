@@ -11,7 +11,6 @@
 
 #include "DJI_HardDriver.h"
 #include "stm32f4xx.h"
-#include "sys.h"
 #include <time.h>
 extern uint32_t tick;
 
@@ -20,6 +19,7 @@ class STM32F4 : public DJI::onboardSDK::HardDriver
   public:
     virtual size_t send(const uint8_t* buf, size_t len);
     virtual DJI::time_ms getTimeStamp();
+    virtual bool getDeviceStatus() { return true; }
 
   public:
     virtual void init() { ; }

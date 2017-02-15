@@ -101,10 +101,11 @@
       printf("ERROR: log printer inner fault\n");           							\
   }
 #define LOG_PRINTF_UCHAR	//开启打印16进制数
-#define LOG_NOTICE_DATA	
+#define LOG_NOTICE_IDATA  //重要提示，在产品代码考虑打印的log数据		
+//#define LOG_NOTICE_DATA   //普通提示	 //zkrt_need_mask
 #define LOG_ERROR_DATA
-#define LOG_DEBUG_DATA
-#define LOG_WARNING_DATA	
+//#define LOG_DEBUG_DATA //zkrt_need_mask
+//#define LOG_WARNING_DATA //zkrt_need_mask	
 #ifdef LOG_DEBUG_DATA
 #define LOG_DEBUG "DEBUG"
 #else
@@ -127,6 +128,12 @@
 #define LOG_NOTICE "NOTICE"
 #else
 #define LOG_NOTICE 0
+#endif
+
+#ifdef LOG_NOTICE_IDATA
+#define LOG_INOTICE "IMPORT_NOTICE"
+#else
+#define LOG_INOTICE 0
 #endif
 
 /* Exported variables ---------------------------------------------------------*/

@@ -52,6 +52,6 @@ typedef struct
 }dji_sdk_status;
 extern dji_sdk_status djisdk_state;
 
-void zkrt_setFrequencyCallback(DJI::onboardSDK::CoreAPI *api __UNUSED, Header *protocolHeader, DJI::UserData userData __UNUSED);
+//void zkrt_setFrequencyCallback(DJI::onboardSDK::CoreAPI *api __UNUSED, Header *protocolHeader, DJI::UserData userData __UNUSED);
 #endif //MAIN_H
 

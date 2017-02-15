@@ -373,6 +373,8 @@ void zkrt_dji_read_heart_tempture(void)
   tempture0 = ADC1_get_value(_T2_value); 
   tempture1 = ADC1_get_value(_T2_value);
   ZKRT_LOG(LOG_NOTICE,"#######tempture0= %d   tempture1= %d!\r\n",tempture0,tempture1);
+//	tempture0 = 1250; 
+//tempture1 = 1250; //zkrt_debug
 #endif
 }
 /***********************************************************************

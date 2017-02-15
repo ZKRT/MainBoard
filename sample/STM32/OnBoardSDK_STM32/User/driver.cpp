@@ -10,6 +10,7 @@
  * */
 
 #include <driver.h>
+#include "sys.h"
 
 size_t STM32F4::send(const uint8_t* buf, size_t len)
 {

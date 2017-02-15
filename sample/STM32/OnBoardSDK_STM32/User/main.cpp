@@ -49,10 +49,7 @@ extern "C"
 
 /* Private define ------------------------------------------------------------*/
 #undef USE_ENCRYPT
-
-/* Private variables ---------------------------------------------------------*/
-
-/*----------DJI_LIB VARIABLE----------*/
+/*-----------------------DJI_LIB VARIABLE-----------------------------*/
 using namespace DJI::onboardSDK;
 
 HardDriver* driver = new STM32F4;
@@ -65,15 +62,9 @@ FlightData flightData = FLIGHTDATA_VERT_VEL_1MS;
 Camera camera=Camera(coreApi);
 GimbalSpeedData gimbalSpeedData;
 VirtualRC virtualrc = VirtualRC(coreApi);
-
 VirtualRCData myVRCdata =
-{
-  1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-  1024, 1024
-};
-
-uint32_t runOnce = 1;
-uint32_t next500MilTick;
+{ 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
+    1024, 1024 };
 
 extern TerminalCommand myTerminal;
 extern LocalNavigationStatus droneState;
@@ -103,10 +94,10 @@ void avoid_temp_alarm(void);
 int main()
 {
   BSPinit();
-  delay_nms(15000);
-	ZKRT_LOG(LOG_NOTICE, "==================================================\r\n"); 
+	delay_nms(30);
+	ZKRT_LOG(LOG_INOTICE, "==================================================\r\n"); 
 	printf("PRODUCT_NAME: %s\r\nPRODUCT_ID: %s\r\nPRODUCT_VERSION: %s\r\nPRODUCT_TIME: %s %s\r\n",PRODUCT_NAME,PRODUCT_ID,PRODUCT_VERSION,__DATE__,__TIME__);
-	ZKRT_LOG(LOG_NOTICE, "==================================================\r\n"); 
+	ZKRT_LOG(LOG_INOTICE, "==================================================\r\n"); 
 #ifdef USE_DJI_FUN	
 	dji_init();
 #endif 
@@ -140,15 +131,13 @@ int main()
   */
 void dji_init()
 {
+	delay_nms(15000);
   ZKRT_LOG(LOG_NOTICE,"This is the example App to test DJI onboard SDK on STM32F4Discovery Board! \r\n");
   ZKRT_LOG(LOG_NOTICE,"Refer to \r\n");
   ZKRT_LOG(LOG_NOTICE,"https://developer.dji.com/onboard-sdk/documentation/github-platform-docs/STM32/README.html \r\n");
   ZKRT_LOG(LOG_NOTICE,"for supported commands!\r\n");
   ZKRT_LOG(LOG_NOTICE,"Board Initialization Done!\r\n");
-  //! Change the version string to your platform/version as defined in DJI_Version.h
-  coreApi->setVersion(SDK_VERSION);
-  delay_nms(200);
-  ZKRT_LOG(LOG_NOTICE,"API Version Set Done!\r\n");	
+  delay_nms(1000);
 }
 /**
   * @brief  dji_process.  DJI 流程
@@ -160,31 +149,25 @@ void dji_process()
 	switch(djisdk_state.run_status)
 	{
 		case init_none_djirs:
-			coreApi->setBroadcastFreq(myFreq, zkrt_setFrequencyCallback);
-			coreApi->setBroadcastCallback(myRecvCallback,(DJI::UserData)(&droneState));
-			djisdk_state.run_status = set_broadcastFreq_djirs;
-			djisdk_state.cmdres_timeout = TimingDelay;
-			break;
-		case set_broadcastFreq_djirs:
-			if(djisdk_state.cmdres_timeout - TimingDelay >= 5000)
-			{
-				ZKRT_LOG(LOG_NOTICE,"setBroadcastFreq\n");
-				coreApi->setBroadcastFreq(myFreq, zkrt_setFrequencyCallback);
-				coreApi->setBroadcastCallback(myRecvCallback,(DJI::UserData)(&droneState));
-				User_Activate(); //zkrt_notice: 激活跟setBroadcastFreq一起发送，激活经常因为各种原因不成功，放在一开始可以看到飞控返回来的激活失败信息 
-				djisdk_state.cmdres_timeout = TimingDelay;
-			}	
-			break;
-		case set_broadcastFreq_ok:
-			User_Activate(); 
 			djisdk_state.run_status = set_avtivate_djirs;
 			djisdk_state.cmdres_timeout = TimingDelay;
+//>>>>>dji oes standby work start			
+      coreApi->setBroadcastFreq(myFreq);
+   		delay_nms(50);
+
+      //! Since OSDK 3.2.1, the new versioning system does not require you to set version.
+      //! It automatically sets activation version through a call to getDroneVersion.
+      coreApi->getDroneVersion();
+      delay_nms(1000);
+		
+      User_Activate();      
+      delay_nms(50);
+//>>>>>dji oes standby work end
 			break;
 		case set_avtivate_djirs:
-			if(djisdk_state.cmdres_timeout - TimingDelay >= 5000) //激活不成功时，每5秒激活一次
+			if(djisdk_state.cmdres_timeout - TimingDelay >= 5000) //激活不成功时，每5秒重新激活一次
 			{
-				User_Activate(); 
-				djisdk_state.cmdres_timeout = TimingDelay;
+				djisdk_state.run_status = init_none_djirs;
 			}
 			break;
 		case avtivated_ok_djirs:
@@ -193,6 +176,49 @@ void dji_process()
 	}
 	coreApi->sendPoll();
 }
+///**
+//  * @brief  dji_process.  old dji_process function before A3_FW < 1.7.0
+//  * @param  None
+//  * @retval None
+//  */
+//void dji_process() 
+//{
+//	switch(djisdk_state.run_status)
+//	{
+//		case init_none_djirs:
+//			coreApi->setBroadcastFreq(myFreq, zkrt_setFrequencyCallback);
+//			coreApi->setBroadcastCallback(myRecvCallback,(DJI::UserData)(&droneState));
+//			djisdk_state.run_status = set_broadcastFreq_djirs;
+//			djisdk_state.cmdres_timeout = TimingDelay;
+//			break;
+//		case set_broadcastFreq_djirs:
+//			if(djisdk_state.cmdres_timeout - TimingDelay >= 5000)
+//			{
+//				ZKRT_LOG(LOG_NOTICE,"setBroadcastFreq\n");
+//				coreApi->setBroadcastFreq(myFreq, zkrt_setFrequencyCallback);
+//				coreApi->setBroadcastCallback(myRecvCallback,(DJI::UserData)(&droneState));
+//				User_Activate(); //zkrt_notice: 激活跟setBroadcastFreq一起发送，激活经常因为各种原因不成功，放在一开始可以看到飞控返回来的激活失败信息 
+//				djisdk_state.cmdres_timeout = TimingDelay;
+//			}	
+//			break;
+//		case set_broadcastFreq_ok:
+//			User_Activate(); 
+//			djisdk_state.run_status = set_avtivate_djirs;
+//			djisdk_state.cmdres_timeout = TimingDelay;
+//			break;
+//		case set_avtivate_djirs:
+//			if(djisdk_state.cmdres_timeout - TimingDelay >= 5000) //激活不成功时，每5秒激活一次
+//			{
+//				User_Activate(); 
+//				djisdk_state.cmdres_timeout = TimingDelay;
+//			}
+//			break;
+//		case avtivated_ok_djirs:
+//			break;
+//		default:break;
+//	}
+//	coreApi->sendPoll();
+//}
 /**
   * @brief  tempture_flight_control. 温度控制飞行+温度信息组包到心跳包里+电池数据检测组包
   * @param  None
@@ -304,6 +330,9 @@ void avoid_temp_alarm(void)
 	status1_t0 = msg_smartbat_dji_buffer[0];
 	status2_t1 = msg_smartbat_dji_buffer[3];
 	
+	if(djisdk_state.run_status !=avtivated_ok_djirs)
+		return;
+
 //	if((status1_t0 == TEMP_OVER_HIGH)||(status1_t0 == TEMP_OVER_LOW)||(status2_t1 == TEMP_OVER_HIGH)||(status2_t1 == TEMP_OVER_LOW))
 	if((status1_t0 == TEMP_OVER_HIGH)||(status2_t1 == TEMP_OVER_HIGH))
 	{

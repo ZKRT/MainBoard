@@ -25,14 +25,15 @@
 //! Uncomment these macros to access various messages from the API. 
 
 //#define API_MISSION_DATA
+//#define API_TRACE_DATA
 //#define API_DEBUG_DATA
 //#define API_BUFFER_DATA
 //#define API_RTK_DEBUG
 #define API_ERROR_DATA
-#define API_STATUS_DATA
+//#define API_STATUS_DATA  //zkrt_need_mask
 
 //! @note if you do NOT want to use AES encrypt, comment this macro below
-#define USE_ENCRYPT
+//#define USE_ENCRYPT
 
 //! @todo Not supported in this release.
 //#define USE_SIMULATION
