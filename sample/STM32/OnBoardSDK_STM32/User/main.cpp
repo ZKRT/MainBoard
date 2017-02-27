@@ -310,11 +310,11 @@ void mobile_heardbeat_packet_control(void)
 	}	
 	if ((phone_recv_flag-TimingDelay) >= 5000)
 	{
-		msg_smartbat_buffer[24] &= 0XFD;
+		msg_smartbat_dji_buffer[24] &= 0XFD;
 	}
 	if ((threemodeling_recv_flag-TimingDelay) >= 5000)  //从1开始算，第12位，即Device_Status的第二个字节的第4位,即与0XF7相与。
 	{
-		msg_smartbat_buffer[24] &= 0XF7;
+		msg_smartbat_dji_buffer[24] &= 0XF7;
 	}	
 /*------------------------------------------------------------------*/	
 }
