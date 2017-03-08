@@ -49,9 +49,11 @@ void BSPinit()
 	lwip_timer_init();                                      //专为网络使用的定时器时钟
 #endif
 	led_init();
+#ifdef USE_EXTRAM_FUN	
 	FSMC_SRAM_Init();
 	mymem_init(SRAMIN);		                                  //初始化内部内存池
 	mymem_init(SRAMEX);		                                  //初始化外部内存池
+#endif	
 	IIC_Init();
 	STMFLASH_Init();
 #ifdef USE_DJI_FUN	

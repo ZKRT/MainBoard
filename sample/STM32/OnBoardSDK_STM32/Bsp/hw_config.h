@@ -33,6 +33,7 @@
 #define USE_LED_FUN			
 #define USE_IIC_FUN  
 #define USE_DJI_FUN
+//#define USE_EXTRAM_FUN
 //#define USE_USB_FUN
 //#define USE_LWIP_FUN
 //#define HWTEST_FUN
@@ -95,10 +96,10 @@
   * @{
   */ 
 #define	TIMER_CHANNEL_PWM													  TIM10
-#define	TIMER_CHANNEL_PWM1													TIM11
-#define	TIMER_CHANNEL_PWM2													TIM13
-#define	TIMER_CHANNEL_PWM3													TIM4
-#define	TIMER_CHANNEL_PWM4													TIM3
+#define	TIMER_CHANNEL_PWM1													TIM13
+#define	TIMER_CHANNEL_PWM2													TIM5
+#define	TIMER_CHANNEL_PWM3													TIM11
+#define	TIMER_CHANNEL_PWM4													TIM14
 
 /**
   * @}
