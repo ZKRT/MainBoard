@@ -42,9 +42,9 @@ uint16_t usart1_rx_buffer_pos = 0;
 /*********USART6************/ //modify by yanly
 volatile uint8_t usart6_tx_buffer[USART_BUFFER_SIZE];
 volatile uint8_t usart6_rx_buffer[USART_BUFFER_SIZE];
-uint16_t usart6_tx_buffer_tail = 0;
-uint16_t usart6_tx_buffer_head = 0;
-uint16_t usart6_rx_buffer_pos = 0;
+volatile uint16_t usart6_tx_buffer_tail = 0;
+volatile uint16_t usart6_tx_buffer_head = 0;
+volatile uint16_t usart6_rx_buffer_pos = 0;
 /*********USART3************/
 volatile uint8_t usart3_tx_buffer[USART_BUFFER_SIZE];
 volatile uint8_t usart3_rx_buffer[USART_BUFFER_SIZE];
@@ -296,6 +296,7 @@ void uart_init(void)
 	USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;	
 	
 	/***********433M´®¿Ú6*********/
+	USART_InitStructure.USART_BaudRate = 115200;
 	USART_Init(USART6, &USART_InitStructure);
 	USART_DMACmd(USART6,USART_DMAReq_Tx,ENABLE);
 	USART_DMACmd(USART6,USART_DMAReq_Rx,ENABLE);
@@ -303,6 +304,7 @@ void uart_init(void)
 	USART_ClearFlag(USART6, USART_FLAG_TC);
 	
 	/***********TEST´®¿Ú3*************/
+	USART_InitStructure.USART_BaudRate = 57600;
 	USART_Init(USART3, &USART_InitStructure);
 	USART_DMACmd(USART3,USART_DMAReq_Tx,ENABLE);
 	USART_DMACmd(USART3,USART_DMAReq_Rx,ENABLE);
@@ -310,6 +312,7 @@ void uart_init(void)
 	USART_ClearFlag(USART3, USART_FLAG_TC);
 	
 	/***********SBUS/PPM´®¿Ú4*************/
+	USART_InitStructure.USART_BaudRate = 100000;
 	USART_Init(UART4, &USART_InitStructure);
 	USART_DMACmd(UART4,USART_DMAReq_Tx,ENABLE);
 	USART_DMACmd(UART4,USART_DMAReq_Rx,ENABLE);
@@ -613,8 +616,11 @@ uint8_t usart6_rx_check(void)
 	else
 	{
 #ifndef HWTEST_FUN		
-		_433M_UART_RX_LED = 0;
-		u433m_rx_flag = TimingDelay;
+		if(u433m_rx_flag >= TimingDelay+1000)
+		{	
+		  _433M_UART_RX_LED = 0;
+		  u433m_rx_flag = TimingDelay;
+		}
 #endif
 		return 1;
 	}

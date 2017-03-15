@@ -45,10 +45,18 @@ enum dji_run_state
 	set_avtivate_djirs,		    //激活 
 	avtivated_ok_djirs		    //激活成功
 }; 	
+
+enum dji_oes_fc_controlbit
+{
+	fc_tempctrl_b = 0,		  //高温控制位号
+	fc_obstacle_b           //避障控制位号
+}; 	
 typedef struct
 {
 	char run_status;
+	char temp_alarmed; //1-高温逃逸，0-正常
 	u32 cmdres_timeout;
+	int oes_fc_controled; //高温控制置1<<0; 避障控制置1<<1; 全部都没有控制置0
 }dji_sdk_status;
 extern dji_sdk_status djisdk_state;
 

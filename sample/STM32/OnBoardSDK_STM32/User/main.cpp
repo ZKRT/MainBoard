@@ -44,6 +44,9 @@ extern "C"
 #include "hwTestHandle.h"
 #endif	
 #include "versionzkrt.h"
+#ifdef USE_OBSTACLE_AVOID_FUN
+#include "obstacleAvoid.h"
+#endif
 }
 #endif //__cplusplus
 
@@ -58,7 +61,12 @@ CoreAPI *coreApi = &defaultAPI;
 
 Flight flight = Flight(coreApi);
 #define FLIGHTDATA_VERT_VEL_1MS	{0x48, 0, 0, 1, 0}  //垂直速度1m/s向上飞行的飞行数据 //add by yanly //The Control Model Flag 0x48 (0b 0100 1000) sets the command values to be X, Y, Z velocities in ground frame and Yaw rate.
-FlightData flightData = FLIGHTDATA_VERT_VEL_1MS;
+#define FLIGHT_ZKRT_CONTROL_MODE  0x4A  //0x4A: non-stable mode，机体坐标系,HORI_VEL,VERT_VEL,YAW_RATE
+FlightData flightData;
+FlightData flightData_zkrtctrl = {FLIGHT_ZKRT_CONTROL_MODE, 0, 0,0, 0};
+#ifdef USE_OBSTACLE_AVOID_FUN
+FlightData flightData_obstacle= {OBSTACLE_MODE, 0, 0,0, 0};
+#endif
 Camera camera=Camera(coreApi);
 GimbalSpeedData gimbalSpeedData;
 VirtualRC virtualrc = VirtualRC(coreApi);
@@ -71,7 +79,7 @@ extern LocalNavigationStatus droneState;
 extern uint8_t myFreq[16];
 
 /*----------ZKRT VARIABLE----------*/
-dji_sdk_status djisdk_state = {init_none_djirs, 0xffffffff};  //dji sdk 运行状态
+dji_sdk_status djisdk_state = {init_none_djirs, 0, 0xffffffff, 0};  //dji sdk 运行状态
 uint8_t tempture_invalid=0; //两个温度值是否有效，无效为1，有效为0
 //uint8_t msgbuffer[25] = {0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77,0x77};
 
@@ -82,6 +90,9 @@ void dji_process(void);
 void mobile_heardbeat_packet_control(void);
 void tempture_flight_control(void);
 void avoid_temp_alarm(void);
+#ifdef USE_OBSTACLE_AVOID_FUN
+void avoid_obstacle_alarm(void);
+#endif
 //#ifdef __cplusplus
 //extern "C" void ADC_SoftwareStartConv(ADC_TypeDef* ADCx);
 //#endif //__cplusplus
@@ -94,7 +105,7 @@ void avoid_temp_alarm(void);
 int main()
 {
   BSPinit();
-	delay_nms(30);
+	delay_nms(5000);
 	ZKRT_LOG(LOG_INOTICE, "==================================================\r\n"); 
 	printf("PRODUCT_NAME: %s\r\nPRODUCT_ID: %s\r\nPRODUCT_VERSION: %s\r\nPRODUCT_TIME: %s %s\r\n",PRODUCT_NAME,PRODUCT_ID,PRODUCT_VERSION,__DATE__,__TIME__);
 	ZKRT_LOG(LOG_INOTICE, "==================================================\r\n"); 
@@ -104,6 +115,9 @@ int main()
 #ifdef USE_LWIP_FUN	
 	lwip_prcs_init();
 #endif	
+#ifdef USE_OBSTACLE_AVOID_FUN	
+	guidance_init();
+#endif	
   while (1)
   {
 #ifdef USE_DJI_FUN			
@@ -112,6 +126,9 @@ int main()
 		mobile_data_process();                //将接收到的mobile透传数据进行解析处理
     main_zkrt_dji_recv();		              //从子模块通过CAN接收数据，将毒气、抛投数据填充到心跳包，并且相关位置一
 		tempture_flight_control();            //温度超过上下限启动逃逸功能
+#ifdef USE_OBSTACLE_AVOID_FUN	
+		main_recv_decode_zkrt_dji_guidance(); //Guidance数据包解析处理
+#endif
 		mobile_heardbeat_packet_control();    //板子定时发送心跳包到地面站
 		led_process();                        //LED控制
 		stmflash_process();                   //用户配置信息处理
@@ -131,7 +148,7 @@ int main()
   */
 void dji_init()
 {
-	delay_nms(15000);
+	delay_nms(10000); 
   ZKRT_LOG(LOG_NOTICE,"This is the example App to test DJI onboard SDK on STM32F4Discovery Board! \r\n");
   ZKRT_LOG(LOG_NOTICE,"Refer to \r\n");
   ZKRT_LOG(LOG_NOTICE,"https://developer.dji.com/onboard-sdk/documentation/github-platform-docs/STM32/README.html \r\n");
@@ -159,7 +176,7 @@ void dji_process()
       //! It automatically sets activation version through a call to getDroneVersion.
       coreApi->getDroneVersion();
       delay_nms(1000);
-		
+		  coreApi->sendPoll();
       User_Activate();      
       delay_nms(50);
 //>>>>>dji oes standby work end
@@ -236,6 +253,9 @@ void tempture_flight_control(void)
 			zkrt_dji_read_heart_tempture();  /*获取温度传感器数据*/
 			
 			avoid_temp_alarm(); //避温控制
+#ifdef USE_OBSTACLE_AVOID_FUN			
+			avoid_obstacle_alarm(); //避障控制
+#endif			
 			
 			if (MAVLINK_TX_INIT_VAL - TimingDelay >= 4000)	
 			{					
@@ -333,22 +353,107 @@ void avoid_temp_alarm(void)
 	if(djisdk_state.run_status !=avtivated_ok_djirs)
 		return;
 
-//	if((status1_t0 == TEMP_OVER_HIGH)||(status1_t0 == TEMP_OVER_LOW)||(status2_t1 == TEMP_OVER_HIGH)||(status2_t1 == TEMP_OVER_LOW))
 	if((status1_t0 == TEMP_OVER_HIGH)||(status2_t1 == TEMP_OVER_HIGH))
 	{
-//		virtualrc.setControl(1,virtualrc.CutOff_ToRealRC);
-//		myVRCdata=virtualrc.getVRCData();
-//		myVRCdata.throttle=1024+200;  //速度约为0.8m/s
-//		virtualrc.sendData(myVRCdata);
+		djisdk_state.temp_alarmed = 1;
 		coreApi->setControl(1);
-		flight.setFlight(&flightData);
+		flightData_zkrtctrl.z = 1;
+		flight.setFlight(&flightData_zkrtctrl);
 		ZKRT_LOG(LOG_NOTICE, "avoid_temp_alarm open======================================\r\n");
+    djisdk_state.oes_fc_controled |= 1<< fc_tempctrl_b;
 	}
 	else
 	{
+		djisdk_state.temp_alarmed = 0;
+		if(flightData_zkrtctrl.z)
+			flightData_zkrtctrl.z = 0;
+	  if(	djisdk_state.oes_fc_controled)
+		{
+			djisdk_state.oes_fc_controled &= ~(1<< fc_tempctrl_b);
+			if(djisdk_state.oes_fc_controled ==0)
+			{
+				coreApi->setControl(0);  //释放控制权
+				ZKRT_LOG(LOG_INOTICE, "oes control closed\n");
+			}
+	  }
 //		virtualrc.setControl(0,virtualrc.CutOff_ToRealRC);
 	}	
-}	
+}
+#ifdef USE_OBSTACLE_AVOID_FUN
+/**
+*   @brief  avoid_obstacle_alarm 避障控制
+  * @parm   none
+  * @retval none
+  */
+void avoid_obstacle_alarm(void)
+{
+	u8 move_flag; //移动标记
+	if(djisdk_state.run_status !=avtivated_ok_djirs) //DJI不在线
+		return;
+	
+	if(GuidanceObstacleData.online_flag ==0) //Guidance不在线
+		return;
+	
+	move_flag = obstacle_avoidance_handle();
+	if(move_flag)
+	{
+//		if(djisdk_state.oes_fc_controled ==0)
+//		{
+		  coreApi->setControl(1);			//遥控器切换档位后，控制权被抢占，需要重新获取控制权，暂时做控制时每次都获取控制权。//zkrt_todo
+//		}	
+		djisdk_state.oes_fc_controled |= 1<< fc_obstacle_b;
+	
+#ifdef OBSTACLE_VEL_MODE		
+		if(move_flag &(1<<(GE_DIR_FRONT-1)))                     //前后
+			flightData_zkrtctrl.x = OBSTACLE_VEL_FORWORD_X;
+		else if(move_flag &(1<<(GE_DIR_BACK-1)))
+			flightData_zkrtctrl.x = OBSTACLE_VEL_BACK_X;
+		else
+			flightData_zkrtctrl.x = 0;
+		
+		if(move_flag &(1<<(GE_DIR_RIGHT-1)))                     //左右                    
+			flightData_zkrtctrl.y = OBSTACLE_VEL_RIGHT_Y;         
+		else if(move_flag &(1<<(GE_DIR_LEFT-1)))
+			flightData_zkrtctrl.y = OBSTACLE_VEL_LEFT_Y;
+		else
+			flightData_zkrtctrl.y = 0;
+#else
+		if(move_flag &(1<<(GE_DIR_FRONT-1)))                     //前后
+			flightData_zkrtctrl.y = 0;.y = OBSTACLE_ANG_FORWORD_Y;
+		else if(move_flag &(1<<(GE_DIR_BACK-1)))
+			flightData_zkrtctrl.y = 0;.y = OBSTACLE_ANG_BACK_Y;
+		else
+			flightData_zkrtctrl.y = 0;.y = 0;
+		
+		if(move_flag &(1<<(GE_DIR_RIGHT-1)))                     //左右                    
+			flightData_zkrtctrl.y = 0;.x = OBSTACLE_ANG_RIGHT_X;         
+		else if(move_flag &(1<<(GE_DIR_LEFT-1)))
+			flightData_zkrtctrl.y = 0;.x = OBSTACLE_ANG_LEFT_X;
+		else
+			flightData_zkrtctrl.y = 0;.x = 0;		
+#endif		
+//		printf("flight vel x=%f, y=%f! \n", flightData_obstacle.x, flightData_obstacle.y);
+		flight.setFlight(&flightData_zkrtctrl);
+		ZKRT_LOG(LOG_NOTICE, "avoid_obstacle_alarm open=================\r\n")
+	}
+	else
+	{
+		if(	djisdk_state.oes_fc_controled)
+		{	
+			djisdk_state.oes_fc_controled &= ~(1<< fc_obstacle_b);
+			if(djisdk_state.oes_fc_controled ==0)
+			{
+				coreApi->setControl(0);
+				ZKRT_LOG(LOG_INOTICE, "oes control closed\n");
+			}
+	  }
+		if(flightData_zkrtctrl.x)
+			flightData_zkrtctrl.x = 0;
+		if(flightData_zkrtctrl.y)
+			flightData_zkrtctrl.y = 0;
+	}
+}
+#endif
 extern "C" void sendToMobile(uint8_t *data, uint8_t len)
 {
   coreApi->sendToMobile(data,  len);//数据透传到地面站软件

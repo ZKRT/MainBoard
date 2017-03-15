@@ -33,6 +33,7 @@
 #define USE_LED_FUN			
 #define USE_IIC_FUN  
 #define USE_DJI_FUN
+#define USE_OBSTACLE_AVOID_FUN
 //#define USE_EXTRAM_FUN
 //#define USE_USB_FUN
 //#define USE_LWIP_FUN

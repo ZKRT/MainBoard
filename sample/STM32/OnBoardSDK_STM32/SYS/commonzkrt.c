@@ -205,6 +205,32 @@ void printf_uchar(unsigned char *data, u16 length)
 #endif	
 }
 /**
+  * @brief  arry_max_item 返回数组里最大的item
+  * @param  array_data
+  * @param  item_num
+  * @retval max_item
+  */
+char arry_max_item(const unsigned short *array_data, u16 item_num)
+{
+	int i =0;
+	char max_item =0;
+	unsigned short temp;
+	temp = array_data[0];
+	
+	for(i=0; i<item_num-1; i++)
+	{
+		if(temp > array_data[i+1])
+		{
+		}
+		else
+		{
+			temp = array_data[i+1];
+			max_item = i+1;
+		}
+	}
+	return max_item;
+}
+/**
   * @}
   */ 
 

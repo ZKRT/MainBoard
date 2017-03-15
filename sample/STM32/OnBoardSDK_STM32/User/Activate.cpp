@@ -16,7 +16,6 @@
 extern CoreAPI defaultAPI;
 extern CoreAPI *coreApi;
 extern Flight flight;
-extern FlightData flightData;
 
 void zkrt_activateCallback(DJI::onboardSDK::CoreAPI *myapi, Header *protocolHeader, DJI::UserData userData __UNUSED);
 

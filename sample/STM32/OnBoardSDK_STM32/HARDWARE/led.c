@@ -222,29 +222,29 @@ void led_process(void)
 		_RUN_LED = 1;
 	}
 	//flight led control
-	if ((usart1_tx_flag-TimingDelay) >= 50)
+	if ((usart1_tx_flag-TimingDelay) > 50)
 	{
 		_FLIGHT_UART_TX_LED = 1;
 	}
-	if ((usart1_rx_flag-TimingDelay) >= 50)
+	if ((usart1_rx_flag-TimingDelay) > 50)
 	{
 		_FLIGHT_UART_RX_LED = 1;
 	}
 	//can led control
-	if ((can_rx_flag-TimingDelay)  >= 50)
+	if ((can_rx_flag-TimingDelay)  > 50)
 	{
 		_CAN_RX_LED = 1;
 	}
-	if ((can_tx_flag-TimingDelay)  >= 50)
+	if ((can_tx_flag-TimingDelay)  > 50)
 	{
 		_CAN_TX_LED = 1;
 	}	
 	//433m led control
-	if ((u433m_tx_flag-TimingDelay) >= 50)
+	if ((u433m_tx_flag-TimingDelay) > 50)
 	{
 		_433M_UART_TX_LED = 1;
 	}
-	if ((u433m_rx_flag-TimingDelay) >= 50)
+	if ((u433m_rx_flag-TimingDelay) > 50)
 	{
 		_433M_UART_RX_LED = 1;
 	}
