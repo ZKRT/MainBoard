@@ -121,7 +121,7 @@ extern "C"
 #endif //__cplusplus
 
 	
-void USART1_IRQHandler(void) //zkrt_todo: have to modify by yanly
+void USART1_IRQHandler(void) //zkrt_notice: have to modify by yanly
 {
   if (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == SET)
   {

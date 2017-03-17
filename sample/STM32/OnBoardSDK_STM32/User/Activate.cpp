@@ -11,7 +11,7 @@
 
 #include "Activate.h"
 #include "sys.h"
-#include "main.h"
+#include "djiCtrl.h"
 
 extern CoreAPI defaultAPI;
 extern CoreAPI *coreApi;
@@ -31,7 +31,7 @@ User_Activate ()
 
   //! Change the version string to your platform/version as defined in DJI_Version.h
   //! Starting from OSDK 3.2.1, you do not need to do this. Instead, call droneVersion before activation.
-  user_act_data.version = SDK_VERSION;
+//  user_act_data.version = SDK_VERSION;  //zkrt_modify: 不再需要调用
 
   user_act_data.encKey = key_buf;
 

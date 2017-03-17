@@ -210,7 +210,6 @@ unsigned char obstacle_avoidance_handle(void)
 //	g_obstacle_move_flag=0;  //避障算法计算出来的避障移动标记
 	g_obstacle_dir=0; //障碍物方向超过阈值的标记，标记位置定义与obstacle_move_flag一样
 
-	
 	if(GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] < GE_ALARM_DISE_FRONT)
 	{
 		g_obstacle_cnt++;
@@ -299,7 +298,7 @@ unsigned char obstacle_avoidance_handle(void)
 
 /************************ (C) COPYRIGHT ZKRT *****END OF FILE****/
 ////角度控制水平向后方向飞行。
-//void avoid_obstacle_alarm(void) //zkrt_debug
+//void avoid_obstacle_alarm(void)
 //{
 //	if(djisdk_state.run_status !=avtivated_ok_djirs) //DJI不在线
 //		return;
@@ -311,7 +310,7 @@ unsigned char obstacle_avoidance_handle(void)
 //	ZKRT_LOG(LOG_NOTICE, "avoid_obstacle_alarm open=================\r\n")
 //}
 //角度控制水平向右方向飞行。
-//void avoid_obstacle_alarm(void) //zkrt_debug
+//void avoid_obstacle_alarm(void)
 //{
 //	if(djisdk_state.run_status !=avtivated_ok_djirs) //DJI不在线
 //		return;
@@ -359,7 +358,7 @@ unsigned char obstacle_avoidance_handle(void)
 //	if(GuidanceObstacleData.online_flag ==0) //Guidance不在线
 //		return;
 //	
-//	if(djisdk_state.temp_alarmed == 1) //zkrt_todo: 待优化，高温逃逸与避障的兼容性
+//	if(djisdk_state.temp_alarmed == 1) 
 //		return;
 //	
 //	if((GuidanceObstacleData.g_distance_value[GE_DIR_DOWN] < GE_ALARM_DISE_DOWN)||(GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] < GE_ALARM_DISE_LEFT)

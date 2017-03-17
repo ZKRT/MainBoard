@@ -43,7 +43,7 @@ extern uint16_t now_uav_num;
 
 //设备类型定义，用于UAVID[3]
 //设备数量用于给CAN创建这么多数量的缓存
-#define DEVICE_NUMBER           0X0C
+#define DEVICE_NUMBER           0X0C   //zkrt_notice: 每次新增设备需更新此值
 #define DEVICE_TYPE_UDP         0X00
 #define DEVICE_TYPE_TEMPERATURE 0X01
 #define DEVICE_TYPE_OBSTACLE    0X02

@@ -37,7 +37,7 @@ const Version versionM100_31 = (MAKE_VERSION(3, 1, 10, 0));
 const Version versionA3_31 = (MAKE_VERSION(3, 1, 100, 0));
 const Version versionA3_32 = (MAKE_VERSION(3, 2, 0, 0));
 const Version versionA3_32_7 = (MAKE_VERSION(3, 2, 15, 37));  //A3固件版本1.7  
-const Version SDK_VERSION = versionA3_32_7;  //zkrt_todo: 每次更新DJI A3固件版本后，需要检测此处版本号并更新
+const Version SDK_VERSION = versionA3_32_7;  //zkrt_modify: 以前的版本<3.2.1，每次更新DJI A3固件版本后，需要检测此处版本号并更新
 
 #ifdef SDK_DEV
 #include "dev.h"

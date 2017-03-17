@@ -521,9 +521,6 @@ void DMA1_Stream3_IRQHandler(void)  //tx it
 	
 	DMA_ClearITPendingBit(DMA1_Stream3,DMA_IT_TCIF3);
 	
-//	GPIO_ResetBits(GPIOD, GPIO_Pin_0);
-	//zkrt_todo: led control
-//	usart1_tx_flag = TimingDelay;
 //	test_inter_count++;
 }
 uint8_t usart3_rx_check(void)
@@ -532,10 +529,6 @@ uint8_t usart3_rx_check(void)
 		return 0;
 	else
 	{
-//		GPIO_ResetBits(GPIOD, GPIO_Pin_1);
-		//zkrt_todo: led control
-//		usart1_rx_flag = TimingDelay;			
-		
 		return 1;
 	}
 }
@@ -616,7 +609,7 @@ uint8_t usart6_rx_check(void)
 	else
 	{
 #ifndef HWTEST_FUN		
-		if(u433m_rx_flag >= TimingDelay+1000)
+		if(u433m_rx_flag >= TimingDelay+1000)  //zkrt_notice: 数据接收太快，灯频闪，所以这里改为延时1s才亮
 		{	
 		  _433M_UART_RX_LED = 0;
 		  u433m_rx_flag = TimingDelay;
@@ -691,9 +684,6 @@ void DMA1_Stream4_IRQHandler(void)  //tx it
 	
 	DMA_ClearITPendingBit(DMA1_Stream4,DMA_IT_TCIF4);
 	
-//	GPIO_ResetBits(GPIOD, GPIO_Pin_0);
-	//zkrt_todo: led control
-//	usart1_tx_flag = TimingDelay;
 //	test_inter_count++;
 }
 uint8_t uart4_rx_check(void)
@@ -702,10 +692,6 @@ uint8_t uart4_rx_check(void)
 		return 0;
 	else
 	{
-//		GPIO_ResetBits(GPIOD, GPIO_Pin_1);
-		//zkrt_todo: led control
-//		usart1_rx_flag = TimingDelay;			
-		
 		return 1;
 	}
 }

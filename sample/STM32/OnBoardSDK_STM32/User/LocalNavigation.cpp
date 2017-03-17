@@ -19,20 +19,39 @@
 using namespace DJI::onboardSDK;
 extern Flight flight;
 
+//uint8_t myFreq[16] =
+//{
+//  BROADCAST_FREQ_10HZ, //0 - Timestamp
+//  BROADCAST_FREQ_10HZ, //1 - Attitude Quaterniouns
+//  BROADCAST_FREQ_10HZ, //2 - Acceleration
+//  BROADCAST_FREQ_50HZ, //3 - Velocity (Ground Frame)
+//  BROADCAST_FREQ_10HZ, //4 - Angular Velocity (Body Frame)
+//  BROADCAST_FREQ_50HZ, //5 - Position
+//  BROADCAST_FREQ_10HZ, //6 - Magnetometer
+//  BROADCAST_FREQ_10HZ, //7 - RC Channels Data
+//  BROADCAST_FREQ_10HZ, //8 - Gimbal Data
+//  BROADCAST_FREQ_10HZ, //9 - Flight Status
+//  BROADCAST_FREQ_10HZ, //10 - Battery Level
+//  BROADCAST_FREQ_10HZ  //11 - Control Information
+//};
+
+//modify by yanly
 uint8_t myFreq[16] =
 {
-  BROADCAST_FREQ_10HZ, //0 - Timestamp
-  BROADCAST_FREQ_10HZ, //1 - Attitude Quaterniouns
-  BROADCAST_FREQ_10HZ, //2 - Acceleration
-  BROADCAST_FREQ_50HZ, //3 - Velocity (Ground Frame)
-  BROADCAST_FREQ_10HZ, //4 - Angular Velocity (Body Frame)
-  BROADCAST_FREQ_50HZ, //5 - Position
-  BROADCAST_FREQ_10HZ, //6 - Magnetometer
-  BROADCAST_FREQ_10HZ, //7 - RC Channels Data
-  BROADCAST_FREQ_10HZ, //8 - Gimbal Data
-  BROADCAST_FREQ_10HZ, //9 - Flight Status
-  BROADCAST_FREQ_10HZ, //10 - Battery Level
-  BROADCAST_FREQ_10HZ  //11 - Control Information
+  BROADCAST_FREQ_0HZ, //0 - Timestamp
+  BROADCAST_FREQ_0HZ, //1 - Attitude Quaterniouns
+  BROADCAST_FREQ_0HZ, //2 - Acceleration
+  BROADCAST_FREQ_0HZ, //3 - Velocity (Ground Frame)
+  BROADCAST_FREQ_0HZ, //4 - Angular Velocity (Body Frame)
+  BROADCAST_FREQ_50HZ,//5 - Position
+	BROADCAST_FREQ_0HZ, //6 - gps detailed information
+  BROADCAST_FREQ_0HZ, //7 - rtk detailed information
+	BROADCAST_FREQ_0HZ, //8 - Magnetometer
+  BROADCAST_FREQ_10HZ,//9 - RC Channels Data
+  BROADCAST_FREQ_0HZ, //10 - Gimbal Data
+  BROADCAST_FREQ_10HZ,//11 - Flight Status
+  BROADCAST_FREQ_0HZ, //12 - Battery Level
+  BROADCAST_FREQ_50HZ //13 - Control Information
 };
 
 //static void gps_convert_ned_deg(float32_t &ned_x, float32_t &ned_y,

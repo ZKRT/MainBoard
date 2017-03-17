@@ -453,6 +453,11 @@
               <FileType>8</FileType>
               <FilePath>..\User\LocalNavigation.cpp</FilePath>
             </File>
+            <File>
+              <FileName>djiCtrl.cpp</FileName>
+              <FileType>8</FileType>
+              <FilePath>..\User\djiCtrl.cpp</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1140,6 +1145,11 @@
               <FileName>obstacleAvoid.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ZKRT\obstacleAvoid.c</FilePath>
+            </File>
+            <File>
+              <FileName>undercarriageCtrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ZKRT\undercarriageCtrl.c</FilePath>
             </File>
           </Files>
         </Group>

@@ -618,7 +618,7 @@ void dji_zkrt_read_heart_tempture_check(void)
 	}
 	else
 	{
-//		msg_smartbat_dji_buffer[23] &= 0XFE; //zkrt_todo: modify by yanly
+//		msg_smartbat_dji_buffer[23] &= 0XFE; //AD采集温度数据异常时置0xFE //zkrt_debug: modify by yanly 
 	}
 #endif
 }

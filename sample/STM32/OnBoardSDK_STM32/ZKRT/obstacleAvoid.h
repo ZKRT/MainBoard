@@ -24,7 +24,7 @@
 /* Exported constants --------------------------------------------------------*/
 #define CAMERA_PAIR_NUM          5      //5个传感器
 #define GUIDANCE_ONLINE_TIMEOUT  5000   //5s
-#define OBSTACLE_ALARM_DISTANCE  500    //500cm  //zkrt_debug
+#define OBSTACLE_ALARM_DISTANCE  300    //500cm   //zkrt_debug
 
 //CONTROL MODE
 #define OBSTACLE_VEL_MODE        0x4A    //0x4A: non-stable mode，机体坐标系,HORI_VEL,VERT_VEL,YAW_RATE
@@ -34,10 +34,10 @@
 //VEL X AND Y FOR OBSTACLE
 //flightData_obstacle.x = 0; //+向前 -向后
 //flightData_obstacle.y = 1; //+向右 -向左
-#define OBSTACLE_VEL_FORWORD_X   (0.2)    //zkrt_notice：暂定为0.2m/s，因为不管什么速度刹车效果差不多 
-#define OBSTACLE_VEL_BACK_X      (-0.2)
-#define OBSTACLE_VEL_RIGHT_Y     (0.2)
-#define OBSTACLE_VEL_LEFT_Y      (-0.2)
+#define OBSTACLE_VEL_FORWORD_X   (1)    //zkrt_notice：暂定为0.2m/s，因为不管什么速度刹车效果差不多  //zkrt_debug 修改为1m/s，看一下效果
+#define OBSTACLE_VEL_BACK_X      (-1)
+#define OBSTACLE_VEL_RIGHT_Y     (1)
+#define OBSTACLE_VEL_LEFT_Y      (-1)
 #define OBSTACLE_MODE             OBSTACLE_VEL_MODE
 #endif
 #ifdef OBSTACLE_HORI_ANGLE_MODE
