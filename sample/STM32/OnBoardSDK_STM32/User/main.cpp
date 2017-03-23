@@ -107,8 +107,10 @@ int main()
 #endif	
 #ifdef USE_OBSTACLE_AVOID_FUN	
 	guidance_init();
-#endif	
+#endif
+#ifdef USE_UNDERCARRIAGE_FUN	
 	undercarriage_init();
+#endif	
   while (1)
   {
 #ifdef USE_DJI_FUN			
@@ -132,8 +134,10 @@ int main()
 #ifdef USE_USB_FUN			
 		usb_user_prcs();                      //USB流程
 #endif    
+#ifdef USE_UNDERCARRIAGE_FUN
     undercarriage_process();              //起落架处理
-		IWDG_Feed();
+#endif
+	IWDG_Feed();
   }
 }
 

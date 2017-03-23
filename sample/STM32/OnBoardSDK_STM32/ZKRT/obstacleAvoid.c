@@ -199,6 +199,7 @@ void main_recv_decode_zkrt_dji_guidance(void)
               right:  (1<<(GE_DIR_RIGHT-1))
               back :  (1<<(GE_DIR_BACK-1))
               left :  (1<<(GE_DIR_LEFT-1))
+						when retval = 0x80, 飞机悬停
   */
 char g_obstacle_cnt=0;  //避障触发的方向个数
 char g_obstacle_move_flag=0;  //避障算法计算出来的避障移动标记
@@ -249,31 +250,59 @@ unsigned char obstacle_avoidance_handle(void)
 
 		  if(g_obstacle_dir==10) //0b1010: 左右相反方向处理
 			{
-				if(GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] > GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT])
+////first method				
+//				if(GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] > GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT])
+//					g_obstacle_move_flag = (1<<(GE_DIR_LEFT-1));
+//				else
+//					g_obstacle_move_flag = (1<<(GE_DIR_RIGHT-1));
+////second method							
+				if(GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] - GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] > 50) //>50m 差值大于50cm才移动
 					g_obstacle_move_flag = (1<<(GE_DIR_LEFT-1));
-				else
+				else if(GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] - GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] > 50) 
 					g_obstacle_move_flag = (1<<(GE_DIR_RIGHT-1));
+				else 
+					g_obstacle_move_flag = 0x80;  //悬停
+////third method				
+//				g_obstacle_move_flag = 0x80;  //悬停				
+				
 			}	
 			else if(g_obstacle_dir == 5) //0b0101: 前后相反方向处理
 			{
-				if(GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] > GuidanceObstacleData.g_distance_value[GE_DIR_BACK])
+////first method
+//				if(GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] > GuidanceObstacleData.g_distance_value[GE_DIR_BACK])
+//					g_obstacle_move_flag = (1<<(GE_DIR_FRONT-1));
+//				else
+//					g_obstacle_move_flag = (1<<(GE_DIR_BACK-1));	
+////second method				
+				if(GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] - GuidanceObstacleData.g_distance_value[GE_DIR_BACK] > 50) 
 					g_obstacle_move_flag = (1<<(GE_DIR_FRONT-1));
-				else
-					g_obstacle_move_flag = (1<<(GE_DIR_BACK-1));				
-			}	
+				else if(GuidanceObstacleData.g_distance_value[GE_DIR_BACK] - GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] > 50) 
+					g_obstacle_move_flag = (1<<(GE_DIR_BACK-1));
+				else 
+					g_obstacle_move_flag = 0x80;  //悬停
+////third method				
+//				g_obstacle_move_flag = 0x80;  //悬停
+				
+			}
 			else  //相邻方向处理
 			{
-				g_obstacle_move_flag = ~g_obstacle_dir;
+				g_obstacle_move_flag = ~g_obstacle_dir;  
 			}
 			break;
 		
 		case 3:
-			g_obstacle_move_flag = (~g_obstacle_dir)&0x0f;
+////first method			
+//			g_obstacle_move_flag = (~g_obstacle_dir)&0x0f; //zkrt_todo: 待优化 
+////second method	
+			g_obstacle_move_flag = 0x80;  //悬停
 			break;
 		
 		case 4:
 			temp_flag = arry_max_item(GuidanceObstacleData.g_distance_value+GE_DIR_FRONT, 4);
-		  g_obstacle_move_flag = 1<<temp_flag;
+	    if(GuidanceObstacleData.g_distance_value[temp_flag] <100)
+				g_obstacle_move_flag = 0x80;  //悬停
+			else
+				g_obstacle_move_flag = (1<<(temp_flag-1));
 			break;
 		
 		default:

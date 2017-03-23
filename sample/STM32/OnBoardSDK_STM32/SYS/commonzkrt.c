@@ -225,10 +225,10 @@ char arry_max_item(const unsigned short *array_data, u16 item_num)
 		else
 		{
 			temp = array_data[i+1];
-			max_item = i+1;
+			max_item = i;
 		}
 	}
-	return max_item;
+	return max_item+1;
 }
 /**
   * @}

@@ -612,18 +612,25 @@ void dji_zkrt_read_heart_tempture_check(void)
 	last_tempture0 = tempture0;
 	last_tempture1 = tempture1;
 #elif defined _TEMPTURE_ADC_
-	if ((tempture0 > 50)&&(tempture1 > 50))
+//	if ((tempture0 > 50)&&(tempture1 > 50))  //zkrt_notice: 温度大于500摄氏度，表示AD检测异常
+//	{
+//		msg_smartbat_dji_buffer[23] |= 0X01;
+//	}
+//	else
+//	{
+//		msg_smartbat_dji_buffer[23] &= 0XFE; //AD采集温度数据异常时置0xFE 
+//	}
+	
+	if((msg_smartbat_dji_buffer[0] != TEMP_INVALID)&&(msg_smartbat_dji_buffer[3] != TEMP_INVALID))  //zkrt_notice: 两个AD检测异常，置温度传感器不在线
 	{
 		msg_smartbat_dji_buffer[23] |= 0X01;
 	}
 	else
 	{
-//		msg_smartbat_dji_buffer[23] &= 0XFE; //AD采集温度数据异常时置0xFE //zkrt_debug: modify by yanly 
+		msg_smartbat_dji_buffer[23] &= 0XFE; //AD采集温度数据异常时置0xFE 
 	}
 #endif
 }
-
-
 
 /***********************************************************************
 		          中科瑞泰消防无人机函数定义

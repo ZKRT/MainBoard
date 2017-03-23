@@ -179,6 +179,13 @@ void get_flight_data_and_handle(void)
 //	printf("vel x=%f, y=%f, z=%f\n", flight.getYawRate().x, flight.getYawRate().y, flight.getYawRate().z);//这个是角速度
 //	printf("getAcceleration x=%f, y=%f, z=%f\n", flight.getAcceleration().x, flight.getAcceleration().y, flight.getAcceleration().z);//这个是加速度
 //	printf("gps vel x=%f, y=%f, z=%f\n", coreApi->getBroadcastData().gps.velocityNorth, coreApi->getBroadcastData().gps.velocityEast, coreApi->getBroadcastData().gps.velocityGround);//这个是GPS速度
+//	double yaw;
+//	double roll;
+//	double pitch;
+//	yaw = flight.getYaw();
+//	roll = flight.getRoll();
+//	pitch = flight.getPitch();
+//	printf("yaw=%f, roll=%f, pitch=%f\n", yaw, roll, pitch);   //yaw , roll, pitch
 	
 	if(f_act_height > UDCAIE_TRIGGER_UP_HEIGHT)
 	{
@@ -204,7 +211,7 @@ void djizkrt_timer_task(void)
 	{
 		getfdata_timercnt--;
 	}
-}	
+}
 /**
   * @}
   */ 
