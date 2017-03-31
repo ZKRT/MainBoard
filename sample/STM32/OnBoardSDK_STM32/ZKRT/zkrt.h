@@ -58,8 +58,9 @@ extern uint16_t now_uav_num;
 #define DEVICE_TYPE_BATTERY     0X0B
 //#define DEVICE_TYPE_BAOSHAN			0X0C	//屏蔽爆闪灯，主模块不再搭载爆闪灯 //by yanly
 #define DEVICE_TYPE_3DMODELING  0X0C
+#define DEVICE_TYPE_MAINBOARD   100
 #define DEVICE_TYPE_HEART				101
-
+#define DEVICE_TYPE_HEARTV2			102
 
 //编号定义，用于UAVID[2：1]和UAVID[5：4]
 #define DEFAULT_NUM 0X00

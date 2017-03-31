@@ -1151,6 +1151,16 @@
               <FileType>1</FileType>
               <FilePath>..\ZKRT\undercarriageCtrl.c</FilePath>
             </File>
+            <File>
+              <FileName>heartBeatHandle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ZKRT\heartBeatHandle.c</FilePath>
+            </File>
+            <File>
+              <FileName>ProtocolZkrtHandle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ZKRT\ProtocolZkrtHandle.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -347,7 +347,7 @@ char pwm_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	///doing test
 	pwm_tim_init();
 	//pwm test
-	pwm_output_test(); //zkrt_todo: wait test
+	pwm_output_test(); 
 	
 	outdata[0] = RESULT_UNCONFIRM_HWT;
 	*out_arg_len = 1;
@@ -789,7 +789,7 @@ char pwm_output_test(void)
 			change=0;//pwmval到达后，方向为递减
 		if(pwmval<1100)
 			change=1;	//pwmval递减到0后，方向改为递增
-//		PWM_OUT(pwmval); //zkrt_todo: wait test
+//		PWM_OUT(pwmval);
 		PWM1_OUT(pwmval);
 		PWM2_OUT(pwmval);
 		PWM3_OUT(pwmval);

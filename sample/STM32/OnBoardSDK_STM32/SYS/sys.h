@@ -75,7 +75,7 @@
 #define TEMPTURE_DIFF         8
 #elif defined _TEMPTURE_ADC_
 #define TEMPTURE_LOW_EXTRA  -45
-#define TEMPTURE_HIGH_EXTRA 7000   //zkrt_debug by yanly
+#define TEMPTURE_HIGH_EXTRA 7000   //zkrt_notice by yanly
 #else
 #define TEMPTURE_LOW_EXTRA  999
 #define TEMPTURE_HIGH_EXTRA 999

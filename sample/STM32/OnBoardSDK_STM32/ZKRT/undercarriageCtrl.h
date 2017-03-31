@@ -35,6 +35,8 @@
 #define  UDCAIE_TRIGGER_UP_HEIGHT         4 //4m    //起落架触发高度
 #define  UDCAIE_TRIGGER_DOWN_HEIGHT       3 //3m    //起落架触发高度
 #define  UDCAIE_CHANGE_TIME               7 //7s    //起落架运动时间
+#define  UCE_DOWNED_ANGLE                 700  
+#define  UCE_UPED_ANGLE                   0
 
 /** @def OBSTACLE_ALARM_DISTANCE definition
   */ 	
@@ -60,6 +62,11 @@ typedef struct{
 	volatile u8 run_timeout;             //起落架运动时间  //3s
 	volatile u8 run_timeoutflag;         //超时标记
 	int state_bya3height;        //起落架应该处于的状态，根据飞控运行的高度来确定。if height>3m, state_bya3height = uped_udcaie_rs; if height < 3m, state_bya3height = downed_udcaie_rs
+	u8 uce_autoenabled;     //脚架自动收放的使能状态
+	u16 uce_angle;          //脚架当前角度值   : 与大地夹角， 最大降落角度是70度，最大升起角度是0度，运动时角度是
+	u16 uce_autodown_ae;    //脚架自动降落的角度值
+	u16 uce_autoup_ae;      //脚架自动升起的角度值
+//	u8 uce_updown_runtime;      //起落架上升、下降需要运动的时间
 }undercarriage_st;
 /* Exported functions ------------------------------------------------------- */
 void undercarriage_init(void);

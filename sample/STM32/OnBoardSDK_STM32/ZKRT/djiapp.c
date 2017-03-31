@@ -21,6 +21,8 @@
  * */
 
 #include "djiapp.h"
+#include "obstacleAvoid.h"
+
 #define TEMPTURE_DIFF         8
 
 uint8_t posion_dji_buffer[16] = {0};
@@ -621,14 +623,18 @@ void dji_zkrt_read_heart_tempture_check(void)
 //		msg_smartbat_dji_buffer[23] &= 0XFE; //AD采集温度数据异常时置0xFE 
 //	}
 	
-	if((msg_smartbat_dji_buffer[0] != TEMP_INVALID)&&(msg_smartbat_dji_buffer[3] != TEMP_INVALID))  //zkrt_notice: 两个AD检测异常，置温度传感器不在线
-	{
-		msg_smartbat_dji_buffer[23] |= 0X01;
-	}
-	else
+	if((msg_smartbat_dji_buffer[0] == TEMP_INVALID)&&(msg_smartbat_dji_buffer[3] == TEMP_INVALID))  //zkrt_notice: 两个AD检测异常，置温度传感器不在线
 	{
 		msg_smartbat_dji_buffer[23] &= 0XFE; //AD采集温度数据异常时置0xFE 
 	}
+	else
+	{
+		msg_smartbat_dji_buffer[23] |= 0X01;
+	}
+	if(GuidanceObstacleData.online_flag == 1)
+		msg_smartbat_dji_buffer[23] |= 0X02;  //避障在线标记
+	else
+		msg_smartbat_dji_buffer[23] &= 0XFD;
 #endif
 }
 

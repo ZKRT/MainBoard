@@ -41,6 +41,10 @@ typedef struct _flash_type
 	uint32_t _start_cod;
 	short _tempture_low;
 	short _tempture_high;
+  u8 avoid_ob_enabled;    //避障使能   
+  u16 avoid_ob_distse;    //避障生效距离
+	u8 uce_autoenabled;     //脚架自动收放使能
+	u16 avoid_ob_velocity;  //避障速度
 	uint32_t _end_cod;
 }flash_type;
 #pragma pack(pop)

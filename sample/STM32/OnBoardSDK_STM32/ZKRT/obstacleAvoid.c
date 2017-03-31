@@ -24,7 +24,8 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-obstacleData_st GuidanceObstacleData = {{0}, {0}, 0, 0, 0xffffffff};
+//obstacleData_st GuidanceObstacleData = {{0}, {0}, 0, 0, 0xffffffff, 1, OBSTACLE_ALARM_DISTANCE, OBSTACLE_AVOID_VEL};
+obstacleData_st GuidanceObstacleData;
 volatile uint8_t guidance_v_index=0; //Êý¾Ý°ü½â°üµÄindex£¬½âÍêÒ»¸ö×Ö½Ú£¬indexÖ¸ÏòÏÂÒ»¸ö×Ö½ÚÊý¾Ý
 
 /* Private functions ---------------------------------------------------------*/
@@ -36,13 +37,17 @@ volatile uint8_t guidance_v_index=0; //Êý¾Ý°ü½â°üµÄindex£¬½âÍêÒ»¸ö×Ö½Ú£¬indexÖ¸Ï
   */
 static void guidance_parmdata_init(void)
 {
-	memset(&GuidanceObstacleData, 0x00, sizeof(obstacleData_st));
-	GuidanceObstacleData.g_distance_value[0] = 2000;
-	GuidanceObstacleData.g_distance_value[1] = 2000;
-	GuidanceObstacleData.g_distance_value[2] = 2000;
-	GuidanceObstacleData.g_distance_value[3] = 2000;
-	GuidanceObstacleData.g_distance_value[4] = 2000;
+	GuidanceObstacleData.g_distance_value[0] = OBSTACLE_DISTACNE_INITV;
+	GuidanceObstacleData.g_distance_value[1] = OBSTACLE_DISTACNE_INITV;
+	GuidanceObstacleData.g_distance_value[2] = OBSTACLE_DISTACNE_INITV;
+	GuidanceObstacleData.g_distance_value[3] = OBSTACLE_DISTACNE_INITV;
+	GuidanceObstacleData.g_distance_value[4] = OBSTACLE_DISTACNE_INITV;
+	GuidanceObstacleData.online_flag = 0;
+	GuidanceObstacleData.g_distance_valid = 0;
 	GuidanceObstacleData.online_timing = 0xffffffff;
+//	GuidanceObstacleData.ob_enabled = 1;                                     //this parameter init read from flash in function of STMFLASH_Init().
+//	GuidanceObstacleData.ob_distance = OBSTACLE_ALARM_DISTANCE;
+//	GuidanceObstacleData.ob_velocity = OBSTACLE_AVOID_VEL;
 }
 /**
 *   @brief  guidance_init
@@ -52,7 +57,7 @@ static void guidance_parmdata_init(void)
 void guidance_init(void)
 {
 	guidance_parmdata_init();
-}	
+}
 
 /**
 *   @brief  main_recv_decode_zkrt_dji_guidance GuidanceÊý¾Ý°ü½âÎö´¦Àí£¨´Ëº¯ÊýÖ»½âÎö´¦ÀíÕÏ°­Îï¾àÀëÊý¾Ý£©
@@ -86,8 +91,6 @@ void main_recv_decode_zkrt_dji_guidance(void)
 					GuidanceObstacleData.online_flag = 1;
 					GuidanceObstacleData.online_timing = TimingDelay;
 					guidance_v_index=1;
-//					delay_ms(1);
-//					printf("11111111111\r\n");
 				}
 				else
 					guidance_v_index=0;	
@@ -96,8 +99,6 @@ void main_recv_decode_zkrt_dji_guidance(void)
 				if (guidance_vlaue== 0x80)
 				{
 					guidance_v_index=2;
-//					delay_ms(1);
-//					printf("2222222222222\r\n");
 				}
 				else
 					guidance_v_index=0;
@@ -106,8 +107,6 @@ void main_recv_decode_zkrt_dji_guidance(void)
 				if (guidance_vlaue== 0x4)
 				{
 					guidance_v_index=14;
-//					delay_ms(1);
-//					printf("13131313\r\n");
 				}
 				else
 					guidance_v_index=0;
@@ -176,7 +175,6 @@ void main_recv_decode_zkrt_dji_guidance(void)
 		GuidanceObstacleData.g_distance_value[3]=GuidanceObstacleData.g_distance_char[6]+((GuidanceObstacleData.g_distance_char[7]<<8)&0xff00);
 		GuidanceObstacleData.g_distance_value[4]=GuidanceObstacleData.g_distance_char[8]+((GuidanceObstacleData.g_distance_char[9]<<8)&0xff00);	
 		GuidanceObstacleData.g_distance_valid = 0;
-		
 //		for(i=0;i<5;i++)
 //		{
 //			printf("[%d]=%d, ",i,GuidanceObstacleData.g_distance_value[i]);
@@ -211,25 +209,25 @@ unsigned char obstacle_avoidance_handle(void)
 //	g_obstacle_move_flag=0;  //±ÜÕÏËã·¨¼ÆËã³öÀ´µÄ±ÜÕÏÒÆ¶¯±ê¼Ç
 	g_obstacle_dir=0; //ÕÏ°­Îï·½Ïò³¬¹ýãÐÖµµÄ±ê¼Ç£¬±ê¼ÇÎ»ÖÃ¶¨ÒåÓëobstacle_move_flagÒ»Ñù
 
-	if(GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] < GE_ALARM_DISE_FRONT)
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] < GuidanceObstacleData.ob_distance)
 	{
 		g_obstacle_cnt++;
 		g_obstacle_dir |=(1<<(GE_DIR_FRONT-1));
 		g_obstacle_move_flag = (1<<(GE_DIR_BACK-1));
 	}
-	if(GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] < GE_ALARM_DISE_RIGHT)
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] < GuidanceObstacleData.ob_distance)
 	{
 		g_obstacle_cnt++;
 		g_obstacle_dir |=(1<<(GE_DIR_RIGHT-1));
 		g_obstacle_move_flag = (1<<(GE_DIR_LEFT-1));
 	}
-	if(GuidanceObstacleData.g_distance_value[GE_DIR_BACK] < GE_ALARM_DISE_BACK)
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_BACK] < GuidanceObstacleData.ob_distance)
 	{
 		g_obstacle_cnt++;
 		g_obstacle_dir |=(1<<(GE_DIR_BACK-1));
 		g_obstacle_move_flag = (1<<(GE_DIR_FRONT-1));
 	}	
-	if(GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] < GE_ALARM_DISE_LEFT)
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] < GuidanceObstacleData.ob_distance)
 	{
 		g_obstacle_cnt++;
 		g_obstacle_dir |=(1<<(GE_DIR_LEFT-1));

@@ -45,6 +45,7 @@ extern "C"
 #include "obstacleAvoid.h"
 #endif
 #include "undercarriageCtrl.h"
+#include "heartBeatHandle.h"
 }
 #endif //__cplusplus
 
@@ -95,7 +96,7 @@ void avoid_obstacle_alarm(void);
 int main()
 {
   BSPinit();
-	delay_nms(5000);
+	delay_nms(1000);
 	ZKRT_LOG(LOG_INOTICE, "==================================================\r\n"); 
 	printf("PRODUCT_NAME: %s\r\nPRODUCT_ID: %s\r\nPRODUCT_VERSION: %s\r\nPRODUCT_TIME: %s %s\r\n",PRODUCT_NAME,PRODUCT_ID,PRODUCT_VERSION,__DATE__,__TIME__);
 	ZKRT_LOG(LOG_INOTICE, "==================================================\r\n"); 
@@ -111,6 +112,7 @@ int main()
 #ifdef USE_UNDERCARRIAGE_FUN	
 	undercarriage_init();
 #endif	
+	heartbeat_parm_init();   //put at last
   while (1)
   {
 #ifdef USE_DJI_FUN			
@@ -122,7 +124,7 @@ int main()
 #ifdef USE_OBSTACLE_AVOID_FUN	
 		main_recv_decode_zkrt_dji_guidance(); //Guidance数据包解析处理
 #ifdef USE_OBSTACLE_AVOID_FUN			
-			avoid_obstacle_alarm(); //避障检测
+		avoid_obstacle_alarm(); //避障检测
 #endif			
 #endif
 		mobile_heardbeat_packet_control();    //板子定时发送心跳包到地面站
@@ -137,7 +139,7 @@ int main()
 #ifdef USE_UNDERCARRIAGE_FUN
     undercarriage_process();              //起落架处理
 #endif
-	IWDG_Feed();
+	  IWDG_Feed();
   }
 }
 
@@ -189,7 +191,7 @@ void mobile_heardbeat_packet_control(void)
 		if ((mavlink_send_flag-TimingDelay) >= 800)
 		{
 			mavlink_send_flag = TimingDelay;
-			#if 1
+			#if 0   //zkrt_notice: send heartbeat1 at another place.
 			switch (mavlink_type_flag_dji)
 			{
 				case 0:
@@ -199,16 +201,13 @@ void mobile_heardbeat_packet_control(void)
 					break;
 				case 1:
 					mavlink_type_flag_dji = 0;
-				//dji_bat_value_send();  /*发送智能电池数据，总共32个字节*/    //????为什么没有封装zkrt packet格式 //modify by yanly
+				  dji_bat_value_send();  /*发送智能电池数据，总共32个字节*/    //????为什么没有封装zkrt packet格式 //modify by yanly
 					coreApi->sendPoll();
 					break;
 				default:
 					break;
 			}
 			#endif
-//			printf("T1 = %d T2 = %d  ADC1_25_dji=%d  ADC1_5_dji=%d  ADC1_I_dji=%d   LOW_VALUE = %d HIGH_VALUE = %d STA1 = %x STA2 = %x\r\n",
-//			tempture0, tempture1, ADC1_25_dji,ADC1_5_dji,ADC1_I_dji,glo_tempture_low, glo_tempture_high, msg_smartbat_dji_buffer[0],
-//			msg_smartbat_dji_buffer[3]);
 		}
 	}	
 	
@@ -287,6 +286,13 @@ void avoid_obstacle_alarm(void)
 	if(GuidanceObstacleData.online_flag ==0) //Guidance不在线
 		return;
 	
+	if(GuidanceObstacleData.ob_enabled ==0) //避障不生效
+	{
+		if(	djisdk_state.oes_fc_controled)
+			djisdk_state.oes_fc_controled &= ~(1<< fc_obstacle_b);
+		return;
+	}
+	
 	move_flag = obstacle_avoidance_handle();
 	if(move_flag)
 	{
@@ -294,16 +300,20 @@ void avoid_obstacle_alarm(void)
 	
 #ifdef OBSTACLE_VEL_MODE		
 		if(move_flag &(1<<(GE_DIR_FRONT-1)))                     //前后
-			flightData_zkrtctrl.x = OBSTACLE_VEL_FORWORD_X;
+		  flightData_zkrtctrl.x = OBSTACLE_VEL_FORWORD_X(GuidanceObstacleData.ob_velocity);
+//			flightData_zkrtctrl.x = OBSTACLE_VEL_FORWORD_X;
 		else if(move_flag &(1<<(GE_DIR_BACK-1)))
-			flightData_zkrtctrl.x = OBSTACLE_VEL_BACK_X;
+			flightData_zkrtctrl.x = OBSTACLE_VEL_BACK_X(GuidanceObstacleData.ob_velocity);
+//			flightData_zkrtctrl.x = OBSTACLE_VEL_BACK_X;
 		else
 			flightData_zkrtctrl.x = 0;
 		
-		if(move_flag &(1<<(GE_DIR_RIGHT-1)))                     //左右                    
-			flightData_zkrtctrl.y = OBSTACLE_VEL_RIGHT_Y;         
+		if(move_flag &(1<<(GE_DIR_RIGHT-1)))                     //左右  
+			flightData_zkrtctrl.y = OBSTACLE_VEL_RIGHT_Y(GuidanceObstacleData.ob_velocity);
+//			flightData_zkrtctrl.y = OBSTACLE_VEL_RIGHT_Y;         
 		else if(move_flag &(1<<(GE_DIR_LEFT-1)))
-			flightData_zkrtctrl.y = OBSTACLE_VEL_LEFT_Y;
+			flightData_zkrtctrl.y = OBSTACLE_VEL_LEFT_Y(GuidanceObstacleData.ob_velocity);
+//			flightData_zkrtctrl.y = OBSTACLE_VEL_LEFT_Y;
 		else
 			flightData_zkrtctrl.y = 0;
 #else

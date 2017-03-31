@@ -25,7 +25,7 @@
 /* Private function prototypes -----------------------------------------------*/
 void undercarriage_timer_task(void);
 /* Private variables ---------------------------------------------------------*/
-undercarriage_st undercarriage_data = {downed_udcaie_rs, 0, 0, downed_udcaie_rs};
+undercarriage_st undercarriage_data;
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -36,6 +36,7 @@ undercarriage_st undercarriage_data = {downed_udcaie_rs, 0, 0, downed_udcaie_rs}
   */
 void undercarriage_init(void)
 {
+//io config	
   GPIO_InitTypeDef GPIO_InitStructure;
 	
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA| RCC_AHB1Periph_GPIOF, ENABLE);
@@ -56,13 +57,18 @@ void undercarriage_init(void)
   UDCAIE_LEFT_STOP;
 	UDCAIE_RIGHT_STOP;
 	
-//	GPIO_SetBits(GPIOA, GPIO_Pin_0);
-//	GPIO_SetBits(GPIOF, GPIO_Pin_9 | GPIO_Pin_7 | GPIO_Pin_8);	//zkrt_debug
-	
+//timer task init
 	t_ostmr_insertTask(undercarriage_timer_task, 1000, OSTMR_PERIODIC);
 	
-//	undercarriage_data.state_bya3height = downed_udcaie_rs;	//zkrt_debug
-//	undercarriage_data.run_state = uped_udcaie_rs;	//zkrt_debug
+//param init
+	undercarriage_data.run_timeout = 0;
+	undercarriage_data.run_timeoutflag = 0;
+	undercarriage_data.state_bya3height = downed_udcaie_rs;
+	undercarriage_data.run_state = downed_udcaie_rs;
+//	undercarriage_data.uce_autoenabled  = 1;   //this parameter init read from flash in function of STMFLASH_Init().
+	undercarriage_data.uce_angle = UCE_DOWNED_ANGLE; 
+	undercarriage_data.uce_autodown_ae = UCE_DOWNED_ANGLE;
+	undercarriage_data.uce_autoup_ae = UCE_UPED_ANGLE;
 }
 /**
 *   @brief  undercarriage_process
@@ -71,6 +77,9 @@ void undercarriage_init(void)
   */
 void undercarriage_process(void)
 {
+	if(!undercarriage_data.uce_autoenabled)
+		return;
+	
 	if(undercarriage_data.state_bya3height + undercarriage_data.run_state == 1)  //‘ –Ì±‰ªØ
 	{
 		undercarriage_data.run_state = undercarriage_data.state_bya3height -1;
@@ -89,6 +98,7 @@ void undercarriage_process(void)
 				UDCAIE_LEFT_STOP;
 				UDCAIE_RIGHT_STOP;
 				undercarriage_data.run_state = downed_udcaie_rs;
+				undercarriage_data.uce_angle = UCE_DOWNED_ANGLE; 
 				ZKRT_LOG(LOG_INOTICE, "undercarriage downing over\n"); 
 			}	
 			else
@@ -104,6 +114,7 @@ void undercarriage_process(void)
 				UDCAIE_LEFT_STOP;
 				UDCAIE_RIGHT_STOP;
 				undercarriage_data.run_state = uped_udcaie_rs;
+				undercarriage_data.uce_angle = UCE_UPED_ANGLE; 
 				ZKRT_LOG(LOG_INOTICE, "undercarriage upping over\n"); 
 			}	
 			else

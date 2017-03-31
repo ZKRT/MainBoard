@@ -23,6 +23,7 @@ extern "C"
 #include "sys.h"
 #include "ostmr.h"
 #include "undercarriageCtrl.h"
+#include "heartBeatHandle.h"
 }
 #endif
 
@@ -31,14 +32,17 @@ extern Flight flight;
 extern uint8_t myFreq[16];
 extern FlightData flightData_zkrtctrl;
 extern VirtualRC virtualrc;
+
+extern "C" void sendToMobile(uint8_t *data, uint8_t len);
+
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-
 void dji_flight_ctrl(void);
 void djizkrt_timer_task(void);
 void get_flight_data_and_handle(void);
+void heartbeat_ctrl(void);
 
 /* Private variables ---------------------------------------------------------*/
 
@@ -59,7 +63,7 @@ volatile u16 getfdata_timercnt = GETFDATA_TIMEROUT;//周期获取飞行数据时钟计数
   */
 void dji_init(void)
 {
-	delay_nms(10000); 
+	delay_nms(5000); 
   ZKRT_LOG(LOG_NOTICE,"This is the example App to test DJI onboard SDK on STM32F4Discovery Board! \r\n");
   ZKRT_LOG(LOG_NOTICE,"Refer to \r\n");
   ZKRT_LOG(LOG_NOTICE,"https://developer.dji.com/onboard-sdk/documentation/github-platform-docs/STM32/README.html \r\n");
@@ -97,11 +101,13 @@ void dji_process(void)
 			if(djisdk_state.cmdres_timeout - TimingDelay >= 5000) //激活不成功时，每5秒重新激活一次
 			{
 				djisdk_state.run_status = init_none_djirs;
+//				heartbeat_ctrl(); //zkrt_debug
 			}
 			break;
 		case avtivated_ok_djirs:
 			dji_flight_ctrl();  //飞行控制
 		  get_flight_data_and_handle(); //飞行数据处理
+		  heartbeat_ctrl();  //心跳包定时处理
 			break;
 		default:break;
 	}
@@ -194,6 +200,23 @@ void get_flight_data_and_handle(void)
 	else if(f_act_height < UDCAIE_TRIGGER_DOWN_HEIGHT)
 	{
 		undercarriage_data.state_bya3height = downed_udcaie_rs;
+	}
+}
+/**
+  * @brief  heartbeat_ctrl 心跳包处理
+  * @param  None
+  * @retval None
+  */
+void heartbeat_ctrl(void)
+{
+	if(zkrt_heartbeat_pack())
+	{
+		sendToMobile((uint8_t*)&_zkrt_packet_hb, 50);
+//		int k; //zkrt_debug
+//		printf("heart start_code=0x %x\r\n",_zkrt_packet_hb.start_code);
+//		for(k=0; k<30; k++)
+//			printf("%x ",_zkrt_packet_hb.data[k]);
+//		printf("\r\n");
 	}
 }
 /**

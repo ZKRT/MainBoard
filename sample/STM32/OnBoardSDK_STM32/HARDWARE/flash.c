@@ -1,4 +1,6 @@
 #include "flash.h"
+#include "undercarriageCtrl.h"
+#include "obstacleAvoid.h"
 
 /*
 ³ýÁËÖ÷´æ´¢Æ÷Íâ£¬»¹ÓÐ3ÉÁ´æÄ£¿é´æ´¢Æ÷×éÖ¯»¹°üÀ¨3¸öÇøÓò£ºÏµÍ³´æ´¢Æ÷£¨30K£©¡¢OTPÇøÓò£¨528×Ö£©¡¢Ñ¡Ïî×Ö½Ú£¨16×Ö£©
@@ -23,7 +25,9 @@ IAP¿ÉÒÔÍ¨¹ýÈÎÒâ·½Ê½£¬ÈçÓ²¼þ¡¢ÍøÂç¡¢GPRSÔ¶³ÌÉý¼¶µÈ£¬Ð§ÂÊºÜ¸ß¡£ÍøÂç¡¢GPRSµÈ×îºó»¹Ê
 //×Ö0£ºT1
 //×Ö1£ºT2
 
-flash_type flash_buffer ={0XFEDCBA98, TEMPTURE_LOW_EXTRA, TEMPTURE_HIGH_EXTRA, 0X76543210};
+//flash_type flash_buffer ={0XFEDCBA98, TEMPTURE_LOW_EXTRA, TEMPTURE_HIGH_EXTRA, 0X76543210};
+flash_type flash_buffer;
+
 //¶ÁÈ¡Ö¸¶¨µØÖ·µÄ°ë×Ö(16Î»Êý¾Ý) 
 //faddr:¶ÁµØÖ· 
 //·µ»ØÖµ:¶ÔÓ¦Êý¾Ý.
@@ -86,17 +90,34 @@ void STMFLASH_Init(void)
 	
 	if((flash_buffer._start_cod == 0XFEDCBA98)&&(flash_buffer._end_cod == 0X76543210))
 	{
-		glo_tempture_low  =  flash_buffer._tempture_low;
-		glo_tempture_high =  flash_buffer._tempture_high;
-	}	
+	}
 	else
 	{
 		flash_buffer._start_cod = 0XFEDCBA98;
 		flash_buffer._end_cod = 0X76543210;
+		//tempture data
 		flash_buffer._tempture_low  = glo_tempture_low;
 		flash_buffer._tempture_high = glo_tempture_high;
+		//obstacle data
+		flash_buffer.avoid_ob_enabled = 1;
+		flash_buffer.avoid_ob_distse = OBSTACLE_ALARM_DISTANCE;
+		flash_buffer.avoid_ob_velocity = OBSTACLE_AVOID_VEL;
+		//undercarriage data
+		flash_buffer.uce_autoenabled = 1;
+		
 		STMFLASH_Write();
 	}
+	
+	////read flash value to global param struct
+	//temp
+	glo_tempture_low  =  flash_buffer._tempture_low;
+	glo_tempture_high =  flash_buffer._tempture_high;
+	//obstacle
+	GuidanceObstacleData.ob_enabled = flash_buffer.avoid_ob_enabled;
+	GuidanceObstacleData.ob_distance = flash_buffer.avoid_ob_distse;
+	GuidanceObstacleData.ob_velocity = flash_buffer.avoid_ob_velocity;
+	//undercarriage
+	undercarriage_data.uce_autoenabled = flash_buffer.uce_autoenabled;
 }
 //²Á³ýÄ³¸öÉÈÇø
 void STMFLASH_Erase(short sector)	

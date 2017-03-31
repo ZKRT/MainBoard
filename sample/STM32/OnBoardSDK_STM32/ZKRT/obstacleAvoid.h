@@ -24,7 +24,9 @@
 /* Exported constants --------------------------------------------------------*/
 #define CAMERA_PAIR_NUM          5      //5个传感器
 #define GUIDANCE_ONLINE_TIMEOUT  5000   //5s
-#define OBSTACLE_ALARM_DISTANCE  300    //300cm   //zkrt_debug
+#define OBSTACLE_ALARM_DISTANCE  500    //500cm 
+#define OBSTACLE_DISTACNE_INITV  2000   //20m 初值
+#define OBSTACLE_AVOID_VEL       15     //避障速度除以10，单位m/s
 
 //CONTROL MODE
 #define OBSTACLE_VEL_MODE        0x4A    //0x4A: non-stable mode，机体坐标系,HORI_VEL,VERT_VEL,YAW_RATE
@@ -34,11 +36,15 @@
 //VEL X AND Y FOR OBSTACLE
 //flightData_obstacle.x = 0; //+向前 -向后
 //flightData_obstacle.y = 1; //+向右 -向左
-#define OBSTACLE_VEL_FORWORD_X   (1.5)    //zkrt_notice：暂定为0.2m/s，因为不管什么速度刹车效果差不多  //zkrt_debug 修改为1.5m/s，看一下效果
-#define OBSTACLE_VEL_BACK_X      (-1.5)
-#define OBSTACLE_VEL_RIGHT_Y     (1.5)
-#define OBSTACLE_VEL_LEFT_Y      (-1.5)
-#define OBSTACLE_MODE             OBSTACLE_VEL_MODE
+//#define OBSTACLE_VEL_FORWORD_X   (1.5)    //zkrt_notice：暂定为1.5m/s，因为不管什么速度刹车效果差不多 
+//#define OBSTACLE_VEL_BACK_X      (-1.5)
+//#define OBSTACLE_VEL_RIGHT_Y     (1.5)
+//#define OBSTACLE_VEL_LEFT_Y      (-1.5)
+#define OBSTACLE_VEL_FORWORD_X(vel)   (vel*0.1)
+#define OBSTACLE_VEL_BACK_X(vel)      (vel*(-0.1))
+#define OBSTACLE_VEL_RIGHT_Y(vel)     (vel*0.1)
+#define OBSTACLE_VEL_LEFT_Y(vel)      (vel*(-0.1))
+#define OBSTACLE_MODE            OBSTACLE_VEL_MODE
 #endif
 #ifdef OBSTACLE_HORI_ANGLE_MODE
 #define OBSTACLE_ANG_FORWORD_Y   (-4)      //Roll_X-正向右-负向左，Pitch_Y-正向后-负向前 //zkrt_notice：暂定为5度
@@ -98,6 +104,9 @@ typedef struct{
 	unsigned short g_distance_valid;                      //超声波char值数据有效标记，bit位的1代表有效，0代表无效。全部有效时，g_distance_valid值>=0x03ff
 	unsigned char online_flag;                            //在线标记，1-在线，0-不在线。有接收到数据时置在线，30秒会清除一次在线标记。不在线时，视障碍物数据无效，不做避障处理。
 	volatile unsigned int online_timing;                  //guidane在线超时时间标记
+	unsigned char ob_enabled;                             //避障使能标记，0-不使能，1-使能
+	unsigned short ob_distance;                           //避障生效距离
+	unsigned short ob_velocity;                           //值除以10，单位m/s     
 }obstacleData_st;
 
 /* Exported functions ------------------------------------------------------- */
