@@ -193,6 +193,9 @@ void get_flight_data_and_handle(void)
 //	pitch = flight.getPitch();
 //	printf("yaw=%f, roll=%f, pitch=%f\n", yaw, roll, pitch);   //yaw , roll, pitch
 	
+	if(!undercarriage_data.uce_autoenabled)
+		return;
+	
 	if(f_act_height > UDCAIE_TRIGGER_UP_HEIGHT)
 	{
 		undercarriage_data.state_bya3height = uped_udcaie_rs;

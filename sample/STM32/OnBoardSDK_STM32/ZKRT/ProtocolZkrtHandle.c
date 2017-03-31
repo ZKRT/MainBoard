@@ -47,8 +47,13 @@ const MB_SELF_MSG_FUN mb_self_handle_fun[MAX_MBDH_NUM] = {
   */
 void avoid_osstacle_ptl_hf(u8 *data)
 {
+	u16 temp_distse;
 	zkrt_heartv2.avoid_ob_enabled = data[0];
-	zkrt_heartv2.avoid_ob_distse = ((data[2])<<8)+(data[1]);
+	temp_distse = ((data[2])<<8)+(data[1]);
+	
+	if(temp_distse <2000)
+		zkrt_heartv2.avoid_ob_distse = temp_distse;
+	
 	zkrt_heartv2.avoid_ob_velocity = ((data[4])<<8)+(data[3]);
 	GuidanceObstacleData.ob_enabled = zkrt_heartv2.avoid_ob_enabled;
 	GuidanceObstacleData.ob_distance = zkrt_heartv2.avoid_ob_distse;
@@ -89,14 +94,17 @@ void undercarriage_ptl_hf(u8 *data)
 		if(uce_adjust==1)
 		{
 			UDCAIE_LEFT_DOWN;
+			UDCAIE_RIGHT_DOWN;
 		}
 		else if(uce_adjust==2)
 		{
 			UDCAIE_LEFT_UP;
+			UDCAIE_RIGHT_UP;
 		}		
 		else if(uce_adjust==3)
 		{
 			UDCAIE_LEFT_STOP;
+			UDCAIE_RIGHT_STOP;
 		}
 	}
 	

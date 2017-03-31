@@ -58,7 +58,7 @@ void undercarriage_init(void)
 	UDCAIE_RIGHT_STOP;
 	
 //timer task init
-	t_ostmr_insertTask(undercarriage_timer_task, 1000, OSTMR_PERIODIC);
+	t_ostmr_insertTask(undercarriage_timer_task, 500, OSTMR_PERIODIC);  //500ms
 	
 //param init
 	undercarriage_data.run_timeout = 0;
@@ -77,9 +77,6 @@ void undercarriage_init(void)
   */
 void undercarriage_process(void)
 {
-	if(!undercarriage_data.uce_autoenabled)
-		return;
-	
 	if(undercarriage_data.state_bya3height + undercarriage_data.run_state == 1)  //‘ –Ì±‰ªØ
 	{
 		undercarriage_data.run_state = undercarriage_data.state_bya3height -1;

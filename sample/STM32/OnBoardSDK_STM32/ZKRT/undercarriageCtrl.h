@@ -34,7 +34,7 @@
 /* Exported constants --------------------------------------------------------*/
 #define  UDCAIE_TRIGGER_UP_HEIGHT         4 //4m    //起落架触发高度
 #define  UDCAIE_TRIGGER_DOWN_HEIGHT       3 //3m    //起落架触发高度
-#define  UDCAIE_CHANGE_TIME               7 //7s    //起落架运动时间
+#define  UDCAIE_CHANGE_TIME               15 //7.5s    //起落架运动时间
 #define  UCE_DOWNED_ANGLE                 700  
 #define  UCE_UPED_ANGLE                   0
 
