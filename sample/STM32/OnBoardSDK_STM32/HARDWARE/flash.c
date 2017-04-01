@@ -96,8 +96,8 @@ void STMFLASH_Init(void)
 		flash_buffer._start_cod = 0XFEDCBA98;
 		flash_buffer._end_cod = 0X76543210;
 		//tempture data
-		flash_buffer._tempture_low  = glo_tempture_low;
-		flash_buffer._tempture_high = glo_tempture_high;
+		flash_buffer._tempture_low  = GLO_TEMPTURE_LOW_INIT;
+		flash_buffer._tempture_high = GLO_TEMPTURE_HIGH_INIT;
 		//obstacle data
 		flash_buffer.avoid_ob_enabled = 1;
 		flash_buffer.avoid_ob_distse = OBSTACLE_ALARM_DISTANCE;

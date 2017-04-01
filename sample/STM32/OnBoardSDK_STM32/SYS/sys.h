@@ -74,15 +74,15 @@
 #define TEMPTURE_HIGH_EXTRA 1250
 #define TEMPTURE_DIFF         8
 #elif defined _TEMPTURE_ADC_
-#define TEMPTURE_LOW_EXTRA  -45
+#define TEMPTURE_LOW_EXTRA  -550   //异常值
 #define TEMPTURE_HIGH_EXTRA 7000   //zkrt_notice by yanly
 #else
 #define TEMPTURE_LOW_EXTRA  999
 #define TEMPTURE_HIGH_EXTRA 999
 #endif
 
-#define GLO_TEMPTURE_LOW_INIT           0         //温度上下限初始值
-#define GLO_TEMPTURE_HIGH_INIT          1200
+#define GLO_TEMPTURE_LOW_INIT      -450         //温度上下限初始值
+#define GLO_TEMPTURE_HIGH_INIT     6800
 
 /* definition of return value */
 #define	RETURN_FAILURE                  0

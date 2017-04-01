@@ -160,10 +160,8 @@ void DMAX_init(DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel, uint32_t pe
 }
 
 
-short glo_tempture_low  = TEMPTURE_LOW_EXTRA;
-short glo_tempture_high = TEMPTURE_HIGH_EXTRA;
-//short glo_tempture_low  = GLO_TEMPTURE_LOW_INIT;  //modify by yanly 170116
-//short glo_tempture_high = GLO_TEMPTURE_HIGH_INIT;
+short glo_tempture_low;
+short glo_tempture_high;
 
 short last_tempture0 = 0;
 short last_tempture1 = 0;

@@ -372,8 +372,10 @@ void zkrt_dji_read_heart_tempture(void)
 		_ALARM_LED = 1;	//modify by yanly
   }
 #elif defined _TEMPTURE_ADC_
-  tempture0 = ADC1_get_value(_T1_value); 
-  tempture1 = ADC1_get_value(_T2_value);
+  tempture0 = ADC1_get_value(_T1_value)-100;    //zkrt_notice: 温度补偿处理，由于AD采集温度受芯片内部温度的影响，实际运行一段时间后，芯片内部温度上升，导致AD采集温度过高，故减10度补偿。
+  tempture1 = ADC1_get_value(_T2_value)-100;
+//	tempture0 = -460; //zkrt_debug
+//  tempture1 = -668;
   ZKRT_LOG(LOG_NOTICE,"#######tempture0= %d   tempture1= %d!\r\n",tempture0,tempture1);
 #endif
 }
@@ -489,7 +491,7 @@ void dji_zkrt_read_heart_tempture_check_send(uint8_t num)
 //检查温度值的正确与否，并在对应的心跳数组里写入标志位
 void dji_zkrt_read_heart_tempture_check(void)
 {
-      if (tempture0 < TEMPTURE_LOW_EXTRA) 
+	if (tempture0 < TEMPTURE_LOW_EXTRA) 
 	{
 		tempture0 = TEMPTURE_LOW_EXTRA;	 
 		msg_smartbat_dji_buffer[0] = 0XFD;	 
@@ -545,8 +547,7 @@ void dji_zkrt_read_heart_tempture_check(void)
 		msg_smartbat_dji_buffer[0] = 0XFE;
 	}
 	
-
-      if (tempture1 < TEMPTURE_LOW_EXTRA)
+	if (tempture1 < TEMPTURE_LOW_EXTRA)
 	{
 		tempture1 = TEMPTURE_LOW_EXTRA;
 		msg_smartbat_dji_buffer[3] = 0XFD;
