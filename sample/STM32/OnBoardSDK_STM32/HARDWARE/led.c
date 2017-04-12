@@ -31,16 +31,6 @@
 								PC15£ºUSART6_RX
 								PA5£ºCAN1_RX
 								PA4£ºCAN1_TX
-  *           + (3)ÐÞ¸ÄLEDÒý½Å;  --170306 by yanly
-								PF11£ºRUN
-								PB15£ºALRM
-								PB14£ºH/S
-								PG8£ºUSART1_TX
-								PC12£ºUSART1_RX
-								PA15£ºUSART6_TX
-								PD6£ºUSART6_RX
-								PG6£ºCAN1_RX
-								PG7£ºCAN1_TX								
   *         
  ===============================================================================
   * @attention
@@ -115,7 +105,8 @@ void led_init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
 	
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA| RCC_AHB1Periph_GPIOB| RCC_AHB1Periph_GPIOC| RCC_AHB1Periph_GPIOD| RCC_AHB1Periph_GPIOF| RCC_AHB1Periph_GPIOG, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA| RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOE, ENABLE);
+//	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOF, ENABLE); //zkrt_todo: have to remove //yanly test
 	
  	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -124,30 +115,23 @@ void led_init(void)
 	
 	delay_ms(500);										
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6;
+	GPIO_Init(GPIOE, &GPIO_InitStructure);
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15;
 	GPIO_Init(GPIOC, &GPIO_InitStructure);
 	
-	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_6;
-	GPIO_Init(GPIOD, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4 | GPIO_Pin_5;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);		  
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
-	GPIO_Init(GPIOF, &GPIO_InitStructure);
+	GPIO_SetBits(GPIOE, GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6);
+	GPIO_SetBits(GPIOC, GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15);
+	GPIO_SetBits(GPIOA, GPIO_Pin_4 | GPIO_Pin_5);
 	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8;
-	GPIO_Init(GPIOG, &GPIO_InitStructure);		  
-	
-	GPIO_SetBits(GPIOA, GPIO_Pin_15);
-	GPIO_SetBits(GPIOB, GPIO_Pin_14 | GPIO_Pin_15);
-	GPIO_SetBits(GPIOC, GPIO_Pin_12);
-	GPIO_SetBits(GPIOD, GPIO_Pin_6);
-	GPIO_SetBits(GPIOF, GPIO_Pin_11);
-	GPIO_SetBits(GPIOG, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8);
+	//zkrt_todo: have to remove //yanly test
+//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_9;
+//	GPIO_Init(GPIOF, &GPIO_InitStructure);
+//	GPIO_ResetBits(GPIOF, GPIO_Pin_10 | GPIO_Pin_9);
 }
 
 /**

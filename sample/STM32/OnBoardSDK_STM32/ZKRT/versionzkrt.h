@@ -31,7 +31,7 @@
   */ 
 /* Exported constants --------------------------------------------------------*/
 
-#define  PRODUCT_NAME													"MainBoard"
+#define  PRODUCT_NAME													"MainBoard_lianggong"
 #define  PRODUCT_ID	                          "10000000"
 #define  PRODUCT_VERSION                      "V01-00"
 /* Exported functions ------------------------------------------------------- */

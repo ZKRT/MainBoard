@@ -98,10 +98,10 @@
   * @{
   */ 
 #define	TIMER_CHANNEL_PWM													  TIM10
-#define	TIMER_CHANNEL_PWM1													TIM13
-#define	TIMER_CHANNEL_PWM2													TIM5
-#define	TIMER_CHANNEL_PWM3													TIM11
-#define	TIMER_CHANNEL_PWM4													TIM14
+#define	TIMER_CHANNEL_PWM1													TIM11
+#define	TIMER_CHANNEL_PWM2													TIM13
+#define	TIMER_CHANNEL_PWM3													TIM4
+#define	TIMER_CHANNEL_PWM4													TIM3
 
 /**
   * @}

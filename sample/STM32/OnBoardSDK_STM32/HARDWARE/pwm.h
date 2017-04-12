@@ -29,18 +29,11 @@
   */ 
 /* Exported constants --------------------------------------------------------*/
 /*
-//	PWM:T10:CH1:PF6:APB2
-//	PWM1:T11_CH1:PF7:APB2
-//	PWM2:T13:CH1:PF8:APB1
-//	PWM3:T4:CH2:PB7:APB1
-//	PWM4:T3:CH3:PC8:APB1
-
-PWM_T10_CH1>>PB3
-PWM1_T13_CH1>>PF8
-PWM2_T5_CH1>>PA0
-PWM3_T11_CH1>>PF7
-PWM4_T14_CH1>>PF9
-
+	PWM:T10:CH1:PF6:APB2
+	PWM1:T11_CH1:PF7:APB2
+	PWM2:T13:CH1:PF8:APB1
+	PWM3:T4:CH2:PB7:APB1
+	PWM4:T3:CH3:PC8:APB1
 */
 /** @defgroup pwm timer period and prescaler define
   * @{  
@@ -50,11 +43,11 @@ PWM4_T14_CH1>>PF9
 #define PWM_T_PERIOD					20000  //timer overflow is 20ms
 #define PWM_T_PSC							168
 #define PWM1_T_PERIOD					20000  //timer overflow is 20ms
-#define PWM1_T_PSC						84
+#define PWM1_T_PSC						168
 #define PWM2_T_PERIOD					20000  //timer overflow is 20ms
 #define PWM2_T_PSC						84
 #define PWM3_T_PERIOD					20000  //timer overflow is 20ms
-#define PWM3_T_PSC						168
+#define PWM3_T_PSC						84
 #define PWM4_T_PERIOD					20000  //timer overflow is 20ms
 #define PWM4_T_PSC						84
 /**
