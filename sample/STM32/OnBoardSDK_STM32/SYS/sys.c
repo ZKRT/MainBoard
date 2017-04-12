@@ -100,6 +100,7 @@ volatile uint32_t camera_recv_flag = 0XFFFFFFFF;
 volatile uint32_t irradiate_recv_flag = 0XFFFFFFFF;
 volatile uint32_t phone_recv_flag = 0XFFFFFFFF;
 volatile uint32_t threemodeling_recv_flag = 0XFFFFFFFF;
+volatile uint32_t multicamera_recv_flag = 0XFFFFFFFF;
 volatile uint32_t _read_count = 0; 	
 volatile uint32_t tcp_client_init_timeout;
 

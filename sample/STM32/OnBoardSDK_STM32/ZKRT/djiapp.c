@@ -62,7 +62,7 @@ uint8_t dji_which_bit  = 0;
 		说     明：
 
 ************************************************************************/
-uint8_t dji_heart_ack_check(uint8_t device_id, uint8_t value)
+uint8_t dji_heart_ack_check(uint8_t device_id, uint8_t value)  //zkrt_add_new_module
 {
 	dji_which_byte = (device_id-1)/8;			
 	dji_which_bit  = device_id%8 -1;		
@@ -151,6 +151,12 @@ uint8_t dji_heart_ack_check(uint8_t device_id, uint8_t value)
 				msg_smartbat_dji_buffer[26] &= 0XDF;						//将字26的位5清空
 				msg_smartbat_dji_buffer[26] |= value<<5;						
 			}
+			else
+			{
+				msg_smartbat_dji_buffer[26] = 0;
+//				msg_smartbat_dji_buffer[27] = 0;
+//				msg_smartbat_dji_buffer[28] = 0;
+			}	
 			heart_ack_dji_status[device_id] |= 1<<6;												
 			break;
 		case 0X7F:
@@ -278,16 +284,14 @@ void zkrt_read_heart_dji_posion_check(void)
 		说     明：
 
 ************************************************************************/
-//CAN总线数据接收（can数据在后台中断接收，并缓冲到can1_rx_buff缓存数组里，前台从缓存数组里取数据解析处理）处理，CAN总线连接传感器设备。
+//CAN总线数据接收（can数据在后台中断接收，并缓冲到can1_rx_buff缓存数组里，前台从缓存数组里取数据解析处理）处理，CAN总线连接传感器设备。 //zkrt_add_new_module
 void main_zkrt_dji_recv(void)
 {
 	uint8_t value;
 
 	while (CAN1_rx_check(DEVICE_TYPE_GAS) == 1)  /*毒气检测模块*/
 	{
-//	      printf("CAN1_rx_check\r\n");
 		value = CAN1_rx_byte(DEVICE_TYPE_GAS);
-//		printf("CAN1_rx_byte=0x %x\r\n",value);
 		if (zkrt_decode_char(&can1_rx_dji_posion,value)==1)/*如果当中一个数据丢失，整个数据包就得重新接收，这样是不是有点问题*/
 		{
 			memcpy((void *)posion_dji_buffer, (void *)&(can1_rx_dji_posion.data[0]), 16);
@@ -341,6 +345,15 @@ void main_zkrt_dji_recv(void)
 			threemodeling_recv_flag = TimingDelay;
 		}
 	}	
+	
+	while (CAN1_rx_check(DEVICE_TYPE_MULTICAMERA) == 1)				//多光吊舱
+	{
+		value = CAN1_rx_byte(DEVICE_TYPE_MULTICAMERA);
+		if (dji_heart_ack_check(DEVICE_TYPE_MULTICAMERA, value)==1)
+		{
+			multicamera_recv_flag = TimingDelay;
+		}
+	}		
 }
 
 
@@ -372,8 +385,8 @@ void zkrt_dji_read_heart_tempture(void)
 		_ALARM_LED = 1;	//modify by yanly
   }
 #elif defined _TEMPTURE_ADC_
-  tempture0 = ADC1_get_value(_T1_value)-100;    //zkrt_notice: 温度补偿处理，由于AD采集温度受芯片内部温度的影响，实际运行一段时间后，芯片内部温度上升，导致AD采集温度过高，故减10度补偿。
-  tempture1 = ADC1_get_value(_T2_value)-100;
+  tempture0 = ADC1_get_value(_T1_value)-TEMPTURE_CALIBRATE;    //zkrt_notice: 温度补偿处理，由于AD采集温度受芯片内部温度的影响，实际运行一段时间后，芯片内部温度上升，导致AD采集温度过高，故减10度补偿。
+  tempture1 = ADC1_get_value(_T2_value)-TEMPTURE_CALIBRATE;
 //	tempture0 = -460; //zkrt_debug
 //  tempture1 = -668;
   ZKRT_LOG(LOG_NOTICE,"#######tempture0= %d   tempture1= %d!\r\n",tempture0,tempture1);

@@ -81,10 +81,10 @@ void undercarriage_process(void)
 	{
 		undercarriage_data.run_state = undercarriage_data.state_bya3height -1;
 		
-		if(undercarriage_data.state_bya3height == downed_udcaie_rs) //上升时间和下降时间不同
+//		if(undercarriage_data.state_bya3height == downed_udcaie_rs) //上升时间和下降时间不同  //整体时间增加了，所以暂时去掉这个逻辑
 			undercarriage_data.run_timeout = UDCAIE_CHANGE_TIME;    
-		else
-			undercarriage_data.run_timeout = UDCAIE_CHANGE_TIME+1;    //+0.5秒
+//		else
+//			undercarriage_data.run_timeout = UDCAIE_CHANGE_TIME+1;    //+0.5秒
 		
 		ZKRT_LOG(LOG_INOTICE, "undercarriage state changed\r\n"); 
 	}

@@ -43,7 +43,6 @@ extern uint16_t now_uav_num;
 
 //设备类型定义，用于UAVID[3]
 //设备数量用于给CAN创建这么多数量的缓存
-#define DEVICE_NUMBER           0X0C   //zkrt_notice: 每次新增设备需更新此值
 #define DEVICE_TYPE_UDP         0X00
 #define DEVICE_TYPE_TEMPERATURE 0X01
 #define DEVICE_TYPE_OBSTACLE    0X02
@@ -58,6 +57,9 @@ extern uint16_t now_uav_num;
 #define DEVICE_TYPE_BATTERY     0X0B
 //#define DEVICE_TYPE_BAOSHAN			0X0C	//屏蔽爆闪灯，主模块不再搭载爆闪灯 //by yanly
 #define DEVICE_TYPE_3DMODELING  0X0C
+#define DEVICE_TYPE_MULTICAMERA 0X0D
+#define DEVICE_NUMBER           DEVICE_TYPE_MULTICAMERA   //zkrt_notice: 每次新增设备需更新此值 //zkrt_add_new_module
+
 #define DEVICE_TYPE_MAINBOARD   100
 #define DEVICE_TYPE_HEART				101
 #define DEVICE_TYPE_HEARTV2			102

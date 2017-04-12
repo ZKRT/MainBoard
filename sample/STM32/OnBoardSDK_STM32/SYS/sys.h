@@ -74,8 +74,9 @@
 #define TEMPTURE_HIGH_EXTRA 1250
 #define TEMPTURE_DIFF         8
 #elif defined _TEMPTURE_ADC_
-#define TEMPTURE_LOW_EXTRA  -550   //异常值
-#define TEMPTURE_HIGH_EXTRA 7000   //zkrt_notice by yanly
+#define TEMPTURE_CALIBRATE  100                        //校准10度
+#define TEMPTURE_LOW_EXTRA  -450+TEMPTURE_CALIBRATE    //异常值下限，-45度
+#define TEMPTURE_HIGH_EXTRA 5000+TEMPTURE_CALIBRATE    //异常值上限，500度
 #else
 #define TEMPTURE_LOW_EXTRA  999
 #define TEMPTURE_HIGH_EXTRA 999
@@ -152,6 +153,7 @@ extern volatile uint32_t camera_recv_flag;
 extern volatile uint32_t irradiate_recv_flag;
 extern volatile uint32_t phone_recv_flag;
 extern volatile uint32_t threemodeling_recv_flag;
+extern volatile uint32_t multicamera_recv_flag;
 extern volatile uint32_t _read_count;
 extern volatile uint32_t tcp_client_init_timeout;
 

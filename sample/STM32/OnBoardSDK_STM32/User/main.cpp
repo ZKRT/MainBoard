@@ -211,7 +211,7 @@ void mobile_heardbeat_packet_control(void)
 		}
 	}	
 	
-/*根据can收到的模块信息，判断哪个模块在线后，将心跳包的在线标记置位*/	
+/*根据can收到的模块信息，判断哪个模块在线后，将心跳包的在线标记置位*/	 //zkrt_add_new_module
 	if ((posion_recv_flag-TimingDelay)  >= 5000)				
 	{
 		memset((void *)(msg_smartbat_dji_buffer+10), 0, 13);
@@ -237,6 +237,12 @@ void mobile_heardbeat_packet_control(void)
 	{
 		msg_smartbat_dji_buffer[24] &= 0XF7;
 	}	
+	if ((multicamera_recv_flag-TimingDelay) >= 5000)   
+	{
+		msg_smartbat_dji_buffer[24] &= 0XEF;  //0b: 11101111
+	}	
+	
+	
 /*------------------------------------------------------------------*/	
 }
 /**
