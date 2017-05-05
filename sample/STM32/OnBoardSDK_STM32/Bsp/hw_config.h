@@ -39,6 +39,10 @@
 //#define USE_USB_FUN
 //#define USE_LWIP_FUN
 //#define HWTEST_FUN
+
+//unit test debug
+//#define CanSend2SubModule_TEST   //zkrt_debug
+
 /**
   * @}
   */ 

@@ -25,6 +25,10 @@ zkrt_packet_t main_dji_rev;
 static void main_dji_recv(void);
 static void copydataformmobile(void);
 
+#ifdef CanSend2SubModule_TEST
+zkrt_packet_t cansdebug;
+#endif
+
 /*
 * @brief 将接收到的mobile透传数据进行解析处理
 	mobile数据来源是DJI串口透传数据，经过UART1中断接收解析处理过，拷贝到数组djidataformmobile[]
@@ -38,6 +42,24 @@ void mobile_data_process(void)
 		main_dji_recv();
 		djidataformmobile[1] =0;
 	}
+#ifdef CanSend2SubModule_TEST
+	if(can_send_debug - TimingDelay > 10000)
+	{
+		can_send_debug = TimingDelay;
+		cansdebug.start_code = 0xEB;
+		cansdebug.ver = 1;
+		cansdebug.session_ack = 0;
+    cansdebug.padding_enc = 0;
+		cansdebug.cmd =0x20;
+		cansdebug.length = 30;
+		cansdebug.seq = 0;
+		cansdebug.UAVID[3] = 0x0d;  //device uavid
+		cansdebug.data[0] = (u8)(TimingDelay&0xff);
+		cansdebug.end_code = 0xbe;
+		cansdebug.crc = crc_calculate(((const uint8_t*)(&cansdebug)),47);
+		CAN1_send_message_fun((uint8_t *)(&cansdebug), _TOTAL_LEN, (cansdebug.UAVID[3]));/*通过CAN总线发送数据*/
+	}
+#endif	
 }
 /***********************************************************************
 		          中科瑞泰消防无人机函数定义

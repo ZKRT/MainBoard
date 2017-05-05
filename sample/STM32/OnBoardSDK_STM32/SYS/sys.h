@@ -156,7 +156,9 @@ extern volatile uint32_t threemodeling_recv_flag;
 extern volatile uint32_t multicamera_recv_flag;
 extern volatile uint32_t _read_count;
 extern volatile uint32_t tcp_client_init_timeout;
-
+#ifdef CanSend2SubModule_TEST
+extern volatile uint32_t can_send_debug;
+#endif
 extern NVIC_InitTypeDef NVIC_InitStructure;
 
 

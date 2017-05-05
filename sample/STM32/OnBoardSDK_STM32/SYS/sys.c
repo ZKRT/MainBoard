@@ -103,7 +103,9 @@ volatile uint32_t threemodeling_recv_flag = 0XFFFFFFFF;
 volatile uint32_t multicamera_recv_flag = 0XFFFFFFFF;
 volatile uint32_t _read_count = 0; 	
 volatile uint32_t tcp_client_init_timeout;
-
+#ifdef CanSend2SubModule_TEST
+volatile uint32_t can_send_debug  =0XFFFFFFFF;
+#endif
 
 void delay_ms(uint16_t nms)								//最多传入65535ms
 {
