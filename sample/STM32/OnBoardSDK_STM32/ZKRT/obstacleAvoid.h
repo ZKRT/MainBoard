@@ -111,8 +111,11 @@ typedef struct{
 
 /* Exported functions ------------------------------------------------------- */
 void guidance_init(void);
+#ifndef USE_SESORINTEGRATED
 void main_recv_decode_zkrt_dji_guidance(void);
+#endif
 unsigned char obstacle_avoidance_handle(void);
+void guidance_parmdata_init(void);
 extern obstacleData_st GuidanceObstacleData;
 
 #endif /* __OBSTACLEAVOID_H */

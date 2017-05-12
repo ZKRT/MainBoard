@@ -26,6 +26,36 @@
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+uint16_t crc_ta_4[16]={ /* CRC half byte table */
+    0x0000,0x1021,0x2042,0x3063,0x4084,0x50a5,0x60c6,0x70e7,
+    0x8108,0x9129,0xa14a,0xb16b,0xc18c,0xd1ad,0xe1ce,0xf1ef,
+};
+
+/**
+  * @brief  计算数据包CRC16 CCITT校验码
+  * @param  
+  *			1、ptr：数据包首地址
+  *			2、len：数据包要参与计算的数据字节数
+  * @note   
+  * @retval 返回数据包的 CRC16 值
+  */
+uint16_t CRC16_Cal(uint8_t* ptr, uint8_t len)
+{
+  uint16_t crc = 0xffff;
+	uint8_t high = 0x00;
+	
+	while(len-- != 0)
+	{
+			high = (uint8_t)(crc/4096);
+			crc <<= 4;
+			crc ^= crc_ta_4[high^(*ptr/16)];
+			high = (uint8_t)(crc/4096);
+			crc <<= 4;
+			crc ^= crc_ta_4[high^(*ptr&0x0f)];
+			ptr++;
+	}
+  return crc;
+}
 /**
   * @brief  Hex2String program.
   * @param  pbDest

@@ -34,7 +34,7 @@
 /* Exported functions ------------------------------------------------------- */
 void printf_uchar(unsigned char *data, u16 length);
 char arry_max_item(const unsigned short *array_data, u16 item_num);
-
+uint16_t CRC16_Cal(uint8_t* ptr, uint8_t len);
 #endif /* __COMMONZKRT_H */
 
 /**

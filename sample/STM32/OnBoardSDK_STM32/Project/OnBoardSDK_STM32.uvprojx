@@ -1161,6 +1161,11 @@
               <FileType>1</FileType>
               <FilePath>..\ZKRT\ProtocolZkrtHandle.c</FilePath>
             </File>
+            <File>
+              <FileName>sersorIntegratedHandle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ZKRT\sersorIntegratedHandle.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

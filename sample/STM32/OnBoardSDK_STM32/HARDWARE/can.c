@@ -28,9 +28,9 @@ volatile uint8_t can1_rx_buff[DEVICE_NUMBER][CAN_BUFFER_SIZE];
 volatile uint16_t can1_rx_buff_store[DEVICE_NUMBER]; //数组里保存每个CAN设备接收数据的字节数，接受到数据后can1_rx_buff_store[type]++一直累加，超过CAN_BUFFER_SIZE，就置0继续累加
 uint16_t can1_rx_buff_get[DEVICE_NUMBER]; //每处理一个can1_rx_buff[type][can1_rx_buff_store[type]]，can1_rx_buff_get++累加，循环累加
 #ifdef USE_CAN2_FUN
-volatile uint8_t can2_rx_buff[3][CAN_BUFFER_SIZE];
-volatile uint16_t can2_rx_buff_store[3]; //数组里保存每个CAN设备接收数据的字节数，接受到数据后can1_rx_buff_store[type]++一直累加，超过CAN_BUFFER_SIZE，就置0继续累加
-uint16_t can2_rx_buff_get[3]; //每处理一个can1_rx_buff[type][can1_rx_buff_store[type]]，can1_rx_buff_get++累加，循环累加
+volatile uint8_t can2_rx_buff[1][150];
+volatile uint16_t can2_rx_buff_store[1]; //数组里保存每个CAN设备接收数据的字节数，接受到数据后can1_rx_buff_store[type]++一直累加，超过CAN_BUFFER_SIZE，就置0继续累加
+uint16_t can2_rx_buff_get[1]; //每处理一个can1_rx_buff[type][can1_rx_buff_store[type]]，can1_rx_buff_get++累加，循环累加
 #endif
 /* Private functions ---------------------------------------------------------*/
 

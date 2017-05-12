@@ -46,6 +46,9 @@ extern "C"
 #endif
 #include "undercarriageCtrl.h"
 #include "heartBeatHandle.h"
+#ifdef USE_SESORINTEGRATED
+#include "sersorIntegratedHandle.h"
+#endif
 }
 #endif //__cplusplus
 
@@ -87,7 +90,6 @@ void avoid_temp_alarm(void);
 #ifdef USE_OBSTACLE_AVOID_FUN
 void avoid_obstacle_alarm(void);
 #endif
-
 /**
   * @brief  main. 主函数
   * @param  None
@@ -122,10 +124,12 @@ int main()
     main_zkrt_dji_recv();		              //从子模块通过CAN接收数据，将毒气、抛投数据填充到心跳包，并且相关位置一
 		tempture_flight_control();            //温度超过上下限启动逃逸功能
 #ifdef USE_OBSTACLE_AVOID_FUN	
+#ifdef USE_SESORINTEGRATED		
+		app_sersor_integrated_prcs();         //集成板数据处理
+#else
 		main_recv_decode_zkrt_dji_guidance(); //Guidance数据包解析处理
-#ifdef USE_OBSTACLE_AVOID_FUN			
-		avoid_obstacle_alarm(); //避障检测
-#endif			
+#endif		
+		avoid_obstacle_alarm(); //避障检测		
 #endif
 		mobile_heardbeat_packet_control();    //板子定时发送心跳包到地面站
 		led_process();                        //LED控制
@@ -142,7 +146,6 @@ int main()
 	  IWDG_Feed();
   }
 }
-
 /**
   * @brief  tempture_flight_control. 温度控制飞行+温度信息组包到心跳包里+电池数据检测组包
   * @param  None
@@ -153,12 +156,15 @@ void tempture_flight_control(void)
 	if (_160_read_flag - TimingDelay >= 160)
 	{
 		_160_read_flag = TimingDelay;
+#ifdef USE_SESORINTEGRATED		
 		ADC_SoftwareStartConv(ADC1); /*启动ADC*/	
+#endif		
 //		ZKRT_LOG(LOG_NOTICE, "ADC_SoftwareStartConv!\r\n");	
 		if((_read_count%2) == 0)									
 		{
+#ifdef USE_SESORINTEGRATED			
 			zkrt_dji_read_heart_tempture();  /*获取温度传感器数据*/
-			
+#endif			
 			avoid_temp_alarm();     //避温检测
 			
 			if (MAVLINK_TX_INIT_VAL - TimingDelay >= 4000)	

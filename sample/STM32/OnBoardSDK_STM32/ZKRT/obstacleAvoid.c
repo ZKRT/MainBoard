@@ -35,7 +35,7 @@ volatile uint8_t guidance_v_index=0; //Êı¾İ°ü½â°üµÄindex£¬½âÍêÒ»¸ö×Ö½Ú£¬indexÖ¸Ï
   * @parm   none
   * @retval none
   */
-static void guidance_parmdata_init(void)
+void guidance_parmdata_init(void)
 {
 	GuidanceObstacleData.g_distance_value[0] = OBSTACLE_DISTACNE_INITV;
 	GuidanceObstacleData.g_distance_value[1] = OBSTACLE_DISTACNE_INITV;
@@ -59,6 +59,7 @@ void guidance_init(void)
 	guidance_parmdata_init();
 }
 
+#ifndef USE_SESORINTEGRATED
 /**
 *   @brief  main_recv_decode_zkrt_dji_guidance GuidanceÊı¾İ°ü½âÎö´¦Àí£¨´Ëº¯ÊıÖ»½âÎö´¦ÀíÕÏ°­Îï¾àÀëÊı¾İ£©
   * @parm   none
@@ -182,6 +183,7 @@ void main_recv_decode_zkrt_dji_guidance(void)
 //		printf("\r\n");
 	}
 }	
+#endif
 /**
 *   @brief  obstacle_avoidance_handle
 ±ÜÕÏ²ßÂÔ£º

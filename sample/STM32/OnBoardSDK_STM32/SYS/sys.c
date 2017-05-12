@@ -169,8 +169,8 @@ short glo_tempture_high;
 short last_tempture0 = 0;
 short last_tempture1 = 0;
 
-short tempture0 = 0;
-short tempture1 = 0;
+short tempture0 = TEMPTURE_HIGH_EXTRA+1;  //初始化时是无效的值
+short tempture1 = TEMPTURE_HIGH_EXTRA+1;
 
 uint8_t msg_smartbat_buffer[30] = {0};
 

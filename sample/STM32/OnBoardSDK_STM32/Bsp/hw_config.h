@@ -26,15 +26,16 @@
   * @{
   */              
 //#define _TEMPTURE_IO_           
-#define _TEMPTURE_ADC_	        
+#define _TEMPTURE_ADC_	                //暂时不关闭，在使用集成板采集温度时
 //#define _TEMPTURE_NONE    
 //#define USE_UART1_DMA
-//#define USE_CAN2_FUN                  
+#define USE_CAN2_FUN                  
 #define USE_LED_FUN			
 #define USE_IIC_FUN  
 #define USE_DJI_FUN
 #define USE_OBSTACLE_AVOID_FUN
 #define USE_UNDERCARRIAGE_FUN
+#define USE_SESORINTEGRATED             //使用集成板功能：采集温度和距离数据
 //#define USE_EXTRAM_FUN
 //#define USE_USB_FUN
 //#define USE_LWIP_FUN
