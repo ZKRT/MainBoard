@@ -22,11 +22,18 @@
 #include "sys.h"
 /* Exported macro ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-#define CAMERA_PAIR_NUM          5      //5个传感器
-#define GUIDANCE_ONLINE_TIMEOUT  5000   //5s
-#define OBSTACLE_ALARM_DISTANCE  500    //500cm 
-#define OBSTACLE_DISTACNE_INITV  2000   //20m 初值
-#define OBSTACLE_AVOID_VEL       15     //避障速度除以10，单位m/s
+#define CAMERA_PAIR_NUM                 5      //5个传感器
+#define GUIDANCE_ONLINE_TIMEOUT         5000   //5s
+#define OBSTACLE_ALARM_DISTANCE         500    //500cm 
+#define OBSTACLE_DISTACNE_INITV         2000   //20m 初值
+#define OBSTACLE_AVOID_VEL              15     //避障速度除以10，单位m/s
+//new
+#define OBSTACLE_SAFE_DISTANCE	        300    //避障绝对安全距离
+#define OBSTACLE_SAFEH_VEL	            3      //避障最高安全速度2m/s
+#define OBSTACLE_ENABLED_DISTANCE	      1500   //避障新算法，避障的生效距离 15米  //zkrt_debug
+#define RC_H_VEL	                      10     //遥控器最高时速 //zkrt_notice 测试结果？
+
+
 
 //CONTROL MODE
 #define OBSTACLE_VEL_MODE        0x4A    //0x4A: non-stable mode，机体坐标系,HORI_VEL,VERT_VEL,YAW_RATE
@@ -115,6 +122,7 @@ void guidance_init(void);
 void main_recv_decode_zkrt_dji_guidance(void);
 #endif
 unsigned char obstacle_avoidance_handle(void);
+unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  int16_t RCData_x, int16_t RCData_y);
 void guidance_parmdata_init(void);
 extern obstacleData_st GuidanceObstacleData;
 

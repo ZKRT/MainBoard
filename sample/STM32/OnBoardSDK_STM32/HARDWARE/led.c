@@ -52,6 +52,7 @@
 	
 /* Includes ------------------------------------------------------------------*/
 #include "led.h"
+#include "ostmr.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/ 
@@ -105,7 +106,15 @@ void led_init(void)
 }
   * @}
   */ 
-
+/**
+  * @brief  led_mstask.
+  * @param  None
+  * @retval None
+  */
+void led_mstask(void)
+{
+	
+}
 /**
   * @brief  led_init.
   * @param  None
@@ -148,6 +157,8 @@ void led_init(void)
 	GPIO_SetBits(GPIOD, GPIO_Pin_6);
 	GPIO_SetBits(GPIOF, GPIO_Pin_11);
 	GPIO_SetBits(GPIOG, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8);
+	
+//	t_ostmr_insertTask();
 }
 
 /**

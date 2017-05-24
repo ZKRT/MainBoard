@@ -47,7 +47,7 @@ uint8_t myFreq[16] =
 	BROADCAST_FREQ_0HZ, //6 - gps detailed information
   BROADCAST_FREQ_0HZ, //7 - rtk detailed information
 	BROADCAST_FREQ_0HZ, //8 - Magnetometer
-  BROADCAST_FREQ_10HZ,//9 - RC Channels Data
+  BROADCAST_FREQ_50HZ,//9 - RC Channels Data
   BROADCAST_FREQ_0HZ, //10 - Gimbal Data
   BROADCAST_FREQ_10HZ,//11 - Flight Status
   BROADCAST_FREQ_0HZ, //12 - Battery Level

@@ -98,7 +98,7 @@ static uint8_t sersor_integrated_parse(sensorIntegratedInfo_st *packet, uint8_t 
 	}
 	else if ((si_curser_index == 2)&&(ch == SI_CANUP_DATALEN))
 	{
-		packet->cmd_code = ch;
+		packet->datalen = ch;
 		si_curser_index++;
 	}	
 	

@@ -28,9 +28,10 @@ volatile uint8_t can1_rx_buff[DEVICE_NUMBER][CAN_BUFFER_SIZE];
 volatile uint16_t can1_rx_buff_store[DEVICE_NUMBER]; //数组里保存每个CAN设备接收数据的字节数，接受到数据后can1_rx_buff_store[type]++一直累加，超过CAN_BUFFER_SIZE，就置0继续累加
 uint16_t can1_rx_buff_get[DEVICE_NUMBER]; //每处理一个can1_rx_buff[type][can1_rx_buff_store[type]]，can1_rx_buff_get++累加，循环累加
 #ifdef USE_CAN2_FUN
-volatile uint8_t can2_rx_buff[1][150];
-volatile uint16_t can2_rx_buff_store[1]; //数组里保存每个CAN设备接收数据的字节数，接受到数据后can1_rx_buff_store[type]++一直累加，超过CAN_BUFFER_SIZE，就置0继续累加
-uint16_t can2_rx_buff_get[1]; //每处理一个can1_rx_buff[type][can1_rx_buff_store[type]]，can1_rx_buff_get++累加，循环累加
+#define CAN2_IDNUMBER 1
+volatile uint8_t can2_rx_buff[CAN2_IDNUMBER][CAN_BUFFER_SIZE];
+volatile uint16_t can2_rx_buff_store[CAN2_IDNUMBER]; //数组里保存每个CAN设备接收数据的字节数，接受到数据后can1_rx_buff_store[type]++一直累加，超过CAN_BUFFER_SIZE，就置0继续累加
+uint16_t can2_rx_buff_get[CAN2_IDNUMBER]; //每处理一个can1_rx_buff[type][can1_rx_buff_store[type]]，can1_rx_buff_get++累加，循环累加
 #endif
 /* Private functions ---------------------------------------------------------*/
 
@@ -297,7 +298,7 @@ void CAN2_RX0_IRQHandler(void)
 	CAN_Receive(CAN2, CAN_FIFO0, &RxMessage);
 	can2_rx_type = ((RxMessage.StdId)>>4) - 1;
 	
-	if(can2_rx_type > 3-1)  //zkrt_add: by yanly170315
+	if(can2_rx_type > CAN2_IDNUMBER-1) 
 		return;
 	
 	for (i = 0; i < RxMessage.DLC; i++)
@@ -321,7 +322,14 @@ uint8_t CAN2_rx_check(uint8_t can2_rx_type)
 	if (can2_rx_buff_store[can2_rx_type] == can2_rx_buff_get[can2_rx_type])
 		return 0;
 	else 
+	{
+		if(u433m_rx_flag >= TimingDelay+500)  //zkrt_notice: 数据接收太快，灯频闪，所以这里改为延时1s才亮
+		{	
+			_433M_UART_RX_LED = 0;
+			u433m_rx_flag = TimingDelay;
+		}
 		return 1;
+	}	
 }
 
 

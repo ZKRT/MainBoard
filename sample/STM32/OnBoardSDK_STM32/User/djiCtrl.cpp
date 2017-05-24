@@ -50,7 +50,7 @@ void heartbeat_ctrl(void);
 dji_sdk_status djisdk_state = {init_none_djirs, 0, 0xffffffff, 0, 0};  //dji sdk 运行状态
 
 //#define FCC_TIMEROUT         10  //200ms
-#define FCC_TIMEROUT         2  //40ms
+#define FCC_TIMEROUT         1  //20ms //zkrt_todo : 发送周期待测试
 #define GETFDATA_TIMEROUT    10  //200ms
 volatile u16 fc_timercnt = FCC_TIMEROUT;//飞控周期控制时钟计数
 volatile u16 getfdata_timercnt = GETFDATA_TIMEROUT;//周期获取飞行数据时钟计数
@@ -101,7 +101,7 @@ void dji_process(void)
 			if(djisdk_state.cmdres_timeout - TimingDelay >= 5000) //激活不成功时，每5秒重新激活一次
 			{
 				djisdk_state.run_status = init_none_djirs;
-//				heartbeat_ctrl(); //zkrt_debug
+				heartbeat_ctrl(); //zkrt_debug
 			}
 			break;
 		case avtivated_ok_djirs:
@@ -141,6 +141,7 @@ void dji_flight_ctrl(void)
 				coreApi->setControl(1);	
 				ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
 			}
+//			printf("x=%f,y=%f\n", flightData_zkrtctrl.x, flightData_zkrtctrl.y);
 			flight.setFlight(&flightData_zkrtctrl);
 			ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
 		}
@@ -215,11 +216,11 @@ void heartbeat_ctrl(void)
 	if(zkrt_heartbeat_pack())
 	{
 		sendToMobile((uint8_t*)&_zkrt_packet_hb, 50);
-//		int k; //zkrt_debug
-//		printf("heart start_code=0x %x\r\n",_zkrt_packet_hb.start_code);
-//		for(k=0; k<30; k++)
-//			printf("%x ",_zkrt_packet_hb.data[k]);
-//		printf("\r\n");
+		int k; //zkrt_debug
+		printf("heart start_code=0x %x\r\n",_zkrt_packet_hb.start_code);
+		for(k=0; k<30; k++)
+			printf("%x ",_zkrt_packet_hb.data[k]);
+		printf("\r\n");
 	}
 }
 /**

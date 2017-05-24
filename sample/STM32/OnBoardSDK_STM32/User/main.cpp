@@ -89,6 +89,7 @@ void tempture_flight_control(void);
 void avoid_temp_alarm(void);
 #ifdef USE_OBSTACLE_AVOID_FUN
 void avoid_obstacle_alarm(void);
+void avoid_obstacle_alarm_V2(void);
 #endif
 /**
   * @brief  main. 主函数
@@ -129,7 +130,8 @@ int main()
 #else
 		main_recv_decode_zkrt_dji_guidance(); //Guidance数据包解析处理
 #endif		
-		avoid_obstacle_alarm(); //避障检测		
+//		avoid_obstacle_alarm();               //避障检测		
+		avoid_obstacle_alarm_V2();            //zkrt_todo: need test
 #endif
 		mobile_heardbeat_packet_control();    //板子定时发送心跳包到地面站
 		led_process();                        //LED控制
@@ -344,6 +346,47 @@ void avoid_obstacle_alarm(void)
 			flightData_zkrtctrl.y = 0;.x = 0;		
 #endif		
 //		printf("flight vel x=%f, y=%f! \n", flightData_obstacle.x, flightData_obstacle.y);
+		ZKRT_LOG(LOG_NOTICE, "avoid_obstacle_alarm open=================\r\n")
+	}
+	else
+	{
+		if(	djisdk_state.oes_fc_controled)
+			djisdk_state.oes_fc_controled &= ~(1<< fc_obstacle_b);
+		if(flightData_zkrtctrl.x)
+			flightData_zkrtctrl.x = 0;
+		if(flightData_zkrtctrl.y)
+			flightData_zkrtctrl.y = 0;
+	}
+}
+/**
+*   @brief  avoid_obstacle_alarm_V2 避障控制
+  * @parm   none
+  * @retval none
+  */
+void avoid_obstacle_alarm_V2(void)
+{
+	u8 move_flag; //移动标记
+	float fl_x, fl_y;
+	
+	if(djisdk_state.run_status !=avtivated_ok_djirs) //OES没激活
+		return;
+	
+	if(GuidanceObstacleData.online_flag ==0) //Guidance不在线 
+		return;
+	
+	if(GuidanceObstacleData.ob_enabled ==0) //避障不生效
+	{
+		if(	djisdk_state.oes_fc_controled)
+			djisdk_state.oes_fc_controled &= ~(1<< fc_obstacle_b);
+		return;
+	}
+	
+	move_flag = obstacle_avoidance_handle_V2(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll);
+	flightData_zkrtctrl.x = fl_x;
+	flightData_zkrtctrl.y = fl_y;
+	if(move_flag)
+	{
+		djisdk_state.oes_fc_controled |= 1<< fc_obstacle_b;
 		ZKRT_LOG(LOG_NOTICE, "avoid_obstacle_alarm open=================\r\n")
 	}
 	else

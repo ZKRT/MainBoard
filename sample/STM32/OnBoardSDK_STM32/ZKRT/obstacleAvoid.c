@@ -18,6 +18,7 @@
 #include "obstacleAvoid.h"
 #include "usart.h"
 #include "commonzkrt.h"
+#include <math.h>
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -311,7 +312,97 @@ unsigned char obstacle_avoidance_handle(void)
 	
 	return g_obstacle_move_flag;
 }	
-
+/**
+*   @brief  obstacle_ctrl_check_by_rc_and_distance
+遥控器速度<=允许的最高速度时，OES不控制避障
+  * @parm flight_ch 飞行控制值
+  * @parm RCData_ch 遥控器通道值
+  * @parm distance 障碍物距离
+  * @retval 1-OES避障生效，0-避障不生效
+  */
+unsigned char obstacle_ctrl_check_by_rc_and_distance(float *flight_ch, int16_t RCData_ch, unsigned short distance)
+{
+	char ret =0;
+	float safe_vel;
+	float rcdata_vel;
+	
+//	if(distance >= GuidanceObstacleData.ob_distance)
+	if(distance > OBSTACLE_ENABLED_DISTANCE)
+		return ret;
+	
+	if(distance <= OBSTACLE_SAFE_DISTANCE)
+	{
+		*flight_ch = 0;
+		ret =1;
+	}
+	else
+	{	
+		safe_vel = (float)(OBSTACLE_SAFEH_VEL*(distance-OBSTACLE_SAFE_DISTANCE))/(OBSTACLE_ENABLED_DISTANCE-OBSTACLE_SAFE_DISTANCE);
+		rcdata_vel = (float)(RCData_ch*RC_H_VEL)/10000;
+//		printf("safe_vel:%f\n", safe_vel);  
+//		printf("rcdata_vel:%f\n", rcdata_vel);
+		if(fabs(rcdata_vel)<=safe_vel)
+		{
+			ret =0;
+		}
+		else
+		{
+			*flight_ch = safe_vel;
+			ret =1;
+		}
+	}
+	return ret;
+}
+/**
+*   @brief  obstacle_avoidance_handle
+避障策略：根据遥控器的控制情况，OES执行辅助避障
+辅助避障策略：
+在避障生效距离内，当遥控器往障碍物方向飞行控制时，OES限制其速度。
+在绝对安全距离内，当遥控器往障碍物方向飞行控制时，OES限制制止其飞行。
+  * @parm flight_x 前后速度值，前正后负
+  * @parm flight_y 左右速度值，右正左负
+  * @parm RCData_x 前后遥控器通道值，pitch, [-10000,10000] 	Down: -10000, Up: 10000
+  * @parm RCData_y 左右遥控器通道值，roll, [-10000,10000] 	Left: -10000, Right: 10000
+  * @retval 1-OES避障生效，0-避障不生效
+  */
+unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  int16_t RCData_x, int16_t RCData_y)
+{
+	char ret1=0, ret2=0, ret=0;
+	
+	if(RCData_x>0) //front
+	{
+		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_FRONT]);
+	}
+	else if(RCData_x<0) //back
+	{
+		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_BACK]);
+		*flight_x = -(*flight_x);
+	}
+	else
+	{
+		*flight_x = 0; 
+	}
+	
+	if(RCData_y>0) //right
+	{
+		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT]);
+	}
+	else if(RCData_y<0) //left
+	{
+		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_LEFT]);
+		*flight_y = -(*flight_y);
+	}
+	else
+	{
+			*flight_y = 0;
+	}
+  if((ret1)||(ret2))
+	{
+//		printf("x=%f,y=%f\n", *flight_x, *flight_y);
+		ret = 1;
+	}
+	return ret;
+}
 /**
 *   @brief  guidance_init
   * @parm   none
