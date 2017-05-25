@@ -37,23 +37,41 @@
 
 //心跳包V2数据包结构体
 #pragma pack(push, 1)
+//typedef struct
+//{
+////		u16 down_ob_distse;     //下方向
+////		u16 front_ob_distse;    //前方向障碍物距离
+////		u16 right_ob_distse;    //右方向障碍物距离
+////		u16 back_ob_distse;     //后方向障碍物距离
+////		u16 left_ob_distse;     //左方向障碍物距离	
+//	u16 ob_distse_v[5];	    //障碍物距离
+//  u8 avoid_ob_enabled;    //避障使能
+//  u16 avoid_ob_distse;    //避障生效距离
+//	u16 avoid_ob_velocity;  //避障速度
+//	u8 uce_state;           //脚架状态
+//	u8 uce_autoenabled;     //脚架自动收放的使能状态
+//	u16 uce_angle;          //脚架当前角度值
+//	u16 uce_autodown_ae;    //脚架自动降落的角度值
+//	u16 uce_autoup_ae;      //脚架自动升起的角度值
+//	u8 reserved[7];         //备用
+//}heartv2_st;
 typedef struct
 {
-//		u16 down_ob_distse;     //下方向
-//		u16 front_ob_distse;    //前方向障碍物距离
-//		u16 right_ob_distse;    //右方向障碍物距离
-//		u16 back_ob_distse;     //后方向障碍物距离
-//		u16 left_ob_distse;     //左方向障碍物距离	
 	u16 ob_distse_v[5];	    //障碍物距离
   u8 avoid_ob_enabled;    //避障使能
   u16 avoid_ob_distse;    //避障生效距离
 	u16 avoid_ob_velocity;  //避障速度
 	u8 uce_state;           //脚架状态
 	u8 uce_autoenabled;     //脚架自动收放的使能状态
-	u16 uce_angle;          //脚架当前角度值
-	u16 uce_autodown_ae;    //脚架自动降落的角度值
-	u16 uce_autoup_ae;      //脚架自动升起的角度值
-	u8 reserved[7];         //备用
+	u8 gas_num5;
+	u16 gas_v5;
+	u8 gas_num6;
+	u16 gas_v6;
+	u8 gas_num7;
+	u16 gas_v7;
+	u8 gas_num8;
+	u16 gas_v8;	
+	u8 reserved[1];         //备用
 }heartv2_st;
 #pragma pack(pop)
 

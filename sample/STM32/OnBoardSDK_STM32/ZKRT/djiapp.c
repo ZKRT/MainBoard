@@ -22,10 +22,11 @@
 
 #include "djiapp.h"
 #include "obstacleAvoid.h"
+#include "heartBeatHandle.h"
 
 #define TEMPTURE_DIFF         8
 
-uint8_t posion_dji_buffer[16] = {0};
+uint8_t posion_dji_buffer[30] = {0};
 uint8_t msg_smartbat_dji_buffer[30] = {0};
 uint32_t dji_tempture_error_count = 0;
 uint8_t tempture_change_too_fast_dji[4] = {0};
@@ -202,7 +203,7 @@ void zkrt_read_heart_dji_posion(void)
 	msg_smartbat_dji_buffer[11] = posion_dji_buffer[1];
 	msg_smartbat_dji_buffer[12] = posion_dji_buffer[2];
 	msg_smartbat_dji_buffer[13] = posion_dji_buffer[3];
-		
+	
 	msg_smartbat_dji_buffer[14] = posion_dji_buffer[5];
 	msg_smartbat_dji_buffer[15] = posion_dji_buffer[6];
 	msg_smartbat_dji_buffer[16] = posion_dji_buffer[7];
@@ -214,6 +215,30 @@ void zkrt_read_heart_dji_posion(void)
 	msg_smartbat_dji_buffer[20] = posion_dji_buffer[13];
 	msg_smartbat_dji_buffer[21] = posion_dji_buffer[14];
 	msg_smartbat_dji_buffer[22] = posion_dji_buffer[15];
+	
+	//add another 4 gas values in heartbeatV2
+	if(can1_rx_dji_posion.UAVID[0] ==1)
+	{	
+		zkrt_heartv2.gas_num5 = 5;
+		zkrt_heartv2.gas_num6 = 6;
+		zkrt_heartv2.gas_num7 = 7;
+		zkrt_heartv2.gas_num8 = 8;
+		zkrt_heartv2.gas_v5 = posion_dji_buffer[18]|posion_dji_buffer[19]<<8;
+		zkrt_heartv2.gas_v6 = posion_dji_buffer[20]|posion_dji_buffer[21]<<8;
+		zkrt_heartv2.gas_v7 = posion_dji_buffer[16]|posion_dji_buffer[17]<<8;
+		zkrt_heartv2.gas_v8 = posion_dji_buffer[22]|posion_dji_buffer[23]<<8;
+	}
+	else
+	{
+		zkrt_heartv2.gas_num5 = 0;
+		zkrt_heartv2.gas_num6 = 0;
+		zkrt_heartv2.gas_num7 = 0;
+		zkrt_heartv2.gas_num8 = 0;
+		zkrt_heartv2.gas_v5 = 0;
+		zkrt_heartv2.gas_v6 = 0;
+		zkrt_heartv2.gas_v7 = 0;
+		zkrt_heartv2.gas_v8 = 0;
+	}	
 	
 	if ((msg_smartbat_dji_buffer[12] != 0)||(msg_smartbat_dji_buffer[13] != 0)||(msg_smartbat_dji_buffer[15] != 0)||(msg_smartbat_dji_buffer[16] != 0)
 		||(msg_smartbat_dji_buffer[18] != 0)||(msg_smartbat_dji_buffer[19] != 0)||(msg_smartbat_dji_buffer[21] != 0)||(msg_smartbat_dji_buffer[22] != 0))
@@ -271,6 +296,16 @@ void zkrt_read_heart_dji_posion_check(void)
 	{
 		msg_smartbat_dji_buffer[10] &= 0XF7;
 	}
+	
+	//add for 8 gas sersor
+	if(can1_rx_dji_posion.UAVID[0] ==1)
+  {
+		msg_smartbat_dji_buffer[10] |= 0Xf0;
+	}
+	else
+	{
+		msg_smartbat_dji_buffer[10] &= 0X0f;
+	}	
 }
 
 
@@ -294,7 +329,7 @@ void main_zkrt_dji_recv(void)
 		value = CAN1_rx_byte(DEVICE_TYPE_GAS);
 		if (zkrt_decode_char(&can1_rx_dji_posion,value)==1)/*如果当中一个数据丢失，整个数据包就得重新接收，这样是不是有点问题*/
 		{
-			memcpy((void *)posion_dji_buffer, (void *)&(can1_rx_dji_posion.data[0]), 16);
+			memcpy((void *)posion_dji_buffer, (void *)&(can1_rx_dji_posion.data[0]), 30);
 
 			zkrt_read_heart_dji_posion();						
 			zkrt_read_heart_dji_posion_check();			

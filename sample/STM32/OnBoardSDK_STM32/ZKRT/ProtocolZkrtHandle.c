@@ -79,14 +79,14 @@ void undercarriage_ptl_hf(u8 *data)
 	u8 uce_adjust = 0; //0-stop, 1-uce down, 2-uce up;
 	u8 uce_control = 0;
 	zkrt_heartv2.uce_autoenabled = data[0];
-	zkrt_heartv2.uce_autodown_ae = ((data[2])<<8)+(data[1]);
-	zkrt_heartv2.uce_autoup_ae = ((data[4])<<8)+(data[3]);
+//	zkrt_heartv2.uce_autodown_ae = ((data[2])<<8)+(data[1]); //协议已改，不用该属性
+//	zkrt_heartv2.uce_autoup_ae = ((data[4])<<8)+(data[3]);
 	uce_adjust = data[5];
 	uce_control = data[6];
 	
 	undercarriage_data.uce_autoenabled = zkrt_heartv2.uce_autoenabled;
-	undercarriage_data.uce_autodown_ae = zkrt_heartv2.uce_autodown_ae;
-	undercarriage_data.uce_autoup_ae = zkrt_heartv2.uce_autoup_ae;
+//	undercarriage_data.uce_autodown_ae = zkrt_heartv2.uce_autodown_ae;
+//	undercarriage_data.uce_autoup_ae = zkrt_heartv2.uce_autoup_ae;
 	
 	//脚架校准 -自动收发功能关闭和脚架控制无动作时允许
 	if((!undercarriage_data.uce_autoenabled)&&(!uce_control))

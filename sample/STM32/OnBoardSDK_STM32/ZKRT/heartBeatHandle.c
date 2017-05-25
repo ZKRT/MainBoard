@@ -60,9 +60,20 @@ void heartbeat_parm_init(void)
 	if(undercarriage_data.run_state ==uped_udcaie_rs)
 		zkrt_heartv2.uce_state = 1;
 	zkrt_heartv2.uce_autoenabled = undercarriage_data.uce_autoenabled;
-	zkrt_heartv2.uce_angle = undercarriage_data.uce_angle;	
-	zkrt_heartv2.uce_autodown_ae = undercarriage_data.uce_autodown_ae;
-	zkrt_heartv2.uce_autoup_ae = undercarriage_data.uce_autoup_ae;
+//	zkrt_heartv2.uce_angle = undercarriage_data.uce_angle;	
+//	zkrt_heartv2.uce_autodown_ae = undercarriage_data.uce_autodown_ae;
+//	zkrt_heartv2.uce_autoup_ae = undercarriage_data.uce_autoup_ae;
+	
+	//gas data  
+	//zkrt_debug
+	zkrt_heartv2.gas_num5 = 0;
+	zkrt_heartv2.gas_num6 = 0;
+	zkrt_heartv2.gas_num7 = 0;
+	zkrt_heartv2.gas_num8 = 0;
+//	zkrt_heartv2.gas_v5 = 12;     //1.2
+//	zkrt_heartv2.gas_v6 = 98;     //9.8
+//	zkrt_heartv2.gas_v7 = 1438;   //143.8
+//	zkrt_heartv2.gas_v8 = 234;    //2.34
 	
 	//timer data
 	hb_timer.timer_hbv2_packflag =0;
@@ -166,7 +177,7 @@ static void hbv2_pack(void)
 		  zkrt_heartv2.uce_state = 0;
 		if(undercarriage_data.run_state ==uped_udcaie_rs)
 		  zkrt_heartv2.uce_state = 1;		
-		zkrt_heartv2.uce_angle = undercarriage_data.uce_angle;
+//		zkrt_heartv2.uce_angle = undercarriage_data.uce_angle;  //协议已改，不用该属性
 		
 		//clear timer flag
 		hb_timer.timer_hbv2_packflag = 0;

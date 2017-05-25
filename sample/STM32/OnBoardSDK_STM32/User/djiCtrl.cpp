@@ -101,7 +101,7 @@ void dji_process(void)
 			if(djisdk_state.cmdres_timeout - TimingDelay >= 5000) //激活不成功时，每5秒重新激活一次
 			{
 				djisdk_state.run_status = init_none_djirs;
-				heartbeat_ctrl(); //zkrt_debug
+//				heartbeat_ctrl(); //zkrt_debug
 			}
 			break;
 		case avtivated_ok_djirs:
@@ -216,11 +216,11 @@ void heartbeat_ctrl(void)
 	if(zkrt_heartbeat_pack())
 	{
 		sendToMobile((uint8_t*)&_zkrt_packet_hb, 50);
-		int k; //zkrt_debug
-		printf("heart start_code=0x %x\r\n",_zkrt_packet_hb.start_code);
-		for(k=0; k<30; k++)
-			printf("%x ",_zkrt_packet_hb.data[k]);
-		printf("\r\n");
+//		int k; //zkrt_debug
+//		printf("heart start_code=0x %x\r\n",_zkrt_packet_hb.start_code);
+//		for(k=0; k<30; k++)
+//			printf("%x ",_zkrt_packet_hb.data[k]);
+//		printf("\r\n");
 	}
 }
 /**
