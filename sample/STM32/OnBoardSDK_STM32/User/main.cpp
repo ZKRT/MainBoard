@@ -158,13 +158,13 @@ void tempture_flight_control(void)
 	if (_160_read_flag - TimingDelay >= 160)
 	{
 		_160_read_flag = TimingDelay;
-#ifdef USE_SESORINTEGRATED		
+#ifndef USE_SESORINTEGRATED		
 		ADC_SoftwareStartConv(ADC1); /*启动ADC*/	
 #endif		
 //		ZKRT_LOG(LOG_NOTICE, "ADC_SoftwareStartConv!\r\n");	
 		if((_read_count%2) == 0)									
 		{
-#ifdef USE_SESORINTEGRATED			
+#ifndef USE_SESORINTEGRATED			
 			zkrt_dji_read_heart_tempture();  /*获取温度传感器数据*/
 #endif			
 			avoid_temp_alarm();     //避温检测
@@ -371,7 +371,7 @@ void avoid_obstacle_alarm_V2(void)
 	if(djisdk_state.run_status !=avtivated_ok_djirs) //OES没激活
 		return;
 	
-	if(GuidanceObstacleData.online_flag ==0) //Guidance不在线 
+	if(GuidanceObstacleData.online_flag ==0) //Guidance不在线   //zkrt_debug actual is open
 		return;
 	
 	if(GuidanceObstacleData.ob_enabled ==0) //避障不生效
@@ -382,10 +382,10 @@ void avoid_obstacle_alarm_V2(void)
 	}
 	
 	move_flag = obstacle_avoidance_handle_V2(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll);
-	flightData_zkrtctrl.x = fl_x;
-	flightData_zkrtctrl.y = fl_y;
 	if(move_flag)
 	{
+		flightData_zkrtctrl.x = fl_x;
+		flightData_zkrtctrl.y = fl_y;
 		djisdk_state.oes_fc_controled |= 1<< fc_obstacle_b;
 		ZKRT_LOG(LOG_NOTICE, "avoid_obstacle_alarm open=================\r\n")
 	}

@@ -141,7 +141,7 @@ void dji_flight_ctrl(void)
 				coreApi->setControl(1);	
 				ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
 			}
-//			printf("x=%f,y=%f\n", flightData_zkrtctrl.x, flightData_zkrtctrl.y);
+//			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag); //zkrt_debug
 			flight.setFlight(&flightData_zkrtctrl);
 			ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
 		}

@@ -42,7 +42,14 @@ void guidance_parmdata_init(void)
 	GuidanceObstacleData.g_distance_value[1] = OBSTACLE_DISTACNE_INITV;
 	GuidanceObstacleData.g_distance_value[2] = OBSTACLE_DISTACNE_INITV;
 	GuidanceObstacleData.g_distance_value[3] = OBSTACLE_DISTACNE_INITV;
-	GuidanceObstacleData.g_distance_value[4] = OBSTACLE_DISTACNE_INITV;
+	GuidanceObstacleData.g_distance_value[4] = OBSTACLE_DISTACNE_INITV; 
+//	//zkrt_debug
+//	GuidanceObstacleData.g_distance_value[0] = 2000;
+//	GuidanceObstacleData.g_distance_value[1] = 2000;
+//	GuidanceObstacleData.g_distance_value[2] = 1500;
+//	GuidanceObstacleData.g_distance_value[3] = 500;
+//	GuidanceObstacleData.g_distance_value[4] = 300; 
+	
 	GuidanceObstacleData.online_flag = 0;
 	GuidanceObstacleData.g_distance_valid = 0;
 	GuidanceObstacleData.online_timing = 0xffffffff;
@@ -339,8 +346,7 @@ unsigned char obstacle_ctrl_check_by_rc_and_distance(float *flight_ch, int16_t R
 	{	
 		safe_vel = (float)(OBSTACLE_SAFEH_VEL*(distance-OBSTACLE_SAFE_DISTANCE))/(OBSTACLE_ENABLED_DISTANCE-OBSTACLE_SAFE_DISTANCE);
 		rcdata_vel = (float)(RCData_ch*RC_H_VEL)/10000;
-//		printf("safe_vel:%f\n", safe_vel);  
-//		printf("rcdata_vel:%f\n", rcdata_vel);
+//		printf("safe_vel:%f,rcdata_vel:%f\n", safe_vel,rcdata_vel);  //zkrt_debug
 		if(fabs(rcdata_vel)<=safe_vel)
 		{
 			ret =0;
@@ -394,7 +400,7 @@ unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  in
 	}
 	else
 	{
-			*flight_y = 0;
+		*flight_y = 0;
 	}
   if((ret1)||(ret2))
 	{

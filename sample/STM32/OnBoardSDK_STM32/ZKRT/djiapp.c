@@ -541,13 +541,13 @@ void dji_zkrt_read_heart_tempture_check(void)
 {
 	if (tempture0 < TEMPTURE_LOW_EXTRA) 
 	{
-		tempture0 = TEMPTURE_LOW_EXTRA;	 
+//		tempture0 = TEMPTURE_LOW_EXTRA;	 
 		msg_smartbat_dji_buffer[0] = 0XFD;	 
 		dji_zkrt_read_heart_tempture_check_send(0);
 	}
 	else if (tempture0 > TEMPTURE_HIGH_EXTRA)
 	{
-		tempture0 = TEMPTURE_HIGH_EXTRA;
+//		tempture0 = TEMPTURE_HIGH_EXTRA;
 		msg_smartbat_dji_buffer[0] = 0XFD;
 		dji_zkrt_read_heart_tempture_check_send(0);
 	}
@@ -597,13 +597,13 @@ void dji_zkrt_read_heart_tempture_check(void)
 	
 	if (tempture1 < TEMPTURE_LOW_EXTRA)
 	{
-		tempture1 = TEMPTURE_LOW_EXTRA;
+//		tempture1 = TEMPTURE_LOW_EXTRA;
 		msg_smartbat_dji_buffer[3] = 0XFD;
 		dji_zkrt_read_heart_tempture_check_send(1);
 	}
 	else if (tempture1 > TEMPTURE_HIGH_EXTRA)
 	{
-		tempture1 = TEMPTURE_HIGH_EXTRA;
+//		tempture1 = TEMPTURE_HIGH_EXTRA;
 		msg_smartbat_dji_buffer[3] = 0XFD;
 		dji_zkrt_read_heart_tempture_check_send(1);
 	}
@@ -681,9 +681,18 @@ void dji_zkrt_read_heart_tempture_check(void)
 		msg_smartbat_dji_buffer[23] |= 0X01;
 	}
 	if(GuidanceObstacleData.online_flag == 1)
+	{
 		msg_smartbat_dji_buffer[23] |= 0X02;  //避障在线标记
+	}
 	else
+	{
 		msg_smartbat_dji_buffer[23] &= 0XFD;
+#ifdef USE_SESORINTEGRATED	
+		msg_smartbat_dji_buffer[23] &= 0XFE;  //温度数据在集成板上
+		msg_smartbat_dji_buffer[0] = TEMP_INVALID;
+		msg_smartbat_dji_buffer[3] = TEMP_INVALID;
+#endif
+	}
 #endif
 }
 

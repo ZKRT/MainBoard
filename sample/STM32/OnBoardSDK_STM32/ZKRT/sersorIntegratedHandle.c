@@ -43,8 +43,10 @@ void app_sersor_integrated_prcs(void)
 	if(GuidanceObstacleData.online_timing - TimingDelay > GUIDANCE_ONLINE_TIMEOUT)
 	{
 		guidance_parmdata_init();
-		GuidanceObstacleData.online_timing = TimingDelay;
-		ZKRT_LOG(LOG_ERROR, "Guidance UART not online!\n");
+		GuidanceObstacleData.online_timing = TimingDelay;  //zkrt_debug
+	  tempture0 = 0;
+		tempture1 = 0;
+		ZKRT_LOG(LOG_ERROR, "sensor intergrated board not online!\n"); //zkrt_debug
 	}
 	
 	//parse can2 message
