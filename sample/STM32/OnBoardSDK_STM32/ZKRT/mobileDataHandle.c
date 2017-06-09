@@ -71,6 +71,9 @@ void mobile_data_process(void)
 		说     明：
 
 ************************************************************************/
+//zkrt_debug 
+//int dataindex;
+//short fuyang, hangxiang;
 void main_dji_recv(void)
 {
 	int k;
@@ -123,6 +126,21 @@ void main_dji_recv(void)
 //			printf("%x ", main_dji_rev.data[8]);
 //			printf("===========================\r\n");
 			break;
+		//zkrt_debug
+//    case DEVICE_TYPE_MULTICAMERA:
+//			printf("[start]   ");
+//			for(dataindex=0; dataindex<30; dataindex++)
+//		  {
+//				printf("%x ", main_dji_rev.data[dataindex]);
+//			}
+//			printf("\r\n");
+//			memcpy(&hangxiang, &main_dji_rev.data[0], 2);
+//			memcpy(&fuyang, &main_dji_rev.data[2], 2);
+//			printf("hangxiang=%d ", hangxiang);
+//			printf("fuyang=%d ", fuyang);
+//			printf("   [end]\r\n");			
+//		  CAN1_send_message_fun((uint8_t *)(&main_dji_rev), _TOTAL_LEN, (main_dji_rev.UAVID[3]));/*通过CAN总线发送数据*/
+//			break;
 		default:
 			ZKRT_LOG(LOG_NOTICE,"CAN1_send_message_fun\r\n");
 		  CAN1_send_message_fun((uint8_t *)(&main_dji_rev), _TOTAL_LEN, (main_dji_rev.UAVID[3]));/*通过CAN总线发送数据*/

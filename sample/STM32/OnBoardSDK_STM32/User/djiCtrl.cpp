@@ -26,6 +26,7 @@ extern "C"
 #include "heartBeatHandle.h"
 }
 #endif
+#include <math.h>
 
 extern CoreAPI *coreApi;
 extern Flight flight;
@@ -182,17 +183,22 @@ void get_flight_data_and_handle(void)
 //  flightstatus = flight.getStatus();
 //	printf("flightstatus:%d\n", flightstatus);  //飞行运行状态
 //	printf("virtualrc.mode=%d\n", virtualrc.getRCData().mode); //遥控器值
-//	printf("vel x=%f, y=%f, z=%f\n", flight.getVelocity().x, flight.getVelocity().y, flight.getVelocity().z);//这个是大地坐标系速度
+//	printf("yaw=%d, roll=%d, pitch=%d, throttle=%d, gear=%d\n", virtualrc.getRCData().yaw, virtualrc.getRCData().roll, virtualrc.getRCData().pitch, virtualrc.getRCData().throttle, virtualrc.getRCData().gear);   //遥控器摇杆值 //zkrt_debug
+//	printf("vel x=%f, y=%f, z=%f\n", flight.getVelocity().x, flight.getVelocity().y, flight.getVelocity().z);//这个是大地坐标系速度   //实测飞机P档控制最大速度13m/s左右
 //	printf("vel x=%f, y=%f, z=%f\n", flight.getYawRate().x, flight.getYawRate().y, flight.getYawRate().z);//这个是角速度
 //	printf("getAcceleration x=%f, y=%f, z=%f\n", flight.getAcceleration().x, flight.getAcceleration().y, flight.getAcceleration().z);//这个是加速度
 //	printf("gps vel x=%f, y=%f, z=%f\n", coreApi->getBroadcastData().gps.velocityNorth, coreApi->getBroadcastData().gps.velocityEast, coreApi->getBroadcastData().gps.velocityGround);//这个是GPS速度
 //	double yaw;
 //	double roll;
 //	double pitch;
-//	yaw = flight.getYaw();
+//	yaw = flight.getYaw();  //四元数转换而来的姿态角
 //	roll = flight.getRoll();
 //	pitch = flight.getPitch();
-//	printf("yaw=%f, roll=%f, pitch=%f\n", yaw, roll, pitch);   //yaw , roll, pitch
+//	printf("qyaw=%f, qroll=%f, qpitch=%f\n", yaw, roll, pitch);   //yaw , roll, pitch
+//  float x_body, y_body;
+//	x_body = flight.getVelocity().x*cos(yaw)+flight.getVelocity().y*sin(yaw);
+//	y_body = -flight.getVelocity().x*sin(yaw)+flight.getVelocity().y*cos(yaw);
+//  printf("x=%f, y=%f\n", x_body, y_body);//这个是机体坐标系速度
 	
 	if(!undercarriage_data.uce_autoenabled)
 		return;
