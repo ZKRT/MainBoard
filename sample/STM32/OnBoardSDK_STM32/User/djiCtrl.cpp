@@ -198,6 +198,8 @@ void get_flight_data_and_handle(void)
 //  float x_body, y_body;
 //	x_body = flight.getVelocity().x*cos(yaw)+flight.getVelocity().y*sin(yaw);
 //	y_body = -flight.getVelocity().x*sin(yaw)+flight.getVelocity().y*cos(yaw);
+////	x_body = flight.getVelocity().x*cos(flight.getYaw())+flight.getVelocity().y*sin(flight.getYaw());
+////	y_body = -flight.getVelocity().x*sin(flight.getYaw())+flight.getVelocity().y*cos(flight.getYaw());
 //  printf("x=%f, y=%f\n", x_body, y_body);//这个是机体坐标系速度
 	
 	if(!undercarriage_data.uce_autoenabled)
