@@ -15,6 +15,7 @@
   */
 	
 /* Includes ------------------------------------------------------------------*/
+#include <math.h>
 #include "main.h"
 #include "djiCtrl.h"
 #ifdef __cplusplus
@@ -367,11 +368,12 @@ void avoid_obstacle_alarm_V2(void)
 {
 	u8 move_flag; //移动标记
 	float fl_x, fl_y;
+//	float fl_x_now, fl_y_now;
 	
 	if(djisdk_state.run_status !=avtivated_ok_djirs) //OES没激活
 		return;
 	
-	if(GuidanceObstacleData.online_flag ==0) //Guidance不在线   //zkrt_debug actual is open
+	if(GuidanceObstacleData.online_flag ==0) //Guidance不在线 
 		return;
 	
 	if(GuidanceObstacleData.ob_enabled ==0) //避障不生效
@@ -381,7 +383,11 @@ void avoid_obstacle_alarm_V2(void)
 		return;
 	}
 	
-	move_flag = obstacle_avoidance_handle_V2(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll);
+//	fl_x_now = flight.getVelocity().x*cos(flight.getYaw())+flight.getVelocity().y*sin(flight.getYaw());
+//	fl_y_now = -flight.getVelocity().x*sin(flight.getYaw())+flight.getVelocity().y*cos(flight.getYaw());
+	
+	move_flag = obstacle_avoidance_handle_V2(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll); 
+//	move_flag = obstacle_avoidance_handle_V3(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll, &fl_x_now, &fl_y_now);
 	if(move_flag)
 	{
 		flightData_zkrtctrl.x = fl_x;

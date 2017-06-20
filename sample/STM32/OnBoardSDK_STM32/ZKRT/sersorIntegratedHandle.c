@@ -43,10 +43,10 @@ void app_sersor_integrated_prcs(void)
 	if(GuidanceObstacleData.online_timing - TimingDelay > GUIDANCE_ONLINE_TIMEOUT)
 	{
 		guidance_parmdata_init();
-		GuidanceObstacleData.online_timing = TimingDelay;  //zkrt_debug
+		GuidanceObstacleData.online_timing = TimingDelay;
 	  tempture0 = 0;
 		tempture1 = 0;
-		ZKRT_LOG(LOG_ERROR, "sensor intergrated board not online!\n"); //zkrt_debug
+		ZKRT_LOG(LOG_ERROR, "sensor intergrated board not online!\n");
 	}
 	
 	//parse can2 message
@@ -60,7 +60,12 @@ void app_sersor_integrated_prcs(void)
 			GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = si_data_t->right_D;
 			GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = si_data_t->back_D;
 			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = si_data_t->front_D;
-			//zkrt_todo ±ÜÎÂ±äÁ¿ÖÃ
+			//zkrt_debug
+//			GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = 1500;
+//			GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = 2000;
+//			GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = 200;
+//			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = 100;			
+			
 			tempture0 = si_data_t->body_T;
 			tempture1 = si_data_t->body_T;
 			si_tempdata_t.body_T = si_data_t->body_T;

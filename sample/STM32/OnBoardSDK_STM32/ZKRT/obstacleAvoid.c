@@ -360,10 +360,99 @@ unsigned char obstacle_ctrl_check_by_rc_and_distance(float *flight_ch, int16_t R
 	return ret;
 }
 /**
+*   @brief  obstacle_ctrl_check_by_rc_and_distance
+机体速度<=允许的最高速度时，OES不控制避障
+  * @parm flight_ch 飞行控制值
+  * @parm RCData_ch 遥控器通道值
+  * @parm distance 障碍物距离
+  * @parm flight_now 飞机当前运行速度
+  * @retval 1-OES避障生效，0-避障不生效
+  */
+unsigned char obstacle_ctrl_check_by_rc_and_distance_V2(float *flight_ch, int16_t RCData_ch, unsigned short distance, const float *flight_now)
+{
+	char ret =0;
+	float safe_vel;
+//	float rcdata_vel;
+	float nowvel = *flight_now;
+	
+//	if(distance >= GuidanceObstacleData.ob_distance)
+	if(distance > OBSTACLE_ENABLED_DISTANCE)
+		return ret;
+	
+	if(distance <= OBSTACLE_SAFE_DISTANCE)
+	{
+		*flight_ch = 0;
+		ret =1;
+	}
+	else
+	{
+		safe_vel = (float)(OBSTACLE_SAFEH_VEL*(distance-OBSTACLE_SAFE_DISTANCE))/(OBSTACLE_ENABLED_DISTANCE-OBSTACLE_SAFE_DISTANCE);
+//		rcdata_vel = (float)(RCData_ch*RC_H_VEL)/10000;
+//		printf("rcdata_vel:%f,now_vel:%f,channel:%d, ch_vel_rel:%f\n", rcdata_vel,nowvel, RCData_ch, fabs(nowvel)-fabs(rcdata_vel));  
+		if(nowvel <= safe_vel)
+		{
+			ret =0;
+		}
+		else
+		{
+			*flight_ch = safe_vel;
+////			printf("safe_vel:%f,now_vel:%f,channel:%d\n", safe_vel,nowvel, RCData_ch);  
+			ret =1;
+		}
+	}
+	return ret;
+}
+/**
+*   @brief  obstacle_ctrl_check_by_rc_and_distance
+遥控器速度<=允许的最高速度时，OES不控制避障  遥控器5000上下的斜率不同设置
+  * @parm flight_ch 飞行控制值
+  * @parm RCData_ch 遥控器通道值
+  * @parm distance 障碍物距离
+  * @retval 1-OES避障生效，0-避障不生效
+  */
+unsigned char obstacle_ctrl_check_by_rc_and_distance_V3(float *flight_ch, int16_t RCData_ch, unsigned short distance)
+{
+	char ret =0;
+	float safe_vel;
+	float rcdata_vel;
+	
+	if(distance > OBSTACLE_ENABLED_DISTANCE)
+		return ret;
+	
+	if(distance <= OBSTACLE_SAFE_DISTANCE)
+	{
+		*flight_ch = 0;
+		ret =1;
+	}
+	else
+	{
+		safe_vel = (float)(OBSTACLE_SAFEH_VEL*(distance-OBSTACLE_SAFE_DISTANCE))/(OBSTACLE_ENABLED_DISTANCE-OBSTACLE_SAFE_DISTANCE);
+		if(fabs(RCData_ch) <=5000)
+		{
+			rcdata_vel = (float)(RCData_ch*RC_H_VEL_IN5000CH)/5000;
+		}
+		else
+		{
+			rcdata_vel = (float)(RCData_ch*RC_H_VEL)/10000;
+		}
+//		printf("safe_vel:%f,rcdata_vel:%f\n", safe_vel,rcdata_vel); 
+		if(fabs(rcdata_vel)<=safe_vel)
+		{
+			ret =0;
+		}
+		else
+		{
+			*flight_ch = safe_vel;
+			ret =1;
+		}
+	}
+	return ret;
+}
+/**
 *   @brief  obstacle_avoidance_handle
 避障策略：根据遥控器的控制情况，OES执行辅助避障
 辅助避障策略：
-在避障生效距离内，当遥控器往障碍物方向飞行控制时，OES限制其速度。
+在避障生效距离内，当遥控器往障碍物方向飞行控制时，OES限制其速度。限制速度依靠遥控器控制值
 在绝对安全距离内，当遥控器往障碍物方向飞行控制时，OES限制制止其飞行。
   * @parm flight_x 前后速度值，前正后负
   * @parm flight_y 左右速度值，右正左负
@@ -377,11 +466,11 @@ unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  in
 	
 	if(RCData_x>0) //front
 	{
-		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_FRONT]);
+		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_FRONT]); 
 	}
 	else if(RCData_x<0) //back
 	{
-		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_BACK]);
+		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_BACK]);  
 		*flight_x = -(*flight_x);
 	}
 	else
@@ -391,11 +480,76 @@ unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  in
 	
 	if(RCData_y>0) //right
 	{
-		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT]);
+		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT]); 
 	}
 	else if(RCData_y<0) //left
 	{
-		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_LEFT]);
+		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_LEFT]); 
+		*flight_y = -(*flight_y);
+	}
+	else
+	{
+		*flight_y = 0;
+	}
+  if((ret1)||(ret2))
+	{
+//		printf("x=%f,y=%f\n", *flight_x, *flight_y);
+		ret = 1;
+	}
+	return ret;
+}
+/**
+*   @brief  obstacle_avoidance_handle
+避障策略：根据遥控器的控制情况，OES执行辅助避障
+辅助避障策略：
+在避障生效距离内，当遥控器往障碍物方向飞行控制时，OES限制其速度。限制速度依靠遥控器速度值与机体当前速度值
+在绝对安全距离内，当遥控器往障碍物方向飞行控制时，OES限制制止其飞行。
+  * @parm flight_x 前后速度值，前正后负
+  * @parm flight_y 左右速度值，右正左负
+  * @parm RCData_x 前后遥控器通道值，pitch, [-10000,10000] 	Down: -10000, Up: 10000
+  * @parm RCData_y 左右遥控器通道值，roll, [-10000,10000] 	Left: -10000, Right: 10000
+  * @parm flight_x_now 飞机机体当前速度值
+  * @parm flight_y_now 飞机机体当前速度值
+  * @retval 1-OES避障生效，0-避障不生效
+  */
+unsigned char obstacle_avoidance_handle_V3(float *flight_x, float *flight_y,  int16_t RCData_x, int16_t RCData_y, const float *flight_x_now, const float *flight_y_now)
+{
+	char ret1=0, ret2=0, ret=0;
+	float xnow = *flight_x_now, ynow = *flight_y_now;
+
+	if(RCData_x>0) //front
+	{
+		if(xnow <0)
+			xnow = 0;
+		ret1 = obstacle_ctrl_check_by_rc_and_distance_V2(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_FRONT], &xnow);
+	}
+	else if(RCData_x<0) //back
+	{
+		if(xnow >0)
+			xnow = 0;
+		else
+			xnow = fabs(xnow);
+		ret1 = obstacle_ctrl_check_by_rc_and_distance_V2(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_BACK], &xnow);
+		*flight_x = -(*flight_x);
+	}
+	else
+	{
+		*flight_x = 0; 
+	}
+	
+	if(RCData_y>0) //right
+	{
+		if(ynow <0)
+			ynow = 0;
+		ret2 = obstacle_ctrl_check_by_rc_and_distance_V2(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT], &ynow);
+	}
+	else if(RCData_y<0) //left
+	{
+	  if(ynow >0)
+			ynow = 0;
+		else
+			ynow = fabs(ynow);
+		ret2 = obstacle_ctrl_check_by_rc_and_distance_V2(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_LEFT], &ynow);
 		*flight_y = -(*flight_y);
 	}
 	else

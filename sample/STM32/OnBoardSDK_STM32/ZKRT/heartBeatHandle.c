@@ -64,17 +64,12 @@ void heartbeat_parm_init(void)
 //	zkrt_heartv2.uce_autodown_ae = undercarriage_data.uce_autodown_ae;
 //	zkrt_heartv2.uce_autoup_ae = undercarriage_data.uce_autoup_ae;
 	
-	//gas data  
-	//zkrt_debug
+	//gas data
 	zkrt_heartv2.gas_num5 = 0;
 	zkrt_heartv2.gas_num6 = 0;
 	zkrt_heartv2.gas_num7 = 0;
 	zkrt_heartv2.gas_num8 = 0;
-//	zkrt_heartv2.gas_v5 = 12;     //1.2
-//	zkrt_heartv2.gas_v6 = 98;     //9.8
-//	zkrt_heartv2.gas_v7 = 1438;   //143.8
-//	zkrt_heartv2.gas_v8 = 234;    //2.34
-	
+
 	//timer data
 	hb_timer.timer_hbv2_packflag =0;
 	hb_timer.timer_hbv2_packcnt = TIMER_HBV2PACK_TIMEOUT+5000; //zkrt_notice: 一开始延时等待

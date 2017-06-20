@@ -422,7 +422,7 @@ void zkrt_dji_read_heart_tempture(void)
 #elif defined _TEMPTURE_ADC_
   tempture0 = ADC1_get_value(_T1_value)-TEMPTURE_CALIBRATE;    //zkrt_notice: 温度补偿处理，由于AD采集温度受芯片内部温度的影响，实际运行一段时间后，芯片内部温度上升，导致AD采集温度过高，故减10度补偿。
   tempture1 = ADC1_get_value(_T2_value)-TEMPTURE_CALIBRATE;
-//	tempture0 = -460; //zkrt_debug
+//	tempture0 = -460; 
 //  tempture1 = -668;
   ZKRT_LOG(LOG_NOTICE,"#######tempture0= %d   tempture1= %d!\r\n",tempture0,tempture1);
 #endif
