@@ -25,7 +25,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-//obstacleData_st GuidanceObstacleData = {{0}, {0}, 0, 0, 0xffffffff, 1, OBSTACLE_ALARM_DISTANCE, OBSTACLE_AVOID_VEL};
+//obstacleData_st GuidanceObstacleData = {{0}, {0}, 0, 0, 0xffffffff, 1, OBSTACLE_ALARM_DISTANCE, OBSTACLE_AVOID_VEL_10TIMES};
 obstacleData_st GuidanceObstacleData;
 volatile uint8_t guidance_v_index=0; //数据包解包的index，解完一个字节，index指向下一个字节数据
 
@@ -55,7 +55,7 @@ void guidance_parmdata_init(void)
 	GuidanceObstacleData.online_timing = 0xffffffff;
 //	GuidanceObstacleData.ob_enabled = 1;                                     //this parameter init read from flash in function of STMFLASH_Init().
 //	GuidanceObstacleData.ob_distance = OBSTACLE_ALARM_DISTANCE;
-//	GuidanceObstacleData.ob_velocity = OBSTACLE_AVOID_VEL;
+//	GuidanceObstacleData.ob_velocity = OBSTACLE_AVOID_VEL_10TIMES;
 }
 /**
 *   @brief  guidance_init
@@ -330,30 +330,32 @@ unsigned char obstacle_avoidance_handle(void)
 unsigned char obstacle_ctrl_check_by_rc_and_distance(float *flight_ch, int16_t RCData_ch, unsigned short distance)
 {
 	char ret =0;
-	float safe_vel;
-	float rcdata_vel;
+//	float safe_vel;
+//	float rcdata_vel;
 	
 //	if(distance >= GuidanceObstacleData.ob_distance)
 	if(distance > OBSTACLE_ENABLED_DISTANCE)
 		return ret;
 	
-	if(distance <= OBSTACLE_SAFE_DISTANCE)
+//	if(distance <= OBSTACLE_SAFE_DISTANCE)
+	if(distance <= GuidanceObstacleData.ob_distance)
 	{
 		*flight_ch = 0;
 		ret =1;
 	}
 	else
-	{	
-		safe_vel = (float)(OBSTACLE_SAFEH_VEL*(distance-OBSTACLE_SAFE_DISTANCE))/(OBSTACLE_ENABLED_DISTANCE-OBSTACLE_SAFE_DISTANCE);
-		rcdata_vel = (float)(RCData_ch*RC_H_VEL)/10000;
+	{
+//		safe_vel = (float)(OBSTACLE_SAFEH_VEL*(distance-OBSTACLE_SAFE_DISTANCE))/(OBSTACLE_ENABLED_DISTANCE-OBSTACLE_SAFE_DISTANCE);
+//		rcdata_vel = (float)(RCData_ch*RC_H_VEL)/10000;
 //		printf("safe_vel:%f,rcdata_vel:%f\n", safe_vel,rcdata_vel);  //zkrt_debug
-		if(fabs(rcdata_vel)<=safe_vel)
+//		if(fabs(rcdata_vel)<=safe_vel)
+//		{
+//			ret =0;
+//		}
+//		else
 		{
-			ret =0;
-		}
-		else
-		{
-			*flight_ch = safe_vel;
+//			*flight_ch = safe_vel;
+			*flight_ch = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
 			ret =1;
 		}
 	}

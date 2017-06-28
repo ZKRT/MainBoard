@@ -24,9 +24,10 @@
 /* Exported constants --------------------------------------------------------*/
 #define CAMERA_PAIR_NUM                 5      //5个传感器
 #define GUIDANCE_ONLINE_TIMEOUT         5000   //5s
-#define OBSTACLE_ALARM_DISTANCE         500    //500cm 
+#define OBSTACLE_ALARM_DISTANCE         400    //400cm 
 #define OBSTACLE_DISTACNE_INITV         2000   //20m 初值
-#define OBSTACLE_AVOID_VEL              15     //避障速度除以10，单位m/s
+#define OBSTACLE_AVOID_VEL_10TIMES      10     //避障速度除以10，单位m/s    //==1m/s
+#define OBSTACLE_AVOID_VEL(vel10times)  (vel10times*0.1)     //避障速度，单位m/s
 //new
 #define OBSTACLE_SAFE_DISTANCE	        400    //避障绝对安全距离
 #define OBSTACLE_SAFEH_VEL	            3      //避障最高安全速度3m/s   
