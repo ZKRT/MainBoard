@@ -60,7 +60,7 @@ typedef struct
 /* Exported functions ------------------------------------------------------- */
 void dji_init(void);
 void dji_process(void);
-
+void dji_get_roll_pitch(double* roll, double* pitch);
 extern dji_sdk_status djisdk_state;
 #endif /* __DJICTRL_H */
 

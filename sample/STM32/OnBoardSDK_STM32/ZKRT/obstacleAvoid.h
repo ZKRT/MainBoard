@@ -113,8 +113,18 @@ typedef struct{
 	volatile unsigned int online_timing;                  //guidane在线超时时间标记
 	unsigned char ob_enabled;                             //避障使能标记，0-不使能，1-使能
 	unsigned short ob_distance;                           //避障生效距离
-	unsigned short ob_velocity;                           //值除以10，单位m/s     
+	unsigned short ob_velocity;                           //值除以10，单位m/s    
+	volatile unsigned int obstacle_time;         
+  volatile unsigned char obstacle_time_flag;  	
 }obstacleData_st;
+
+//dji控制需要考虑的机体参数结构体
+typedef struct 
+{
+	double roll;
+	double pitch;
+}dji_flight_status;
+
 
 /* Exported functions ------------------------------------------------------- */
 void guidance_init(void);
@@ -126,7 +136,7 @@ unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  in
 unsigned char obstacle_avoidance_handle_V3(float *flight_x, float *flight_y,  int16_t RCData_x, int16_t RCData_y, const float *flight_x_now, const float *flight_y_now);
 void guidance_parmdata_init(void);
 extern obstacleData_st GuidanceObstacleData;
-
+extern dji_flight_status djif_status;
 #endif /* __OBSTACLEAVOID_H */
 
 /**
