@@ -91,6 +91,7 @@ void avoid_temp_alarm(void);
 #ifdef USE_OBSTACLE_AVOID_FUN
 void avoid_obstacle_alarm(void);
 void avoid_obstacle_alarm_V2(void);
+void sys_ctrl_timetask(void);
 #endif
 /**
   * @brief  main. 主函数
@@ -117,6 +118,7 @@ int main()
 	undercarriage_init();
 #endif	
 	heartbeat_parm_init();   //put at last
+	t_ostmr_insertTask(sys_ctrl_timetask, 1000, OSTMR_PERIODIC);  //1000
   while (1)
   {
 #ifdef USE_DJI_FUN			
@@ -368,7 +370,6 @@ void avoid_obstacle_alarm_V2(void)
 {
 	u8 move_flag; //移动标记
 	float fl_x, fl_y;
-//	float fl_x_now, fl_y_now;
 	
 	if(djisdk_state.run_status !=avtivated_ok_djirs) //OES没激活
 		return;
@@ -383,27 +384,35 @@ void avoid_obstacle_alarm_V2(void)
 		return;
 	}
 	
-//	fl_x_now = flight.getVelocity().x*cos(flight.getYaw())+flight.getVelocity().y*sin(flight.getYaw());
-//	fl_y_now = -flight.getVelocity().x*sin(flight.getYaw())+flight.getVelocity().y*cos(flight.getYaw());
-	
+	dji_get_roll_pitch(&djif_status.roll, &djif_status.pitch);
+	djif_status.xnow = flight.getVelocity().x*cos(flight.getYaw())+flight.getVelocity().y*sin(flight.getYaw());
+  djif_status.ynow = -flight.getVelocity().x*sin(flight.getYaw())+flight.getVelocity().y*cos(flight.getYaw());
 	move_flag = obstacle_avoidance_handle_V2(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll); 
-//	move_flag = obstacle_avoidance_handle_V3(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll, &fl_x_now, &fl_y_now);
-	if(move_flag)
-	{
-		flightData_zkrtctrl.x = fl_x;
-		flightData_zkrtctrl.y = fl_y;
-		djisdk_state.oes_fc_controled |= 1<< fc_obstacle_b;
-		ZKRT_LOG(LOG_NOTICE, "avoid_obstacle_alarm open=================\r\n")
-	}
-	else
-	{
-		if(	djisdk_state.oes_fc_controled)
-			djisdk_state.oes_fc_controled &= ~(1<< fc_obstacle_b);
-		if(flightData_zkrtctrl.x)
-			flightData_zkrtctrl.x = 0;
-		if(flightData_zkrtctrl.y)
-			flightData_zkrtctrl.y = 0;
-	}
+//	if(GuidanceObstacleData.obstacle_time_flag)
+//	{
+//			flightData_zkrtctrl.x = 0;
+//			flightData_zkrtctrl.y = 0;
+//			djisdk_state.oes_fc_controled |= 1<< fc_obstacle_b;
+//	}
+//	else
+//	{
+		if(move_flag)
+		{
+			flightData_zkrtctrl.x = fl_x;
+			flightData_zkrtctrl.y = fl_y;
+			djisdk_state.oes_fc_controled |= 1<< fc_obstacle_b;
+			ZKRT_LOG(LOG_NOTICE, "avoid_obstacle_alarm open=================\r\n")
+		}
+		else
+		{
+			if(	djisdk_state.oes_fc_controled)
+				djisdk_state.oes_fc_controled &= ~(1<< fc_obstacle_b);
+			if(flightData_zkrtctrl.x)
+				flightData_zkrtctrl.x = 0;
+			if(flightData_zkrtctrl.y)
+				flightData_zkrtctrl.y = 0;
+		}
+//	}
 }
 #endif
 extern "C" void sendToMobile(uint8_t *data, uint8_t len)
@@ -416,4 +425,30 @@ extern "C" void sendToMobile(uint8_t *data, uint8_t len)
 extern "C" void sendpoll()
 {
   coreApi->sendPoll();//
+}
+/**
+*   @brief  sys_ctrl_timetask 系统定时任务，秒级
+  * @parm   none
+  * @retval none
+  */
+int temp_sct_i;
+void sys_ctrl_timetask(void)
+{
+	for(temp_sct_i=1; temp_sct_i< 5; temp_sct_i++)
+	{
+		if(GuidanceObstacleData.constant_speed_time[temp_sct_i]--)
+		{
+			if(!GuidanceObstacleData.constant_speed_time[temp_sct_i])
+			{
+				GuidanceObstacleData.constant_speed_time_flag[temp_sct_i] = 0;
+			}	
+		}
+		if(GuidanceObstacleData.obstacle_time[temp_sct_i]--)
+		{
+			if(!GuidanceObstacleData.obstacle_time[temp_sct_i])
+			{
+				GuidanceObstacleData.obstacle_time_flag[temp_sct_i] = 0;
+			}
+		}
+	}
 }

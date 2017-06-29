@@ -28,7 +28,7 @@
 //obstacleData_st GuidanceObstacleData = {{0}, {0}, 0, 0, 0xffffffff, 1, OBSTACLE_ALARM_DISTANCE, OBSTACLE_AVOID_VEL_10TIMES};
 obstacleData_st GuidanceObstacleData;
 volatile uint8_t guidance_v_index=0; //数据包解包的index，解完一个字节，index指向下一个字节数据
-
+dji_flight_status djif_status;
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -320,6 +320,97 @@ unsigned char obstacle_avoidance_handle(void)
 	return g_obstacle_move_flag;
 }	
 /**
+*   @brief  vel_angle_checkout_in_obstacle
+检测飞机当前运行速度和角度，识别是否需要紧急制动飞机。
+角度>0.24；
+速度>3m/s
+  * @parm 
+  * @parm 
+  * @parm 
+	* @parm 
+  * @retval 1-OES避障生效，0-避障不生效
+  */
+char vel_angle_checkout_in_obstacle(char direction, const double *roll, const double *pitch, const float *x, const float *y)
+{
+	if(((*pitch <=-0.24)||(*x >= 3)) &&(direction == GE_DIR_FRONT))
+	{
+		return 1;
+	}	
+	else if(((*pitch >=0.24)||(*x <= -3)) &&(direction == GE_DIR_BACK))
+	{
+		return 1;
+	}	
+	else if(((*roll >=0.24)||(*y >= 3)) &&(direction == GE_DIR_RIGHT))
+	{
+		return 1;
+	}	
+	else if(((*roll <=-0.24)||(*y <= -3)) &&(direction == GE_DIR_LEFT))
+	{
+		return 1;
+	}	
+	else
+		return 0;
+}
+
+/**
+*   @brief  obstacle_ctrl_check_by_rc_and_distance
+遥控器速度<=允许的最高速度时，OES不控制避障, 加入飞行角度做参考量
+  * @parm flight_ch 飞行控制值
+  * @parm RCData_ch 遥控器通道值
+  * @parm distance 障碍物距离
+	* @parm rad
+  * @retval 1-OES避障生效，0-避障不生效
+  */
+unsigned char obstacle_ctrl_check_by_rc_and_distance_V4(char direction, float *flight_ch, int16_t RCData_ch, unsigned short distance)
+{
+	char ret =0;
+	
+	if(GuidanceObstacleData.obstacle_time_flag[direction])
+	{
+		goto ostacleStopKeepOn;
+	}
+	
+	if(distance > OBSTACLE_ENABLED_DISTANCE)
+	{
+		if(GuidanceObstacleData.constant_speed_time_flag[direction])
+		{
+			goto ostacleConstantSpeedKeepOn;
+		}
+		return ret;
+	}
+	
+	if(distance <= GuidanceObstacleData.ob_distance)
+	{
+		*flight_ch = 0;
+		ret =1;
+	}
+	else
+	{
+		if(vel_angle_checkout_in_obstacle(direction, &djif_status.roll, &djif_status.pitch, &djif_status.xnow, &djif_status.ynow))
+		{
+			*flight_ch = 0;
+			GuidanceObstacleData.obstacle_time_flag[direction] = 1;
+			GuidanceObstacleData.obstacle_time[direction] = 5; //5 seconds
+		}
+		else
+		{
+			*flight_ch = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+			GuidanceObstacleData.constant_speed_time_flag[direction] = 1;
+			GuidanceObstacleData.constant_speed_time[direction] = 2;	
+		}
+		ret =1;
+	}
+	return ret;
+ostacleConstantSpeedKeepOn:	
+	*flight_ch = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+	ret =1;
+	return ret;
+ostacleStopKeepOn:
+	*flight_ch = 0;
+	ret =1;
+	return ret;	
+}
+/**
 *   @brief  obstacle_ctrl_check_by_rc_and_distance
 遥控器速度<=允许的最高速度时，OES不控制避障
   * @parm flight_ch 飞行控制值
@@ -468,11 +559,13 @@ unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  in
 	
 	if(RCData_x>0) //front
 	{
-		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_FRONT]); 
+		ret1 = obstacle_ctrl_check_by_rc_and_distance_V4(GE_DIR_FRONT, flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_FRONT]); 
+//		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_FRONT]); 
 	}
 	else if(RCData_x<0) //back
 	{
-		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_BACK]);  
+		ret1 = obstacle_ctrl_check_by_rc_and_distance_V4(GE_DIR_BACK, flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_BACK]); 
+//		ret1 = obstacle_ctrl_check_by_rc_and_distance(flight_x, RCData_x, GuidanceObstacleData.g_distance_value[GE_DIR_BACK]);  
 		*flight_x = -(*flight_x);
 	}
 	else
@@ -482,11 +575,13 @@ unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  in
 	
 	if(RCData_y>0) //right
 	{
-		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT]); 
+		ret2 = obstacle_ctrl_check_by_rc_and_distance_V4(GE_DIR_RIGHT, flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT]); 
+//		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT]); 
 	}
 	else if(RCData_y<0) //left
 	{
-		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_LEFT]); 
+		ret2 = obstacle_ctrl_check_by_rc_and_distance_V4(GE_DIR_LEFT, flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_LEFT]); 
+//		ret2 = obstacle_ctrl_check_by_rc_and_distance(flight_y, RCData_y, GuidanceObstacleData.g_distance_value[GE_DIR_LEFT]); 
 		*flight_y = -(*flight_y);
 	}
 	else

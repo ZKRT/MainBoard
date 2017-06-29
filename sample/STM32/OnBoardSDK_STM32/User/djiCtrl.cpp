@@ -191,10 +191,19 @@ void get_flight_data_and_handle(void)
 //	double yaw;
 //	double roll;
 //	double pitch;
+/*
+0.05 ~ 2.8°
+0.07 ~ 4°
+0.1 ~ 5°
+0.2 ~ 11.459°
+0.24 ~ 13°
+0.3 ~ 17°
+0.43 ~ 24°
+*/
 //	yaw = flight.getYaw();  //四元数转换而来的姿态角
 //	roll = flight.getRoll();
 //	pitch = flight.getPitch();
-//	printf("qyaw=%f, qroll=%f, qpitch=%f\n", yaw, roll, pitch);   //yaw , roll, pitch
+//	printf("qyaw=%f, qroll=%f, qpitch=%f\n", yaw, roll, pitch);   //yaw , roll, pitch  
 //  float x_body, y_body;
 //	x_body = flight.getVelocity().x*cos(yaw)+flight.getVelocity().y*sin(yaw);
 //	y_body = -flight.getVelocity().x*sin(yaw)+flight.getVelocity().y*cos(yaw);
@@ -246,6 +255,17 @@ void djizkrt_timer_task(void)
 	{
 		getfdata_timercnt--;
 	}
+}
+/**
+  * @brief  djizkrt_timer_task, by ostmr.c module
+  * @param  None
+  * @retval None
+  */
+void dji_get_roll_pitch(double* roll, double* pitch)
+{
+	//四元数转换而来的姿态角
+	*roll = flight.getRoll();
+	*pitch = flight.getPitch();	
 }
 /**
   * @}
