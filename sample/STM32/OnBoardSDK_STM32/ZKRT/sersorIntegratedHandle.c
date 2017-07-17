@@ -60,11 +60,11 @@ void app_sersor_integrated_prcs(void)
 			GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = si_data_t->right_D;
 			GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = si_data_t->back_D;
 			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = si_data_t->front_D;
-//			//zkrt_debug
-//			GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = 800;
+////			//zkrt_debug
+//			GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = 600;
 //			GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = 2000;
 //			GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = 2000;
-//			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = 1000;			
+//			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = 2000;			
 			
 			tempture0 = si_data_t->body_T;
 			tempture1 = si_data_t->body_T;

@@ -320,6 +320,108 @@ unsigned char obstacle_avoidance_handle(void)
 	return g_obstacle_move_flag;
 }	
 /**
+*   @brief  obstacle_avoidance_handle
+躲避避障策略：
+1. 只有一个方向有障碍物时，往相反方向移动避障。
+2. 相邻两个方向有障碍物时，往相反的两个方向移动避障。
+3. 相邻三个方向有障碍物时，悬停。
+4. 相反的两个方向有障碍物时，悬停。
+5. 四个方向都有障碍物时，悬停。
+  * @parm flight_x 前后速度值，前正后负
+  * @parm flight_y 左右速度值，右正左负
+  * @retval char: the direction of need move, bit0 is front, bit1 is right, bit2 is back, bit3 is left. 
+             (0b xxxx left back right front)  
+              front:  (1<<(GE_DIR_FRONT-1))
+              right:  (1<<(GE_DIR_RIGHT-1))
+              back :  (1<<(GE_DIR_BACK-1))
+              left :  (1<<(GE_DIR_LEFT-1))
+						when retval = 0x80, 飞机悬停
+  */
+unsigned char obstacle_avoidance_self_handle(float *flight_x, float *flight_y, char *obstacle_dir)
+{
+	char temp_flag=0;  //避障算法计算出来的避障移动标记
+	g_obstacle_cnt=0;  //避障触发的方向个数
+	g_obstacle_dir=0; //障碍物方向超过阈值的标记，标记位置定义与obstacle_move_flag一样
+
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] < GuidanceObstacleData.ob_distance-50)
+	{
+		g_obstacle_cnt++;
+		g_obstacle_dir |=(1<<(GE_DIR_FRONT-1));
+		g_obstacle_move_flag = (1<<(GE_DIR_BACK-1));
+	}
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] < GuidanceObstacleData.ob_distance-50)
+	{
+		g_obstacle_cnt++;
+		g_obstacle_dir |=(1<<(GE_DIR_RIGHT-1));
+		g_obstacle_move_flag = (1<<(GE_DIR_LEFT-1));
+	}
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_BACK] < GuidanceObstacleData.ob_distance-50)
+	{
+		g_obstacle_cnt++;
+		g_obstacle_dir |=(1<<(GE_DIR_BACK-1));
+		g_obstacle_move_flag = (1<<(GE_DIR_FRONT-1));
+	}	
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] < GuidanceObstacleData.ob_distance-50)
+	{
+		g_obstacle_cnt++;
+		g_obstacle_dir |=(1<<(GE_DIR_LEFT-1));
+		g_obstacle_move_flag = (1<<(GE_DIR_RIGHT-1));
+	}
+	
+	temp_flag = g_obstacle_move_flag;
+	switch(g_obstacle_cnt)
+	{
+		case 0:
+			temp_flag = 0;
+			g_obstacle_move_flag = 0;
+			break;
+		
+		case 1:
+			break;
+		
+		case 2:
+		  if(g_obstacle_dir==10) //0b1010: 左右相反方向处理
+			{
+				temp_flag = 0x80;  //悬停
+			}
+			else if(g_obstacle_dir == 5) //0b0101: 前后相反方向处理
+			{
+				temp_flag = 0x80;  //悬停
+			}
+			else  //相邻方向处理
+			{
+				temp_flag = ~g_obstacle_dir;  
+			}
+			break;
+		
+		case 3:
+			temp_flag = 0x80;  //悬停
+			break;
+		case 4:
+				temp_flag = 0x80;  //悬停
+			break;
+		default:
+			break;
+	}
+	//vel calculate
+	if(temp_flag)
+	{
+		if(temp_flag &(1<<(GE_DIR_FRONT-1)))                     //前后
+			*flight_x = (OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity));
+		else if(temp_flag &(1<<(GE_DIR_BACK-1)))
+			*flight_x = -(OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity));
+		else
+			*flight_x = 0;
+		if(temp_flag &(1<<(GE_DIR_RIGHT-1)))                     //左右  
+			*flight_y = (OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity));
+		else if(temp_flag &(1<<(GE_DIR_LEFT-1)))
+			*flight_y = -(OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity));
+		else
+			*flight_y = 0;
+	}
+	return temp_flag;
+}	
+/**
 *   @brief  vel_angle_checkout_in_obstacle
 检测飞机当前运行速度和角度，识别是否需要紧急制动飞机。
 角度>0.24；
@@ -359,7 +461,7 @@ char vel_angle_checkout_in_obstacle(char direction, const double *roll, const do
   * @parm RCData_ch 遥控器通道值
   * @parm distance 障碍物距离
 	* @parm rad
-  * @retval 1-OES避障生效，0-避障不生效
+  * @retval 1-OES安全距离避障生效，2-限速避障生效，3-限速距离内过速避障生效，0-避障不生效
   */
 unsigned char obstacle_ctrl_check_by_rc_and_distance_V4(char direction, float *flight_ch, int16_t RCData_ch, unsigned short distance)
 {
@@ -391,23 +493,24 @@ unsigned char obstacle_ctrl_check_by_rc_and_distance_V4(char direction, float *f
 			*flight_ch = 0;
 			GuidanceObstacleData.obstacle_time_flag[direction] = 1;
 			GuidanceObstacleData.obstacle_time[direction] = 5; //5 seconds
+			ret = 3;
 		}
 		else
 		{
 			*flight_ch = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
 			GuidanceObstacleData.constant_speed_time_flag[direction] = 1;
 			GuidanceObstacleData.constant_speed_time[direction] = 2;	
+			ret = 2;
 		}
-		ret =1;
 	}
 	return ret;
 ostacleConstantSpeedKeepOn:	
 	*flight_ch = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
-	ret =1;
+	ret =2;
 	return ret;
 ostacleStopKeepOn:
 	*flight_ch = 0;
-	ret =1;
+	ret =3;
 	return ret;	
 }
 /**
@@ -590,8 +693,10 @@ unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  in
 	}
   if((ret1)||(ret2))
 	{
-//		printf("x=%f,y=%f\n", *flight_x, *flight_y);
-		ret = 1;
+		if(ret1)
+			ret = ret1;
+		else if(ret2)
+			ret = ret2;
 	}
 	return ret;
 }

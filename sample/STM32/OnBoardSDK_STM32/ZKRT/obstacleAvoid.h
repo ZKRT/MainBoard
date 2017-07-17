@@ -136,6 +136,7 @@ void guidance_init(void);
 void main_recv_decode_zkrt_dji_guidance(void);
 #endif
 unsigned char obstacle_avoidance_handle(void);
+unsigned char obstacle_avoidance_self_handle(float *flight_x, float *flight_y, char *obstacle_dir);
 unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  int16_t RCData_x, int16_t RCData_y);
 unsigned char obstacle_avoidance_handle_V3(float *flight_x, float *flight_y,  int16_t RCData_x, int16_t RCData_y, const float *flight_x_now, const float *flight_y_now);
 void guidance_parmdata_init(void);

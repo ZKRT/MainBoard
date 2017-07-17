@@ -134,7 +134,7 @@ int main()
 		main_recv_decode_zkrt_dji_guidance(); //Guidance数据包解析处理
 #endif		
 //		avoid_obstacle_alarm();               //避障检测		
-		avoid_obstacle_alarm_V2();            //zkrt_todo: need test
+		avoid_obstacle_alarm_V2();            
 #endif
 		mobile_heardbeat_packet_control();    //板子定时发送心跳包到地面站
 		led_process();                        //LED控制
@@ -369,6 +369,9 @@ void avoid_obstacle_alarm(void)
 void avoid_obstacle_alarm_V2(void)
 {
 	u8 move_flag; //移动标记
+	u8 move_flag2; //移动标记
+	char ob_dir=0;
+	char rc_dir=0;
 	float fl_x, fl_y;
 	
 	if(djisdk_state.run_status !=avtivated_ok_djirs) //OES没激活
@@ -387,7 +390,34 @@ void avoid_obstacle_alarm_V2(void)
 	dji_get_roll_pitch(&djif_status.roll, &djif_status.pitch);
 	djif_status.xnow = flight.getVelocity().x*cos(flight.getYaw())+flight.getVelocity().y*sin(flight.getYaw());
   djif_status.ynow = -flight.getVelocity().x*sin(flight.getYaw())+flight.getVelocity().y*cos(flight.getYaw());
-	move_flag = obstacle_avoidance_handle_V2(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll); 
+	move_flag = obstacle_avoidance_handle_V2(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll); //辅助遥控器避障
+	if((!move_flag)||(move_flag == 1)) //辅助避障不生效时和安全距离内避障生效时启动
+	{
+		move_flag2 = obstacle_avoidance_self_handle(&fl_x, &fl_y, &ob_dir);  	//障碍物主动躲避控制逻辑
+		if(virtualrc.getRCData().pitch >0)
+			rc_dir = (1<<(GE_DIR_FRONT-1));
+		else if(virtualrc.getRCData().pitch <0)
+			rc_dir = (1<<(GE_DIR_BACK-1));
+		if(virtualrc.getRCData().roll >0)
+			rc_dir = (1<<(GE_DIR_RIGHT-1));
+		else if(virtualrc.getRCData().roll <0)
+			rc_dir = (1<<(GE_DIR_LEFT-1));
+		if(rc_dir!=0)
+		{
+			if((ob_dir &(1<<(GE_DIR_FRONT-1)))&&(rc_dir &(1<<(GE_DIR_FRONT-1))))			
+			{}	
+			else if((ob_dir &(1<<(GE_DIR_BACK-1)))&&(rc_dir &(1<<(GE_DIR_BACK-1))))			
+			{}	
+			else if((ob_dir &(1<<(GE_DIR_RIGHT-1)))&&(rc_dir &(1<<(GE_DIR_RIGHT-1))))			
+			{}	
+			else if((ob_dir &(1<<(GE_DIR_LEFT-1)))&&(rc_dir &(1<<(GE_DIR_LEFT-1))))			
+			{}
+			else
+			{move_flag2=0;}
+		}		
+		if((!move_flag)&&(move_flag2))
+			move_flag = move_flag2;
+	}
 //	if(GuidanceObstacleData.obstacle_time_flag)
 //	{
 //			flightData_zkrtctrl.x = 0;
@@ -396,6 +426,17 @@ void avoid_obstacle_alarm_V2(void)
 //	}
 //	else
 //	{
+	
+		//如果遥控器油门和偏航处于控制状态，且遥控器俯仰和横滚没有控制，此时OES应该放弃控制飞行状态，让遥控器接管
+		if(move_flag)
+		{
+			 if( (virtualrc.getRCData().pitch==0)&&(virtualrc.getRCData().roll==0)&&
+							((virtualrc.getRCData().throttle)||(virtualrc.getRCData().yaw))
+			   )
+			 {
+				 move_flag = 0;
+			 }
+		}
 		if(move_flag)
 		{
 			flightData_zkrtctrl.x = fl_x;
