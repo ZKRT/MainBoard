@@ -43,6 +43,7 @@ void app_sersor_integrated_prcs(void)
 	if(GuidanceObstacleData.online_timing - TimingDelay > GUIDANCE_ONLINE_TIMEOUT)
 	{
 		guidance_parmdata_init();
+		obstacle_control_parm_init();
 		GuidanceObstacleData.online_timing = TimingDelay;
 	  tempture0 = 0;
 		tempture1 = 0;
@@ -60,6 +61,20 @@ void app_sersor_integrated_prcs(void)
 			GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = si_data_t->right_D;
 			GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = si_data_t->back_D;
 			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = si_data_t->front_D;
+			//zkrt_todo：test
+			//高度低于5米时过滤，高于5米不过滤  //zkrt_notice 对于在屋顶等情况可能不是很好，暂时这样做了
+			//过滤, 飞机倾斜角度过大时
+			if(djif_status.height <= ANGLE2GREAT_HEIGHT)
+			{
+				if(djif_status.roll > ANGLE2GREAT_DISE)
+					GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = DISTANCE_2HIGH_BY_ANGLE;
+				if(djif_status.roll <-ANGLE2GREAT_DISE)
+					GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = DISTANCE_2HIGH_BY_ANGLE;
+				if(djif_status.pitch >ANGLE2GREAT_DISE)
+					GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = DISTANCE_2HIGH_BY_ANGLE;			
+				if(djif_status.pitch <-ANGLE2GREAT_DISE)
+					GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = DISTANCE_2HIGH_BY_ANGLE;			
+			}
 ////			//zkrt_debug
 //			GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = 600;
 //			GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = 2000;

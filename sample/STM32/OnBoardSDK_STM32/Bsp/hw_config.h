@@ -36,13 +36,14 @@
 #define USE_OBSTACLE_AVOID_FUN
 #define USE_UNDERCARRIAGE_FUN
 #define USE_SESORINTEGRATED             //使用集成板功能：采集温度和距离数据
+//#define USE_UART3_TEST_FUN              
 //#define USE_EXTRAM_FUN
 //#define USE_USB_FUN
 //#define USE_LWIP_FUN
 //#define HWTEST_FUN
 
 //unit test debug
-//#define CanSend2SubModule_TEST   //zkrt_debug
+//#define CanSend2SubModule_TEST  
 
 /**
   * @}

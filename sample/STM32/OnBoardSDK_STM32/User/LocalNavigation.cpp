@@ -41,7 +41,7 @@ uint8_t myFreq[16] =
   BROADCAST_FREQ_0HZ, //0 - Timestamp
   BROADCAST_FREQ_50HZ, //1 - Attitude Quaterniouns
   BROADCAST_FREQ_0HZ, //2 - Acceleration
-  BROADCAST_FREQ_50HZ, //3 - Velocity (Ground Frame) //zkrt_debug
+  BROADCAST_FREQ_50HZ, //3 - Velocity (Ground Frame) 
   BROADCAST_FREQ_0HZ, //4 - Angular Velocity (Body Frame)
   BROADCAST_FREQ_50HZ,//5 - Position
 	BROADCAST_FREQ_0HZ, //6 - gps detailed information

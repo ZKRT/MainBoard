@@ -17,6 +17,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "djiCtrl.h"
+#include "obstacleAvoid.h"
 #ifdef __cplusplus
 extern "C"
 {
@@ -33,6 +34,7 @@ extern Flight flight;
 extern uint8_t myFreq[16];
 extern FlightData flightData_zkrtctrl;
 extern VirtualRC virtualrc;
+extern dji_flight_status djif_status;
 
 extern "C" void sendToMobile(uint8_t *data, uint8_t len);
 
@@ -64,7 +66,7 @@ volatile u16 getfdata_timercnt = GETFDATA_TIMEROUT;//周期获取飞行数据时钟计数
   */
 void dji_init(void)
 {
-	delay_nms(5000); 
+	delay_nms(10000);
   ZKRT_LOG(LOG_NOTICE,"This is the example App to test DJI onboard SDK on STM32F4Discovery Board! \r\n");
   ZKRT_LOG(LOG_NOTICE,"Refer to \r\n");
   ZKRT_LOG(LOG_NOTICE,"https://developer.dji.com/onboard-sdk/documentation/github-platform-docs/STM32/README.html \r\n");
@@ -183,7 +185,7 @@ void get_flight_data_and_handle(void)
 //  flightstatus = flight.getStatus();
 //	printf("flightstatus:%d\n", flightstatus);  //飞行运行状态
 //	printf("virtualrc.mode=%d\n", virtualrc.getRCData().mode); //遥控器值
-//	printf("yaw=%d, roll=%d, pitch=%d, throttle=%d, gear=%d\n", virtualrc.getRCData().yaw, virtualrc.getRCData().roll, virtualrc.getRCData().pitch, virtualrc.getRCData().throttle, virtualrc.getRCData().gear);   //遥控器摇杆值 //zkrt_debug
+//	printf("yaw=%d, roll=%d, pitch=%d, throttle=%d, gear=%d\n", virtualrc.getRCData().yaw, virtualrc.getRCData().roll, virtualrc.getRCData().pitch, virtualrc.getRCData().throttle, virtualrc.getRCData().gear);   //遥控器摇杆值 
 //	printf("vel x=%f, y=%f, z=%f\n", flight.getVelocity().x, flight.getVelocity().y, flight.getVelocity().z);//这个是大地坐标系速度   //实测飞机P档控制最大速度13m/s左右
 //	printf("vel x=%f, y=%f, z=%f\n", flight.getYawRate().x, flight.getYawRate().y, flight.getYawRate().z);//这个是角速度
 //	printf("getAcceleration x=%f, y=%f, z=%f\n", flight.getAcceleration().x, flight.getAcceleration().y, flight.getAcceleration().z);//这个是加速度
@@ -257,7 +259,7 @@ void djizkrt_timer_task(void)
 	}
 }
 /**
-  * @brief  djizkrt_timer_task, by ostmr.c module
+  * @brief  dji_get_roll_pitch
   * @param  None
   * @retval None
   */
@@ -266,6 +268,82 @@ void dji_get_roll_pitch(double* roll, double* pitch)
 	//四元数转换而来的姿态角
 	*roll = flight.getRoll();
 	*pitch = flight.getPitch();	
+}
+/**
+  * @brief  dji_get_flight_parm
+  * @param  None
+  * @retval None
+  */
+void dji_get_flight_parm(void *vdfs)
+{
+	dji_flight_status *dfs = (dji_flight_status *)vdfs;
+	dfs->roll = flight.getRoll();  //四元数转换而来的姿态角
+	dfs->pitch = flight.getPitch();
+	dfs->rc_pitch = virtualrc.getRCData().pitch;
+	dfs->rc_roll = virtualrc.getRCData().roll;
+	dfs->rc_throttle = virtualrc.getRCData().throttle;
+	dfs->rc_yaw = virtualrc.getRCData().yaw;
+	dfs->xnow = flight.getVelocity().x*cos(flight.getYaw())+flight.getVelocity().y*sin(flight.getYaw());
+  dfs->ynow = -flight.getVelocity().x*sin(flight.getYaw())+flight.getVelocity().y*cos(flight.getYaw());	
+	dfs->height = flight.getPosition().height;
+}
+/**
+  * @brief  get_limit_vx
+  * @param  None
+  * @retval None
+  */
+float get_limit_vx(uint8_t dir)
+{
+	float vel_limiting = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+	float lv = djif_status.xnow;
+	
+	if(lv > vel_limiting)
+		lv = vel_limiting;
+	else if(lv < -vel_limiting)
+		lv = -vel_limiting;
+	else
+	{
+		if(lv >=0)
+			lv = (lv+vel_limiting)/2;
+		else
+			lv = (lv-vel_limiting)/2;
+	}
+	
+	if((dir == GE_DIR_FRONT)&&(lv <0))
+		lv = vel_limiting;
+	if((dir == GE_DIR_BACK)&&(lv >0))
+		lv = -vel_limiting;
+	
+	return lv;
+}
+/**
+  * @brief  get_limit_vy
+  * @param  None
+  * @retval None
+  */
+float get_limit_vy(uint8_t dir)
+{
+	float vel_limiting = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+	float lv = djif_status.ynow;
+	
+	if(lv > vel_limiting)
+		lv = vel_limiting;
+	else if(lv < -vel_limiting)
+		lv = -vel_limiting;
+	else
+	{
+		if(lv >=0)
+			lv = (lv+vel_limiting)/2;
+		else
+			lv = (lv-vel_limiting)/2;
+	}
+	
+	if((dir == GE_DIR_RIGHT)&&(lv <0))
+		lv = vel_limiting;
+	if((dir == GE_DIR_LEFT)&&(lv >0))
+		lv = -vel_limiting;
+	
+	return lv;
 }
 /**
   * @}

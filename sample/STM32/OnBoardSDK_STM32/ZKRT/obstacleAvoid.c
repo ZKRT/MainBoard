@@ -29,6 +29,7 @@
 obstacleData_st GuidanceObstacleData;
 volatile uint8_t guidance_v_index=0; //数据包解包的index，解完一个字节，index指向下一个字节数据
 dji_flight_status djif_status;
+obstacleAllControl_st obstacleAllControl;  //避障算法主要控制结构体
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -65,8 +66,44 @@ void guidance_parmdata_init(void)
 void guidance_init(void)
 {
 	guidance_parmdata_init();
+	obstacle_control_parm_init();
 }
-
+/**
+*   @brief  obstacle_control_init
+  * @parm   none
+  * @retval none
+  */
+void obstacle_control_parm_init(void)
+{
+	int i;
+	for(i=0; i<4; i++)
+	{
+		obstacleAllControl.control[i].state = OCS_NO_CONTROL;
+		obstacleAllControl.control[i].last_state = obstacleAllControl.control[i].state;
+	}
+	obstacleAllControl.control[GE_DIR_FRONT-1].opposite = GE_DIR_BACK;
+	obstacleAllControl.control[GE_DIR_BACK-1].opposite = GE_DIR_FRONT;
+	obstacleAllControl.control[GE_DIR_RIGHT-1].opposite = GE_DIR_LEFT;
+	obstacleAllControl.control[GE_DIR_LEFT-1].opposite = GE_DIR_RIGHT;
+	obstacleAllControl.x_state = OCS_NO_CONTROL;
+	obstacleAllControl.y_state = OCS_NO_CONTROL;
+	
+}
+/**
+*   @brief  obstacle_control_run_reset  每次避障检测启动时都要调用此函数重置参数
+  * @parm   none
+  * @retval none
+  */
+void obstacle_control_run_reset(void)  
+{
+	int i;
+	for(i=0; i<4; i++)
+	{
+		obstacleAllControl.control[i].state = OCS_NO_CONTROL;
+	}
+	obstacleAllControl.x_state = OCS_NO_CONTROL;
+	obstacleAllControl.y_state = OCS_NO_CONTROL;
+}
 #ifndef USE_SESORINTEGRATED
 /**
 *   @brief  main_recv_decode_zkrt_dji_guidance Guidance数据包解析处理（此函数只解析处理障碍物距离数据）
@@ -467,14 +504,14 @@ unsigned char obstacle_ctrl_check_by_rc_and_distance_V4(char direction, float *f
 {
 	char ret =0;
 	
-	if(GuidanceObstacleData.obstacle_time_flag[direction])
+	if(GuidanceObstacleData.obstacle_time_flag[direction-1])
 	{
 		goto ostacleStopKeepOn;
 	}
 	
 	if(distance > OBSTACLE_ENABLED_DISTANCE)
 	{
-		if(GuidanceObstacleData.constant_speed_time_flag[direction])
+		if(GuidanceObstacleData.constant_speed_time_flag[direction-1])
 		{
 			goto ostacleConstantSpeedKeepOn;
 		}
@@ -491,15 +528,15 @@ unsigned char obstacle_ctrl_check_by_rc_and_distance_V4(char direction, float *f
 		if(vel_angle_checkout_in_obstacle(direction, &djif_status.roll, &djif_status.pitch, &djif_status.xnow, &djif_status.ynow))
 		{
 			*flight_ch = 0;
-			GuidanceObstacleData.obstacle_time_flag[direction] = 1;
-			GuidanceObstacleData.obstacle_time[direction] = 5; //5 seconds
+			GuidanceObstacleData.obstacle_time_flag[direction-1] = 1;
+			GuidanceObstacleData.obstacle_time[direction-1] = 5; //5 seconds
 			ret = 3;
 		}
 		else
 		{
 			*flight_ch = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
-			GuidanceObstacleData.constant_speed_time_flag[direction] = 1;
-			GuidanceObstacleData.constant_speed_time[direction] = 2;	
+			GuidanceObstacleData.constant_speed_time_flag[direction-1] = 1;
+			GuidanceObstacleData.constant_speed_time[direction-1] = 2;	
 			ret = 2;
 		}
 	}
@@ -766,10 +803,99 @@ unsigned char obstacle_avoidance_handle_V3(float *flight_x, float *flight_y,  in
 	return ret;
 }
 /**
-*   @brief  guidance_init
+*   @brief  is_rc_goto_dir
+  * @parm   dir
+  * @retval tempflag 1->yes, 0-no
+  */
+uint8_t is_rc_goto_dir(uint8_t dir)
+{
+//前后遥控器通道值，pitch, [-10000,10000] 	Down: -10000, Up: 10000
+//左右遥控器通道值，roll, [-10000,10000] 	Left: -10000, Right: 10000
+//油门, throttle, [-10000,10000] 	Down: -10000, Up: 10000
+	uint8_t tempflag = 0;
+	switch(dir)
+	{
+		case GE_DIR_LEFT:
+			if(djif_status.rc_roll <0)
+				tempflag = 1;
+			break;
+		case GE_DIR_RIGHT:
+			if(djif_status.rc_roll >0)
+				tempflag = 1;			
+			break;
+		case GE_DIR_BACK:
+			if(djif_status.rc_pitch <0)
+				tempflag = 1;			
+			break;
+		case GE_DIR_FRONT:
+			if(djif_status.rc_pitch >0)
+				tempflag = 1;			
+			break;
+		case GE_DIR_THROTTLE:
+			if(djif_status.rc_throttle!=0)
+				tempflag = 1;						
+			break;
+		case GE_DIR_YAW:
+			if(djif_status.rc_yaw!=0)
+				tempflag = 1;			
+			break;
+		default:break;
+	}
+	return tempflag;
+}
+/**
+*   @brief  obstacle_handle_per_dirc
   * @parm   none
   * @retval none
   */
+uint8_t obstacle_check_per_dirc(dji_flight_status *dfs, uint16_t distance, uint8_t direction)
+{
+	uint8_t rc_to_dir;
+	uint8_t c_state = obstacleAllControl.control[direction-1].state;
+	uint8_t c_laststate = obstacleAllControl.control[direction-1].last_state;
+	
+	rc_to_dir = is_rc_goto_dir(direction);
+	
+	if(rc_to_dir)  //辅助RC控制逻辑:只在RC往障碍物方向操纵时才触发辅助逻辑
+	{
+		if(distance >=OBSTACLE_ENABLED_DISTANCE)
+		{
+			c_state = GuidanceObstacleData.constant_speed_time_flag[direction-1];
+		}
+		else
+		{
+			if(distance <GuidanceObstacleData.ob_distance)
+			{
+				c_state = OCS_HOVER;
+				GuidanceObstacleData.constant_speed_time_flag[direction-1] = OCS_HOVER;
+				GuidanceObstacleData.constant_speed_time[direction-1] = 2;				
+			}
+			else
+			{
+				c_state = OCS_LIMITING_VEL;
+				GuidanceObstacleData.constant_speed_time_flag[direction-1] = OCS_LIMITING_VEL;
+				GuidanceObstacleData.constant_speed_time[direction-1] = 2;
+			}
+		}
+	}
+	
+	if(distance <OBSTACLE_RETURN_DISTANCE)
+	{
+		c_state = OCS_VOLUNTRAY_AVOID;
+	}
+	
+	if((distance <GuidanceObstacleData.ob_distance)&&(c_laststate == OCS_VOLUNTRAY_AVOID))
+	{
+		c_state = OCS_VOLUNTRAY_AVOID;
+	}
+	
+	if((distance <GuidanceObstacleData.ob_distance+50)&&(c_laststate == OCS_HOVER)&&(c_state == OCS_LIMITING_VEL))  //add logic for safe distance change to limit distance cause the flighter shake
+	{
+		c_state = OCS_HOVER;
+	}
+	
+	return c_state;
+}
 /**
   * @}
   */ 
