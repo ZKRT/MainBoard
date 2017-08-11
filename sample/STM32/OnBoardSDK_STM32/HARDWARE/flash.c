@@ -99,11 +99,11 @@ void STMFLASH_Init(void)
 		flash_buffer._tempture_low  = GLO_TEMPTURE_LOW_INIT;
 		flash_buffer._tempture_high = GLO_TEMPTURE_HIGH_INIT;
 		//obstacle data
-		flash_buffer.avoid_ob_enabled = 1;
+		flash_buffer.avoid_ob_enabled = 0;
 		flash_buffer.avoid_ob_distse = OBSTACLE_ALARM_DISTANCE;
 		flash_buffer.avoid_ob_velocity = OBSTACLE_AVOID_VEL_10TIMES;
 		//undercarriage data
-		flash_buffer.uce_autoenabled = 1;
+		flash_buffer.uce_autoenabled = 0;
 		
 		STMFLASH_Write();
 	}

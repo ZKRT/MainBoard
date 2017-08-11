@@ -116,6 +116,51 @@ void dji_process(void)
 	}
 	coreApi->sendPoll();
 }
+///**
+//  * @brief  dji_flight_ctrl
+//  * @param  None
+//  * @retval None
+//  */
+//void dji_flight_ctrl(void)
+//{
+//	if(virtualrc.getRCData().mode <=0) //如果遥控器档位在P档以外，飞行控制跳过
+//		return;
+//	
+//	if(((djisdk_state.oes_fc_controled)||(djisdk_state.last_fc_controled))
+//		&&((fc_timercnt == 0)))   //周期发送飞行控制命令
+//	//zkrt_notice: 文档建议是20ms周期控制，依文档所说来控制。https://developer.dji.com/cn/onboard-sdk/documentation/application-development-guides/programming-guide.html
+//	{
+//		fc_timercnt = FCC_TIMEROUT;
+//	}
+//	else
+//		return;
+//	
+//	if(djisdk_state.oes_fc_controled)
+//	{
+//		if(flight.getStatus() == 2) //飞行控制只在飞行状态==in_air_motor_on时才能使用
+//		{
+//			if(flight.getControlDevice()!=2)  //OES掌握控制权限时=DEVICE_SDK //控制信息广播频率设置为50hz即20ms更新一次，这里控制信息发送频率为40ms，理论上不会有控制信息延迟更新影响此处逻辑的情况。
+//			{
+//				coreApi->setControl(1);	
+//				ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
+//			}
+////			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag); //zkrt_debug
+//			flight.setFlight(&flightData_zkrtctrl);
+//			ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
+//		}
+//	}
+//	else
+//	{
+//		if(flight.getControlDevice()==2)  //OES掌握控制权限时=DEVICE_SDK
+//		{
+//			coreApi->setControl(0);	   
+//		  ZKRT_LOG(LOG_INOTICE, "oes control closed\n");			
+//		}
+//	}
+//	
+//	if(djisdk_state.last_fc_controled != djisdk_state.oes_fc_controled)
+//		djisdk_state.last_fc_controled = djisdk_state.oes_fc_controled;  //置上次控制值=当前控制值
+//}
 /**
   * @brief  dji_flight_ctrl
   * @param  None
@@ -126,8 +171,22 @@ void dji_flight_ctrl(void)
 	if(virtualrc.getRCData().mode <=0) //如果遥控器档位在P档以外，飞行控制跳过
 		return;
 	
-	if(((djisdk_state.oes_fc_controled)||(djisdk_state.last_fc_controled))
-		&&((fc_timercnt == 0)))   //周期发送飞行控制命令
+	if(flight.getStatus() != 2)
+		return;
+	
+	if(!djisdk_state.oes_fc_controled)
+	{
+		if(flight.getControlDevice()==2)  //OES掌握控制权限时=DEVICE_SDK
+		{
+			coreApi->setControl(0);	   
+		  ZKRT_LOG(LOG_INOTICE, "oes control closed\n");			
+		}
+//		if(djisdk_state.last_fc_controled != djisdk_state.oes_fc_controled)
+//			djisdk_state.last_fc_controled = djisdk_state.oes_fc_controled;  //置上次控制值=当前控制值
+		return;
+	}
+	
+	if((djisdk_state.oes_fc_controled)&&((fc_timercnt == 0)))   //周期发送飞行控制命令
 	//zkrt_notice: 文档建议是20ms周期控制，依文档所说来控制。https://developer.dji.com/cn/onboard-sdk/documentation/application-development-guides/programming-guide.html
 	{
 		fc_timercnt = FCC_TIMEROUT;
@@ -135,31 +194,17 @@ void dji_flight_ctrl(void)
 	else
 		return;
 	
-	if(djisdk_state.oes_fc_controled)
+	if(flight.getControlDevice()!=2)  //OES掌握控制权限时=DEVICE_SDK //控制信息广播频率设置为50hz即20ms更新一次，这里控制信息发送频率为40ms，理论上不会有控制信息延迟更新影响此处逻辑的情况。
 	{
-		if(flight.getStatus() == 2) //飞行控制只在飞行状态==in_air_motor_on时才能使用
-		{
-			if(flight.getControlDevice()!=2)  //OES掌握控制权限时=DEVICE_SDK //控制信息广播频率设置为50hz即20ms更新一次，这里控制信息发送频率为40ms，理论上不会有控制信息延迟更新影响此处逻辑的情况。
-			{
-				coreApi->setControl(1);	
-				ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
-			}
+		coreApi->setControl(1);	
+		ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
+	}
 //			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag); //zkrt_debug
-			flight.setFlight(&flightData_zkrtctrl);
-			ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
-		}
-	}
-	else
-	{
-		if(flight.getControlDevice()==2)  //OES掌握控制权限时=DEVICE_SDK
-		{
-			coreApi->setControl(0);	   
-		  ZKRT_LOG(LOG_INOTICE, "oes control closed\n");			
-		}
-	}
+	flight.setFlight(&flightData_zkrtctrl);
+	ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
 	
-	if(djisdk_state.last_fc_controled != djisdk_state.oes_fc_controled)
-		djisdk_state.last_fc_controled = djisdk_state.oes_fc_controled;  //置上次控制值=当前控制值
+//	if(djisdk_state.last_fc_controled != djisdk_state.oes_fc_controled)
+//		djisdk_state.last_fc_controled = djisdk_state.oes_fc_controled;  //置上次控制值=当前控制值
 }
 /**
   * @brief  get_flight_data_and_handle
