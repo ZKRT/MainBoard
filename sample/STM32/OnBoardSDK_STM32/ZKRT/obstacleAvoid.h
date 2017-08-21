@@ -22,14 +22,15 @@
 #include "sys.h"
 /* Exported macro ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
+#define OB_ENABLED_INIT                 0      //zkrt_debug
 #define CAMERA_PAIR_NUM                 5      //5个传感器
 #define GUIDANCE_ONLINE_TIMEOUT         5000   //5s
-#define OBSTACLE_ALARM_DISTANCE         400    //400cm 
+#define OBSTACLE_ALARM_DISTANCE         500    //500cm 
 #define OBSTACLE_DISTACNE_INITV         2000   //20m 初值
 #define OBSTACLE_AVOID_VEL_10TIMES      10     //避障速度除以10，单位m/s    //==1m/s
 #define OBSTACLE_AVOID_VEL(vel10times)  (vel10times*0.1)     //避障速度，单位m/s
 //new
-#define OBSTACLE_SAFE_DISTANCE	        500    //避障绝对安全距离
+#define OBSTACLE_SAFE_DISTANCE	        OBSTACLE_ALARM_DISTANCE    //避障绝对安全距离
 #define OBSTACLE_RETURN_DISTANCE	      200    //主动避障生效距离
 #define OBSTACLE_SAFEH_VEL	            3      //避障最高安全速度3m/s   
 #define OBSTACLE_ENABLED_DISTANCE	      1000   //避障新算法，避障的生效距离 15米 //zkrt_debug
@@ -40,7 +41,9 @@
 #define ANGLE2GREAT_DISE15							0.134
 #define ANGLE2GREAT_DISE12							0.167
 #define ANGLE2GREAT_DISE10							0.190
-#define ANGLE2GREAT_DISE                ANGLE2GREAT_DISE10   //zkrt_debug
+#define ANGLE2GREAT_DISE                ANGLE2GREAT_DISE10
+//倾斜角度校准值，因为TOF本身有垂直方向的1度左右检测
+#define ANGLE2GREAT_CALIBRA             0.0175f   //1度
 //需要过滤的有效高度
 #define ANGLE2GREAT_HEIGHT              4  //4m
 
@@ -165,6 +168,7 @@ typedef struct
   int16_t rc_throttle;
   int16_t rc_yaw;
 	float height;
+	float fiter_angle_ob;
 }dji_flight_status;
 //避障控制结构体，4个方向需要定义一个数组结构体
 typedef struct{
@@ -195,6 +199,7 @@ unsigned char obstacle_avoidance_handle_V3(float *flight_x, float *flight_y,  in
 void guidance_parmdata_init(void);
 uint8_t obstacle_check_per_dirc(dji_flight_status *dfs, uint16_t distance, uint8_t direction);
 uint8_t is_rc_goto_dir(uint8_t dir);
+float get_filter_ang_ob(void);
 extern obstacleData_st GuidanceObstacleData;
 extern dji_flight_status djif_status;
 extern obstacleAllControl_st obstacleAllControl;

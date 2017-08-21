@@ -482,11 +482,11 @@ void avoid_obstacle_alarm_V3(void)
 {
 	u8 ctrl_flag=0;
 	float fl_x=0, fl_y=0,fl_z=0,fl_yaw=0;
-	float vel_limiting = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+//	float vel_limiting = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
 	float vel_hover = 0;
 	float vel_return = 0.5;
 	float vel_z_limit = 0.5;
-	float rate_yaw_limit = 10;
+	float rate_yaw_limit = 20;
 	int i;
 	if(djisdk_state.run_status !=avtivated_ok_djirs) //OES没激活
 		return;
@@ -503,7 +503,7 @@ void avoid_obstacle_alarm_V3(void)
 	
 	obstacle_control_run_reset();  //控制状态重置
 	
-#ifdef USE_UART3_TEST_FUN	
+#ifdef USE_OBSTACLE_TEST2
 /*
 	cmd： FA FB AA FRONT BACK RIGHT LEFT PITCH ROLL THROTTLE YAW INIT_FLAG FE
 	*/	
@@ -511,6 +511,18 @@ void avoid_obstacle_alarm_V3(void)
 	GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = myTerminal.cmdIn[4]*10;
 	GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = myTerminal.cmdIn[5]*10;
 	GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = myTerminal.cmdIn[6]*10;
+	//过滤, 飞机倾斜角度过大时
+	djif_status.fiter_angle_ob = get_filter_ang_ob();
+	if(djif_status.roll > djif_status.fiter_angle_ob)
+		GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = DISTANCE_2HIGH_BY_ANGLE;
+	if(djif_status.roll <-djif_status.fiter_angle_ob)
+		GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = DISTANCE_2HIGH_BY_ANGLE;
+	if(djif_status.pitch >djif_status.fiter_angle_ob)
+		GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = DISTANCE_2HIGH_BY_ANGLE;			
+	if(djif_status.pitch <-djif_status.fiter_angle_ob)
+		GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = DISTANCE_2HIGH_BY_ANGLE;
+#endif
+#ifdef USE_OBSTACLE_TEST1		
 	djif_status.rc_pitch = myTerminal.cmdIn[7]*10*myTerminal.int_flag;
 	djif_status.rc_roll = myTerminal.cmdIn[8]*10*myTerminal.int_flag;
 	djif_status.rc_throttle = myTerminal.cmdIn[9]*10*myTerminal.int_flag;
@@ -519,7 +531,7 @@ void avoid_obstacle_alarm_V3(void)
 	djif_status.ynow = 0;
 #endif
 	
-#ifndef 	USE_UART3_TEST_FUN
+#ifndef USE_OBSTACLE_TEST1
 	dji_get_flight_parm((void*)&djif_status);   //获取飞机状态等信息
 #endif
 
@@ -688,21 +700,21 @@ void avoid_obstacle_alarm_V3(void)
 	if((obstacleAllControl.x_state >OCS_NO_CONTROL)||(obstacleAllControl.y_state >OCS_NO_CONTROL))
 	{
 		ctrl_flag = 1;
-		if(djif_status.rc_throttle >0)
+		if(djif_status.rc_throttle >500)
 		{
 			fl_z = vel_z_limit;
 		}
-		else if(djif_status.rc_throttle <0)
+		else if(djif_status.rc_throttle <-500)
 		{
 			fl_z = -vel_z_limit;
 		}
 		else
 			fl_z = 0;
-		if(djif_status.rc_yaw >0)
+		if(djif_status.rc_yaw >500)
 		{
 			fl_yaw = rate_yaw_limit;
 		}
-		else if(djif_status.rc_yaw <0)
+		else if(djif_status.rc_yaw <-500)
 		{
 			fl_yaw = -rate_yaw_limit;
 		}
@@ -726,8 +738,9 @@ void avoid_obstacle_alarm_V3(void)
 	
 	//zkrt_debug
 //	printf("control:%d,Vx=%f,Vy=%f,Vz=%f\n", ctrl_flag, fl_x, fl_y, fl_z);
+//	printf("height:%f, angle:%f\n", djif_status.height, djif_status.fiter_angle_ob);
 	if(ctrl_flag)
-	{
+	{ 
 		flightData_zkrtctrl.x = fl_x;
 		flightData_zkrtctrl.y = fl_y;
 		flightData_zkrtctrl.z = fl_z;

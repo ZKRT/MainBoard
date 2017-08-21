@@ -113,7 +113,7 @@ void tcp_server_prcs(void)
 				ZKRT_LOG(LOG_NOTICE, "recv: ");
 				printf_uchar(tcpserver_sp->recvbuf, tcpserver_sp->recv_datalen);
 				tcpserver_sp->recv_state = 0;
-				//zkrt_todo: 解析数据处理
+				//解析数据处理
 				handle_res = hwtest_data_handle(tcpserver_sp->recvbuf, tcpserver_sp->recv_datalen, tcpserver_sp->recvbuf, &tcpserver_sp->recv_datalen);
 				if(handle_res == RETURN_SUCCESS_RES)
 				{

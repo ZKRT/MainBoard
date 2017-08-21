@@ -337,7 +337,7 @@ unsigned char obstacle_avoidance_handle(void)
 		
 		case 3:
 ////first method			
-//			g_obstacle_move_flag = (~g_obstacle_dir)&0x0f; //zkrt_todo: ´ýÓÅ»¯ 
+//			g_obstacle_move_flag = (~g_obstacle_dir)&0x0f; 
 ////second method	
 			g_obstacle_move_flag = 0x80;  //ÐüÍ£
 			break;
@@ -816,27 +816,27 @@ uint8_t is_rc_goto_dir(uint8_t dir)
 	switch(dir)
 	{
 		case GE_DIR_LEFT:
-			if(djif_status.rc_roll <0)
+			if(djif_status.rc_roll <-500)
 				tempflag = 1;
 			break;
 		case GE_DIR_RIGHT:
-			if(djif_status.rc_roll >0)
+			if(djif_status.rc_roll >500)
 				tempflag = 1;			
 			break;
 		case GE_DIR_BACK:
-			if(djif_status.rc_pitch <0)
+			if(djif_status.rc_pitch <-500)
 				tempflag = 1;			
 			break;
 		case GE_DIR_FRONT:
-			if(djif_status.rc_pitch >0)
+			if(djif_status.rc_pitch >500)
 				tempflag = 1;			
 			break;
 		case GE_DIR_THROTTLE:
-			if(djif_status.rc_throttle!=0)
-				tempflag = 1;						
+			if((djif_status.rc_throttle>500)||(djif_status.rc_throttle<-500))
+				tempflag = 1;
 			break;
 		case GE_DIR_YAW:
-			if(djif_status.rc_yaw!=0)
+			if((djif_status.rc_yaw>500)||(djif_status.rc_yaw<-500))
 				tempflag = 1;			
 			break;
 		default:break;
@@ -895,6 +895,22 @@ uint8_t obstacle_check_per_dirc(dji_flight_status *dfs, uint16_t distance, uint8
 	}
 	
 	return c_state;
+}
+/**
+  * @brief  get_filter_ang_ob
+  * @param  None
+  * @retval None
+  */
+float get_filter_ang_ob(void)
+{
+	float ang = 10; //10 mean invalid
+	if((djif_status.height <= OBSTACLE_ENABLED_DISTANCE/100)&&(djif_status.height>0.2f))
+	{
+		ang = asin(djif_status.height/(OBSTACLE_ENABLED_DISTANCE/100));
+		if(ang >ANGLE2GREAT_CALIBRA)
+			ang -= ANGLE2GREAT_CALIBRA;
+	}
+	return ang;
 }
 /**
   * @}

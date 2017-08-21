@@ -53,7 +53,7 @@ void heartbeat_ctrl(void);
 dji_sdk_status djisdk_state = {init_none_djirs, 0, 0xffffffff, 0, 0};  //dji sdk 运行状态
 
 //#define FCC_TIMEROUT         10  //200ms
-#define FCC_TIMEROUT         1  //20ms //zkrt_todo : 发送周期待测试
+#define FCC_TIMEROUT         1  //20ms //发送周期
 #define GETFDATA_TIMEROUT    10  //200ms
 volatile u16 fc_timercnt = FCC_TIMEROUT;//飞控周期控制时钟计数
 volatile u16 getfdata_timercnt = GETFDATA_TIMEROUT;//周期获取飞行数据时钟计数
@@ -144,7 +144,7 @@ void dji_process(void)
 //				coreApi->setControl(1);	
 //				ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
 //			}
-////			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag); //zkrt_debug
+////			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag);
 //			flight.setFlight(&flightData_zkrtctrl);
 //			ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
 //		}
@@ -154,7 +154,7 @@ void dji_process(void)
 //		if(flight.getControlDevice()==2)  //OES掌握控制权限时=DEVICE_SDK
 //		{
 //			coreApi->setControl(0);	   
-//		  ZKRT_LOG(LOG_INOTICE, "oes control closed\n");			
+//		  ZKRT_LOG(LOG_INOTICE, "oes control closed\n");		
 //		}
 //	}
 //	
@@ -181,8 +181,6 @@ void dji_flight_ctrl(void)
 			coreApi->setControl(0);	   
 		  ZKRT_LOG(LOG_INOTICE, "oes control closed\n");			
 		}
-//		if(djisdk_state.last_fc_controled != djisdk_state.oes_fc_controled)
-//			djisdk_state.last_fc_controled = djisdk_state.oes_fc_controled;  //置上次控制值=当前控制值
 		return;
 	}
 	
@@ -202,9 +200,6 @@ void dji_flight_ctrl(void)
 //			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag); //zkrt_debug
 	flight.setFlight(&flightData_zkrtctrl);
 	ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
-	
-//	if(djisdk_state.last_fc_controled != djisdk_state.oes_fc_controled)
-//		djisdk_state.last_fc_controled = djisdk_state.oes_fc_controled;  //置上次控制值=当前控制值
 }
 /**
   * @brief  get_flight_data_and_handle
@@ -332,6 +327,64 @@ void dji_get_flight_parm(void *vdfs)
   dfs->ynow = -flight.getVelocity().x*sin(flight.getYaw())+flight.getVelocity().y*cos(flight.getYaw());	
 	dfs->height = flight.getPosition().height;
 }
+///**
+//  * @brief  get_limit_vx
+//  * @param  None
+//  * @retval None
+//  */
+//float get_limit_vx(uint8_t dir)
+//{
+//	float vel_limiting = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+//	float lv = djif_status.xnow;
+//	
+//	if(lv > vel_limiting)
+//		lv = vel_limiting;
+//	else if(lv < -vel_limiting)
+//		lv = -vel_limiting;
+//	else
+//	{
+//		if(lv >=0)
+//			lv = (lv+vel_limiting)/2;
+//		else
+//			lv = (lv-vel_limiting)/2;
+//	}
+//	
+//	if((dir == GE_DIR_FRONT)&&(lv <0))
+//		lv = vel_limiting;
+//	if((dir == GE_DIR_BACK)&&(lv >0))
+//		lv = -vel_limiting;
+//	
+//	return lv;
+//}
+///**
+//  * @brief  get_limit_vy
+//  * @param  None
+//  * @retval None
+//  */
+//float get_limit_vy(uint8_t dir)
+//{
+//	float vel_limiting = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+//	float lv = djif_status.ynow;
+//	
+//	if(lv > vel_limiting)
+//		lv = vel_limiting;
+//	else if(lv < -vel_limiting)
+//		lv = -vel_limiting;
+//	else
+//	{
+//		if(lv >=0)
+//			lv = (lv+vel_limiting)/2;
+//		else
+//			lv = (lv-vel_limiting)/2;
+//	}
+//	
+//	if((dir == GE_DIR_RIGHT)&&(lv <0))
+//		lv = vel_limiting;
+//	if((dir == GE_DIR_LEFT)&&(lv >0))
+//		lv = -vel_limiting;
+//	
+//	return lv;
+//}
 /**
   * @brief  get_limit_vx
   * @param  None
@@ -349,9 +402,9 @@ float get_limit_vx(uint8_t dir)
 	else
 	{
 		if(lv >=0)
-			lv = (lv+vel_limiting)/2;
+			lv = (lv+vel_limiting+lv)/3;
 		else
-			lv = (lv-vel_limiting)/2;
+			lv = (lv+lv-vel_limiting)/3;
 	}
 	
 	if((dir == GE_DIR_FRONT)&&(lv <0))
@@ -378,9 +431,9 @@ float get_limit_vy(uint8_t dir)
 	else
 	{
 		if(lv >=0)
-			lv = (lv+vel_limiting)/2;
+			lv = (lv+lv+vel_limiting)/3;
 		else
-			lv = (lv-vel_limiting)/2;
+			lv = (lv+lv-vel_limiting)/3;
 	}
 	
 	if((dir == GE_DIR_RIGHT)&&(lv <0))

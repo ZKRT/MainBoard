@@ -36,7 +36,9 @@
 #define USE_OBSTACLE_AVOID_FUN
 #define USE_UNDERCARRIAGE_FUN
 #define USE_SESORINTEGRATED             //使用集成板功能：采集温度和距离数据
-//#define USE_UART3_TEST_FUN              
+//#define USE_UART3_TEST_FUN              //使用调试串口3进行功能性测试
+//#define USE_OBSTACLE_TEST1            //使用避障测试1部分：避障数据和机体数据通过调试串口假定测试
+//#define USE_OBSTACLE_TEST2							//避障测试2部分：避障距离数据通过调试串口假定测试 ---需要连接避温避障集成板，需要连接A3飞控,需要开启模拟飞行器
 //#define USE_EXTRAM_FUN
 //#define USE_USB_FUN
 //#define USE_LWIP_FUN
