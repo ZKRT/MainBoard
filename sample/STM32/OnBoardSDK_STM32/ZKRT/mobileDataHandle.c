@@ -18,7 +18,7 @@
 #include "ProtocolZkrtHandle.h"
 
 /////////////////////////////////////////////////////////////////////valible define 
-uint8_t djidataformmobile[50]= {0};
+uint8_t djidataformmobile[MOBILE_DATA_SIZE]= {0};
 zkrt_packet_t main_dji_rev;
 
 ////////////////////////////////////////////////////////////////////static function define

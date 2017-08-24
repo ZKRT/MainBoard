@@ -7,60 +7,66 @@
  *  Copyright 2016 DJI. All right reserved.
  *
  * */
+ 
+#include "stm32f4xx.h"
 #include "cppforstm32.h"
 #include "BspUsart.h"
 
 #ifdef DYNAMIC_MEMORY
-void * operator new (size_t size)
+void*
+operator new(size_t size)
 {
-  if(NULL == size)
+  if (NULL == size)
   {
 #ifdef DEBUG
- //   printf("Error! Size is zero");
-#endif//DEBUG
+    printf("Error! Size is zero");
+#endif // DEBUG
     return NULL;
   }
-  void *p = malloc(size);
+  void* p = malloc(size);
 #ifdef DEBUG
-  if(p == 0)
-//  printf("Lack Memory!");
-#endif//DEBUG
+  if (p == 0)
+    printf("Lack Memory!");
+#endif // DEBUG
   return p;
 }
 
-void * operator new [](size_t size)
+void*
+operator new[](size_t size)
 {
   return operator new(size);
 }
 
-void operator delete (void * pointer)
+void
+operator delete(void* pointer)
 {
-  if(NULL != pointer)
+  if (NULL != pointer)
   {
     free(pointer);
   }
 }
 
-void operator delete[](void * pointer)
+void
+operator delete[](void* pointer)
 {
   operator delete(pointer);
 }
-#endif //DYNAMIC_MEMORY
+#endif // DYNAMIC_MEMORY
 
-////!@code printf link functions
-//#ifdef __cplusplus
-//extern "C"
-//{
-//#endif //__cplusplus
-//int fputc(int ch, FILE *f)
-//{
-//  while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
-//    ;
-//  USART_SendData(USART3, (unsigned char) ch);
+//!@code printf link functions
+#ifdef __cplusplus
+extern "C" {
+#endif //__cplusplus
+// int fputc(int ch, FILE *f)
+PUTCHAR_PROTOTYPE
+{
+  while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
+    ;
+  USART_SendData(USART3, (uint8_t)ch);
 
-//  return (ch);
-//}
-//#ifdef __cplusplus
-//}
-//#endif //__cplusplus
-////!@endcode printf link fuctions.
+  return (ch);
+}
+#ifdef __cplusplus
+}
+#endif //__cplusplus
+//!@endcode printf link fuctions.

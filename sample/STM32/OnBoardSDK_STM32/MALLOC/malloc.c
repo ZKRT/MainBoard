@@ -42,8 +42,8 @@ struct _m_mallco_dev mallco_dev=
 //n:需要复制的内存长度(字节为单位)
 void mymemcpy(void *des,void *src,u32 n)
 {
-	u8 *xdes = des;
-	u8 *xsrc = src;
+	u8 *xdes = (u8*)des;
+	u8 *xsrc = (u8*)src;
 	while(n--) *xdes++ = *xsrc++;
 }
 
@@ -53,7 +53,7 @@ void mymemcpy(void *des,void *src,u32 n)
 //count:需要设置的内存大小(字节为单位)
 void mymemset(void*s,u8 c,u32 count)
 {
-	u8 *xs = s;
+	u8 *xs = (u8*)s;
 	while(count--) *xs++=c;
 }
 

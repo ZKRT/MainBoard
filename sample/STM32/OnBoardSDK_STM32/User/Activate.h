@@ -11,9 +11,11 @@
 
 #ifndef ACTIVATE_H
 #define ACTIVATE_H
-#include "DJI_API.h"
+
+#include "dji_vehicle.hpp"
 #include "string.h"
-#include "DJI_Flight.h"
-using namespace DJI::onboardSDK;
-void User_Activate();
-#endif //ACTIVATE_H
+
+using namespace DJI::OSDK;
+void userActivate();
+
+#endif // ACTIVATE_H

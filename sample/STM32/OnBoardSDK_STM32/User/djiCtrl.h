@@ -19,10 +19,7 @@
 #define __DJICTRL_H
 
 /* Includes ------------------------------------------------------------------*/
-#include "DJI_API.h"
-#include "DJI_Camera.h"
-#include "DJI_Type.h"
-#include "DJI_VirtualRC.h"
+#include "dji_vehicle.hpp"
 #include "main.h"
 /* Exported macro ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -58,7 +55,7 @@ typedef struct
 }dji_sdk_status;
 
 /* Exported functions ------------------------------------------------------- */
-void dji_init(void);
+int dji_init(void);
 void dji_process(void);
 void dji_get_roll_pitch(double* roll, double* pitch);
 extern dji_sdk_status djisdk_state;

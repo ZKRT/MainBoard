@@ -11,7 +11,7 @@ uint8_t result_value[3]={0,0,3};
 
 
 
-void sendToMobile(uint8_t *data, uint8_t len);
+extern void sendToMobile(uint8_t *data, uint8_t len);
 
 
 //¶ÁÎÂ¶È

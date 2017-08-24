@@ -41,7 +41,7 @@ zkrt_packet_t can1_rx_dji_posion;
 
 uint8_t msgbuffer11[10] = {0xcc,0xcc,0xcc,0xcc,0xcc,0x55,0x55,0x55,0x55,0x55};
 
-void sendToMobile(uint8_t *data, uint8_t len);
+extern void sendToMobile(uint8_t *data, uint8_t len);
 
 
 uint8_t heart_ack_dji_count[DEVICE_NUMBER] = {0};

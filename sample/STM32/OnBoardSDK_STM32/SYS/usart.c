@@ -438,32 +438,32 @@ uint8_t usart1_rx_byte(void)
 	return ch;
 }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
                                            
-/**
-  * @brief  //加入以下代码,支持printf函数,而不需要选择use MicroLIB
-  */
-#if 1
-#pragma import(__use_no_semihosting)             
-//标准库需要的支持函数                 
-struct __FILE 
-{ 
-	int handle; 
-}; 
+///**
+//  * @brief  //加入以下代码,支持printf函数,而不需要选择use MicroLIB
+//  */
+//#if 1
+//#pragma import(__use_no_semihosting)             
+////标准库需要的支持函数                 
+//struct __FILE 
+//{ 
+//	int handle; 
+//}; 
 
-FILE __stdout;       
-//定义_sys_exit()以避免使用半主机模式    
-_sys_exit(int x)
-{ 
-	x = x; 
-}
-int fputc(int ch, FILE *f)
-{
-  while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
-    ;
-  USART_SendData(USART3, (unsigned char) ch);
+//FILE __stdout;       
+////定义_sys_exit()以避免使用半主机模式    
+//_sys_exit(int x)
+//{ 
+//	x = x; 
+//}
+//int fputc(int ch, FILE *f)
+//{
+//  while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
+//    ;
+//  USART_SendData(USART3, (unsigned char) ch);
 
-  return (ch);
-}
-#endif
+//  return (ch);
+//}
+//#endif
 
 
 ////add by yanly

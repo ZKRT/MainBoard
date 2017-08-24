@@ -15,9 +15,8 @@
   */
 	
 /* Includes ------------------------------------------------------------------*/
-#include <math.h>
+#include "stm32f4xx.h"
 #include "main.h"
-#include "djiCtrl.h"
 #ifdef __cplusplus
 extern "C"
 {
@@ -50,38 +49,23 @@ extern "C"
 #ifdef USE_SESORINTEGRATED
 #include "sersorIntegratedHandle.h"
 #endif
+#include "iwatchdog.h"
 }
 #endif //__cplusplus
 
-/* Private define ------------------------------------------------------------*/
-#define FLIGHTDATA_VERT_VEL_1MS	{0x48, 0, 0, 1, 0}  //垂直速度1m/s向上飞行的飞行数据 //add by yanly //The Control Model Flag 0x48 (0b 0100 1000) sets the command values to be X, Y, Z velocities in ground frame and Yaw rate.
-#define FLIGHT_ZKRT_CONTROL_MODE  0x4A  //0x4A: non-stable mode，机体坐标系,HORI_VEL,VERT_VEL,YAW_RATE
+/*-----------------------NEW DJI_LIB VARIABLE-----------------------------*/
+using namespace DJI::OSDK;
 
-#undef USE_ENCRYPT
-/*-----------------------DJI_LIB VARIABLE-----------------------------*/
-using namespace DJI::onboardSDK;
-HardDriver* driver = new STM32F4;
-CoreAPI defaultAPI = CoreAPI(driver);
-CoreAPI *coreApi = &defaultAPI;
-Flight flight = Flight(coreApi);
-FlightData flightData;
-FlightData flightData_zkrtctrl = {FLIGHT_ZKRT_CONTROL_MODE, 0, 0,0, 0};
+bool           threadSupport = false;
+bool           isFrame       = false;
+RecvContainer  receivedFrame;
+RecvContainer* rFrame  = &receivedFrame;
+Vehicle        vehicle = Vehicle(threadSupport);
+Vehicle*       v       = &vehicle;
 
-#ifdef USE_OBSTACLE_AVOID_FUN
-FlightData flightData_obstacle= {OBSTACLE_MODE, 0, 0,0, 0};
-#endif
+extern TerminalCommand myTerminal; //add by yanly
 
-Camera camera=Camera(coreApi);
-GimbalSpeedData gimbalSpeedData;
-VirtualRC virtualrc = VirtualRC(coreApi);
-VirtualRCData myVRCdata =
-{ 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024,
-    1024, 1024 };
-
-extern TerminalCommand myTerminal;
-extern LocalNavigationStatus droneState;
-extern uint8_t myFreq[16];
-
+Control::CtrlData flightData_zkrtctrl(Control::VERTICAL_VELOCITY | Control::HORIZONTAL_VELOCITY | Control::YAW_RATE | Control::HORIZONTAL_BODY, 0, 0, 0, 0);
 /*----------ZKRT VARIABLE----------*/
 
 /* Private function prototypes -----------------------------------------------*/
@@ -106,7 +90,8 @@ int main()
 	printf("PRODUCT_NAME: %s\r\nPRODUCT_ID: %s\r\nPRODUCT_VERSION: %s\r\nPRODUCT_TIME: %s %s\r\n",PRODUCT_NAME,PRODUCT_ID,PRODUCT_VERSION,__DATE__,__TIME__);
 	ZKRT_LOG(LOG_INOTICE, "==================================================\r\n"); 
 #ifdef USE_DJI_FUN	
-	dji_init();
+	if(dji_init()<0)
+		return -1;
 #endif 
 #ifdef USE_LWIP_FUN	
 	lwip_prcs_init();
@@ -370,6 +355,7 @@ void avoid_obstacle_alarm_V2(void)
 {
 	u8 move_flag; //移动标记
 	float fl_x, fl_y;
+	double yaw;
 	
 	if(djisdk_state.run_status !=avtivated_ok_djirs) //OES没激活
 		return;
@@ -383,11 +369,11 @@ void avoid_obstacle_alarm_V2(void)
 			djisdk_state.oes_fc_controled &= ~(1<< fc_obstacle_b);
 		return;
 	}
-	
+	yaw = getYaw(v->broadcast->getQuaternion());
 	dji_get_roll_pitch(&djif_status.roll, &djif_status.pitch);
-	djif_status.xnow = flight.getVelocity().x*cos(flight.getYaw())+flight.getVelocity().y*sin(flight.getYaw());
-  djif_status.ynow = -flight.getVelocity().x*sin(flight.getYaw())+flight.getVelocity().y*cos(flight.getYaw());
-	move_flag = obstacle_avoidance_handle_V2(&fl_x, &fl_y, virtualrc.getRCData().pitch, virtualrc.getRCData().roll); 
+	djif_status.xnow = v->broadcast->getVelocity().x*cos(yaw)+v->broadcast->getVelocity().y*sin(yaw);
+  djif_status.ynow = -v->broadcast->getVelocity().x*sin(yaw)+v->broadcast->getVelocity().y*cos(yaw);
+	move_flag = obstacle_avoidance_handle_V2(&fl_x, &fl_y, v->broadcast->getRC().pitch, v->broadcast->getRC().roll); 
 //	if(GuidanceObstacleData.obstacle_time_flag)
 //	{
 //			flightData_zkrtctrl.x = 0;
@@ -415,17 +401,6 @@ void avoid_obstacle_alarm_V2(void)
 //	}
 }
 #endif
-extern "C" void sendToMobile(uint8_t *data, uint8_t len)
-{
-  coreApi->sendToMobile(data,  len);//数据透传到地面站软件
-//  GPIO_ResetBits(GPIOD, GPIO_Pin_0);
-	_FLIGHT_UART_TX_LED = 0;
-  usart1_tx_flag = TimingDelay;
-}
-extern "C" void sendpoll()
-{
-  coreApi->sendPoll();//
-}
 /**
 *   @brief  sys_ctrl_timetask 系统定时任务，秒级
   * @parm   none

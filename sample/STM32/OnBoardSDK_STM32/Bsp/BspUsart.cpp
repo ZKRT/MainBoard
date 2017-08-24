@@ -8,11 +8,8 @@
  *  Copyright 2016 DJI. All right reserved.
  *
  * */
-
+#include "stm32f4xx.h"
 #include "BspUsart.h"
-#include "DJI_API.h"
-#include "DJI_HardDriver.h"
-#include "DJI_Flight.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -27,17 +24,26 @@ extern "C"
 
 extern int Rx_Handle_Flag;
 //int k=0;
-using namespace DJI::onboardSDK;
-extern CoreAPI defaultAPI;
-extern CoreAPI *coreApi;
-extern Flight flight;
-extern FlightData flightData;
+using namespace DJI::OSDK;
+extern Vehicle  vehicle;
+extern Vehicle* v;
+extern Control  control;
 
-unsigned char come_data;
-extern unsigned char Rx_length;
-extern int Rx_adr;
-extern int Rx_Handle_Flag;
-extern unsigned char Rx_buff[];
+extern bool           isFrame;
+bool                  isACKProcessed    = false;
+bool                  ackReceivedByUser = false;
+extern RecvContainer  receivedFramie;
+extern RecvContainer* rFrame;
+// extern CoreAPI defaultAPI;
+// extern CoreAPI *coreApi;
+// extern Flight flight;
+// extern FlightData flightData;
+
+extern uint8_t come_data;
+extern uint8_t Rx_length;
+extern int     Rx_adr;
+extern int     Rx_Handle_Flag;
+extern uint8_t Rx_buff[];
 extern zkrt_packet_t main_dji_rev;
 
 
@@ -116,21 +122,28 @@ void Usart_DJI_Config()
 #endif
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif //__cplusplus
 
-	
-void USART1_IRQHandler(void) //zkrt_notice: have to modify by yanly
+void
+USART1_IRQHandler(void)
 {
   if (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == SET)
   {
-    come_data=USART_ReceiveData(USART1);
-    coreApi->byteHandler(come_data); //Data from M100 were committed to "byteHandler"
-    //  if (come_data==0x55)
-    //   printf("0x %x   ",come_data);
+    isACKProcessed = false;
+    isFrame = v->protocolLayer->byteHandler(USART_ReceiveData(USART1), rFrame);
+    if (isFrame == true)
+    {
+      //! Trigger default or user defined callback
+      v->processReceivedData(*rFrame);
+
+      //! Reset
+      isFrame        = false;
+      isACKProcessed = true;
+    }
   }
 }
+
 #ifdef __cplusplus
 }
 #endif //__cplusplus

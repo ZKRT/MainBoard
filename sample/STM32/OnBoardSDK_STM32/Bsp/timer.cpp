@@ -9,16 +9,11 @@
  *
  * */
 
-
+#include "stm32f4xx.h"
 #include "timer.h"
-#include "DJI_VirtualRC.h"
 #include "main.h"
 
 uint32_t tick = 0; //tick is the time stamp,which record how many ms since u initialize the system.
-extern VirtualRC virtualrc;
-extern VirtualRCData myVRCdata;
-extern FlightData flightData;
-extern Flight flight;
 //extern unsigned char Rx_buff[];
 extern TerminalCommand myTerminal;
 
@@ -107,15 +102,6 @@ extern "C"
  // }
  // tick++;
 //}
-void TIM1_UP_TIM10_IRQHandler(void)
-{
-  if (TIM_GetITStatus(TIM1, TIM_IT_Update) == SET)
-  {
-    virtualrc.sendData(myVRCdata);//TIM_Cmd(TIM1, DISABLE); 目前代码里定时没跑，故不会运行到这里, DJI例程是在用户串口里接收到命令后才开定时  //yanly
-  }
-  TIM_ClearFlag(TIM1, TIM_FLAG_Update);
-}
-
 //modify by yanly
 //void TIM2_IRQHandler()
 //{

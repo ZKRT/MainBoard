@@ -8,7 +8,7 @@
  *  Copyright 2016 DJI. All right reserved.
  *
  * */
-
+#include "stm32f4xx.h"
 #include "bsp.h"
 #include "main.h"
 #include "BspUsart.h"

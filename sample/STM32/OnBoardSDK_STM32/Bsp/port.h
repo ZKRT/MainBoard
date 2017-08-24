@@ -161,8 +161,8 @@ typedef enum
 #define  BITSET     true
 #define  BITCLEAR   !(BITSET) 
 
-#define false 			FALSE
-#define true        TRUE
+//#define false 			FALSE
+//#define true        TRUE
 #define equal			  0				/* for strcmp() and memcmp() */
 
 #ifndef NULL

@@ -11,7 +11,7 @@
  * */
 
 #ifndef RECEIVE_H
-#define	RECEIVE_H
+#define RECEIVE_H
 #include "main.h"
 
 #define MAX_RECEIVE 32
@@ -19,15 +19,19 @@
 class TerminalCommand
 {
 public:
-  uint32_t cmdReadyFlag; //Rx_Handle_Flag
-  uint8_t  cmdIn[MAX_RECEIVE]; //Rx_buff
-  int32_t  rxIndex;  //Rx_adr
-  int32_t  rxLength; //Rx_length
+  uint32_t cmdReadyFlag;       // Rx_Handle_Flag
+  uint8_t  cmdIn[MAX_RECEIVE]; // Rx_buff
+  int32_t  rxIndex;            // Rx_adr
+  int32_t  rxLength;           // Rx_length
 
-  void terminalCommandHandler(CoreAPI* api, Flight* flight);
-  TerminalCommand():cmdReadyFlag(0),rxIndex(0),rxLength(0){;}
+  void terminalCommandHandler(Vehicle* vehicle);
+  TerminalCommand()
+    : cmdReadyFlag(0)
+    , rxIndex(0)
+    , rxLength(0)
+  {
+    ;
+  }
 };
 
-
-#endif //RECEIVE_H
-
+#endif // RECEIVE_H

@@ -9,15 +9,17 @@
  *
  * */
 
-#ifndef  TIMER_H
-#define  TIMER_H
-#include "DJI_API.h"
+#ifndef TIMER_H
+#define TIMER_H
+
+#include "dji_vehicle.hpp"
 #include "string.h"
-#include <stm32f4xx.h>
-using namespace DJI::onboardSDK;
+
+using namespace DJI::OSDK;
+
 void SystickConfig();
 void Timer1Config();
 void Timer2Config();
 void delay_nms(uint16_t time);
 
-#endif //TIMER_H
+#endif // TIMER_H
