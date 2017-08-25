@@ -181,9 +181,6 @@ ostmrID_t t_systmr_insertQuickTask(vfp_t taskHandler, ostmr_t value, ostmrMode_t
         *__ptaskCnt = *__ptaskCnt + 1;                          /* increment of quick counter */       
         hwtmr2_enable();
         return (__ptimer->id);
-//				__tmpTmrID.number = __ptimer->id.number;
-//				__tmpTmrID.speed = __ptimer->id.speed;
-//				return (__tmpTmrID);
       }
       else
       {

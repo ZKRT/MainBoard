@@ -19,6 +19,7 @@
 #include "can.h"
 #include "commonzkrt.h"
 #include "obstacleAvoid.h"
+#include <math.h>
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -43,6 +44,7 @@ void app_sersor_integrated_prcs(void)
 	if(GuidanceObstacleData.online_timing - TimingDelay > GUIDANCE_ONLINE_TIMEOUT)
 	{
 		guidance_parmdata_init();
+		obstacle_control_parm_init();
 		GuidanceObstacleData.online_timing = TimingDelay;
 	  tempture0 = 0;
 		tempture1 = 0;
@@ -55,16 +57,23 @@ void app_sersor_integrated_prcs(void)
 		value = CAN2_rx_byte(SERSOR_HB_ID);
 		if (sersor_integrated_parse(&sensorIntegratedInfo_t,value)==1) 
 		{
+#ifndef USE_OBSTACLE_TEST2
 			//避障全局变量置
 			GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = si_data_t->left_D;
 			GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = si_data_t->right_D;
 			GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = si_data_t->back_D;
-			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = si_data_t->front_D;
-//			//zkrt_debug
-//			GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = 800;
-//			GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = 2000;
-//			GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = 2000;
-//			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = 1000;			
+			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = si_data_t->front_D;			
+#endif			
+			//过滤, 飞机倾斜角度过大时
+			djif_status.fiter_angle_ob = get_filter_ang_ob();
+			if(djif_status.roll > djif_status.fiter_angle_ob)
+				GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = DISTANCE_2HIGH_BY_ANGLE;
+			if(djif_status.roll <-djif_status.fiter_angle_ob)
+				GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = DISTANCE_2HIGH_BY_ANGLE;
+			if(djif_status.pitch >djif_status.fiter_angle_ob)
+				GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = DISTANCE_2HIGH_BY_ANGLE;			
+			if(djif_status.pitch <-djif_status.fiter_angle_ob)
+				GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = DISTANCE_2HIGH_BY_ANGLE;			
 			
 			tempture0 = si_data_t->body_T;
 			tempture1 = si_data_t->body_T;

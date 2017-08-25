@@ -75,6 +75,7 @@ void avoid_temp_alarm(void);
 #ifdef USE_OBSTACLE_AVOID_FUN
 void avoid_obstacle_alarm(void);
 void avoid_obstacle_alarm_V2(void);
+void avoid_obstacle_alarm_V3(void);
 void sys_ctrl_timetask(void);
 #endif
 /**
@@ -118,8 +119,12 @@ int main()
 #else
 		main_recv_decode_zkrt_dji_guidance(); //Guidance数据包解析处理
 #endif		
+#ifdef USE_UART3_TEST_FUN		
+		myTerminal.terminalCommandHandler(v);
+#endif		
 //		avoid_obstacle_alarm();               //避障检测		
-		avoid_obstacle_alarm_V2();            //zkrt_todo: need test
+//		avoid_obstacle_alarm_V2();  		
+    avoid_obstacle_alarm_V3();			
 #endif
 		mobile_heardbeat_packet_control();    //板子定时发送心跳包到地面站
 		led_process();                        //LED控制
@@ -400,6 +405,291 @@ void avoid_obstacle_alarm_V2(void)
 		}
 //	}
 }
+/**
+*   @brief  avoid_obstacle_alarm_V5 避障控制
+  * @parm   none
+  * @retval none
+  */
+void avoid_obstacle_alarm_V3(void)
+{
+	u8 ctrl_flag=0;
+	float fl_x=0, fl_y=0,fl_z=0,fl_yaw=0;
+//	float vel_limiting = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+	float vel_hover = 0;
+	float vel_return = 0.5;
+	float vel_z_limit = 0.5;
+	float rate_yaw_limit = 20;
+	int i;
+	if(djisdk_state.run_status !=avtivated_ok_djirs) //OES没激活
+		return;
+	
+	if(GuidanceObstacleData.online_flag ==0) //Guidance不在线 
+		return;
+	
+	if(GuidanceObstacleData.ob_enabled ==0) //避障不生效
+	{
+		if(	djisdk_state.oes_fc_controled)
+			djisdk_state.oes_fc_controled &= ~(1<< fc_obstacle_b);
+		return;
+	}
+	
+	obstacle_control_run_reset();  //控制状态重置
+	
+#ifdef USE_OBSTACLE_TEST2
+/*
+	cmd： FA FB AA FRONT BACK RIGHT LEFT PITCH ROLL THROTTLE YAW INIT_FLAG FE
+	*/	
+	GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = myTerminal.cmdIn[3]*10;
+	GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = myTerminal.cmdIn[4]*10;
+	GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = myTerminal.cmdIn[5]*10;
+	GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = myTerminal.cmdIn[6]*10;
+	//过滤, 飞机倾斜角度过大时
+	djif_status.fiter_angle_ob = get_filter_ang_ob();
+	if(djif_status.roll > djif_status.fiter_angle_ob)
+		GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = DISTANCE_2HIGH_BY_ANGLE;
+	if(djif_status.roll <-djif_status.fiter_angle_ob)
+		GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = DISTANCE_2HIGH_BY_ANGLE;
+	if(djif_status.pitch >djif_status.fiter_angle_ob)
+		GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = DISTANCE_2HIGH_BY_ANGLE;			
+	if(djif_status.pitch <-djif_status.fiter_angle_ob)
+		GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = DISTANCE_2HIGH_BY_ANGLE;
+#endif
+#ifdef USE_OBSTACLE_TEST1		
+	djif_status.rc_pitch = myTerminal.cmdIn[7]*10*myTerminal.int_flag;
+	djif_status.rc_roll = myTerminal.cmdIn[8]*10*myTerminal.int_flag;
+	djif_status.rc_throttle = myTerminal.cmdIn[9]*10*myTerminal.int_flag;
+	djif_status.rc_yaw = myTerminal.cmdIn[10]*10*myTerminal.int_flag;
+	djif_status.xnow = 0;
+	djif_status.ynow = 0;
+#endif
+	
+#ifndef USE_OBSTACLE_TEST1
+	dji_get_flight_parm((void*)&djif_status);   //获取飞机状态等信息
+#endif
+
+	//方向控制逻辑检测
+	obstacleAllControl.control[GE_DIR_FRONT-1].state = obstacle_check_per_dirc(&djif_status, GuidanceObstacleData.g_distance_value[GE_DIR_FRONT], GE_DIR_FRONT);
+	obstacleAllControl.control[GE_DIR_BACK-1].state = obstacle_check_per_dirc(&djif_status, GuidanceObstacleData.g_distance_value[GE_DIR_BACK], GE_DIR_BACK);
+	obstacleAllControl.control[GE_DIR_RIGHT-1].state = obstacle_check_per_dirc(&djif_status, GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT], GE_DIR_RIGHT);
+	obstacleAllControl.control[GE_DIR_LEFT-1].state = obstacle_check_per_dirc(&djif_status, GuidanceObstacleData.g_distance_value[GE_DIR_LEFT], GE_DIR_LEFT);
+	
+	//前后筛选出x轴控制状态
+	//左右筛选出y轴控制状态
+	for(i=0; i<4; i++)
+	{
+		if((obstacleAllControl.control[i].state== OCS_LIMITING_VEL)&&(obstacleAllControl.control[(obstacleAllControl.control[i].opposite)-1].state == OCS_VOLUNTRAY_AVOID))
+		{
+			obstacleAllControl.control[(obstacleAllControl.control[i].opposite)-1].state = OCS_NO_CONTROL;
+		}
+		if((obstacleAllControl.control[i].state== OCS_HOVER)&&(obstacleAllControl.control[(obstacleAllControl.control[i].opposite)-1].state == OCS_VOLUNTRAY_AVOID))
+		{
+			obstacleAllControl.control[(obstacleAllControl.control[i].opposite)-1].state = OCS_HOVER;
+		}
+		if((obstacleAllControl.control[i].state== OCS_VOLUNTRAY_AVOID)&&(obstacleAllControl.control[(obstacleAllControl.control[i].opposite)-1].state == OCS_VOLUNTRAY_AVOID))
+		{
+			obstacleAllControl.control[(obstacleAllControl.control[i].opposite)-1].state = OCS_HOVER;
+			obstacleAllControl.control[i].state = OCS_HOVER;
+		}
+		if((obstacleAllControl.control[i].state== OCS_NO_CONTROL )&&(obstacleAllControl.control[(obstacleAllControl.control[i].opposite)-1].state == OCS_VOLUNTRAY_AVOID))
+		{
+			if(is_rc_goto_dir(i+1))
+			{
+				obstacleAllControl.control[(obstacleAllControl.control[i].opposite)-1].state = OCS_NO_CONTROL; //special handle
+			}
+			if(GuidanceObstacleData.g_distance_value[i+1] <GuidanceObstacleData.ob_distance)  //special handle
+			{
+				obstacleAllControl.control[(obstacleAllControl.control[i].opposite)-1].state = OCS_HOVER;
+				obstacleAllControl.control[i].state = OCS_HOVER;
+			}
+		}
+	}
+//	obstacleAllControl.x_state = OCS_NO_CONTROL;
+//	obstacleAllControl.y_state = OCS_NO_CONTROL;	
+//	fl_x =0;fl_y=0;fl_z=0;
+//limiting	
+	if(obstacleAllControl.control[GE_DIR_FRONT-1].state== OCS_LIMITING_VEL)
+	{
+//		fl_x = vel_limiting;
+		fl_x = get_limit_vx(GE_DIR_FRONT);
+		obstacleAllControl.x_state = OCS_LIMITING_VEL;
+	}
+	if(obstacleAllControl.control[GE_DIR_BACK-1].state== OCS_LIMITING_VEL)
+	{
+//		fl_x = -vel_limiting;
+		fl_x = get_limit_vx(GE_DIR_BACK);
+		obstacleAllControl.x_state = OCS_LIMITING_VEL;
+	}
+	if(obstacleAllControl.control[GE_DIR_RIGHT-1].state== OCS_LIMITING_VEL)
+	{
+//		fl_y = vel_limiting;
+		fl_y = get_limit_vy(GE_DIR_RIGHT);
+		obstacleAllControl.y_state = OCS_LIMITING_VEL;
+	}
+	if(obstacleAllControl.control[GE_DIR_LEFT-1].state== OCS_LIMITING_VEL)
+	{
+//		fl_y = -vel_limiting;
+		fl_y = get_limit_vy(GE_DIR_LEFT);
+		obstacleAllControl.y_state = OCS_LIMITING_VEL;
+	}
+//hover
+	if(obstacleAllControl.control[GE_DIR_FRONT-1].state== OCS_HOVER)
+	{
+		fl_x = vel_hover;
+		obstacleAllControl.x_state = OCS_HOVER;
+	}
+	if(obstacleAllControl.control[GE_DIR_BACK-1].state== OCS_HOVER)
+	{
+		fl_x = -vel_hover;
+		obstacleAllControl.x_state = OCS_HOVER;
+	}
+	if(obstacleAllControl.control[GE_DIR_RIGHT-1].state== OCS_HOVER)
+	{
+		fl_y = vel_hover;
+		obstacleAllControl.y_state = OCS_HOVER;
+	}
+	if(obstacleAllControl.control[GE_DIR_LEFT-1].state== OCS_HOVER)
+	{
+		fl_y = -vel_hover;
+		obstacleAllControl.y_state = OCS_HOVER;
+	}
+//return	
+	if(obstacleAllControl.control[GE_DIR_FRONT-1].state== OCS_VOLUNTRAY_AVOID)
+	{
+		fl_x = -vel_return;
+		obstacleAllControl.x_state = OCS_VOLUNTRAY_AVOID;
+	}
+	if(obstacleAllControl.control[GE_DIR_BACK-1].state== OCS_VOLUNTRAY_AVOID)
+	{
+		fl_x = vel_return;
+		obstacleAllControl.x_state = OCS_VOLUNTRAY_AVOID;
+	}
+	if(obstacleAllControl.control[GE_DIR_RIGHT-1].state== OCS_VOLUNTRAY_AVOID)
+	{
+		fl_y = -vel_return;
+		obstacleAllControl.y_state = OCS_VOLUNTRAY_AVOID;
+	}
+	if(obstacleAllControl.control[GE_DIR_LEFT-1].state== OCS_VOLUNTRAY_AVOID)
+	{
+		fl_y = vel_return;
+		obstacleAllControl.y_state = OCS_VOLUNTRAY_AVOID;
+	}
+	
+//悬停控制情况下，该轴无rc控制时释放该轴控制权	
+	if((!is_rc_goto_dir(GE_DIR_FRONT))&&(!is_rc_goto_dir(GE_DIR_BACK))
+		&&(obstacleAllControl.x_state ==OCS_HOVER)
+	)
+	{
+		fl_x = 0;
+		obstacleAllControl.x_state = OCS_NO_CONTROL;
+	}
+	if((!is_rc_goto_dir(GE_DIR_RIGHT))&&(!is_rc_goto_dir(GE_DIR_LEFT))
+		&&(obstacleAllControl.y_state ==OCS_HOVER)
+	)
+	{
+		fl_y =0;
+		obstacleAllControl.y_state = OCS_NO_CONTROL;
+	}
+	
+//OES控制时，映射RC控制状态，由OES集中控制  ---y轴
+	if(obstacleAllControl.x_state >OCS_NO_CONTROL)
+	{
+		if(obstacleAllControl.y_state ==OCS_NO_CONTROL)
+		{
+			if(is_rc_goto_dir(GE_DIR_RIGHT))
+			{
+//				fl_y = vel_limiting;
+				fl_y = get_limit_vy(GE_DIR_RIGHT);
+				obstacleAllControl.y_state = OCS_OES_REPLACE_RC;
+			}
+			else if(is_rc_goto_dir(GE_DIR_LEFT))
+			{
+//				fl_y = -vel_limiting;
+				fl_y = get_limit_vy(GE_DIR_LEFT);				
+				obstacleAllControl.y_state = OCS_OES_REPLACE_RC;
+			}		
+		}
+	}
+//OES控制时，映射RC控制状态，由OES集中控制  ---x轴	
+	if(obstacleAllControl.y_state >OCS_NO_CONTROL)
+	{
+		if(obstacleAllControl.x_state ==OCS_NO_CONTROL)
+		{
+			if(is_rc_goto_dir(GE_DIR_FRONT))
+			{
+//				fl_x = vel_limiting;				
+				fl_x = get_limit_vx(GE_DIR_FRONT);
+				obstacleAllControl.x_state = OCS_OES_REPLACE_RC;
+			}
+			else if(is_rc_goto_dir(GE_DIR_BACK))
+			{
+//				fl_x = -vel_limiting;				
+				fl_x = get_limit_vx(GE_DIR_BACK);
+				obstacleAllControl.x_state = OCS_OES_REPLACE_RC;
+			}			
+		}
+	}
+//OES控制时，映射RC控制状态，由OES集中控制  ---z轴
+	if((obstacleAllControl.x_state >OCS_NO_CONTROL)||(obstacleAllControl.y_state >OCS_NO_CONTROL))
+	{
+		ctrl_flag = 1;
+		if(djif_status.rc_throttle >500)
+		{
+			fl_z = vel_z_limit;
+		}
+		else if(djif_status.rc_throttle <-500)
+		{
+			fl_z = -vel_z_limit;
+		}
+		else
+			fl_z = 0;
+		if(djif_status.rc_yaw >500)
+		{
+			fl_yaw = rate_yaw_limit;
+		}
+		else if(djif_status.rc_yaw <-500)
+		{
+			fl_yaw = -rate_yaw_limit;
+		}
+		else
+			fl_yaw = 0;
+	}
+	else
+	{
+		ctrl_flag = 0;
+		for(i=0; i<4; i++)
+		{
+			obstacleAllControl.control[i].state = OCS_NO_CONTROL;
+		}
+	}
+
+	//记录本次控制状态
+	for(i=0; i<4; i++)
+	{
+		obstacleAllControl.control[i].last_state = obstacleAllControl.control[i].state;
+	}
+	
+	//zkrt_debug
+//	printf("control:%d,Vx=%f,Vy=%f,Vz=%f\n", ctrl_flag, fl_x, fl_y, fl_z);
+//	printf("height:%f, angle:%f\n", djif_status.height, djif_status.fiter_angle_ob);
+	if(ctrl_flag)
+	{ 
+		flightData_zkrtctrl.x = fl_x;
+		flightData_zkrtctrl.y = fl_y;
+		flightData_zkrtctrl.z = fl_z;
+		flightData_zkrtctrl.yaw = fl_yaw;
+		djisdk_state.oes_fc_controled |= 1<< fc_obstacle_b;
+		ZKRT_LOG(LOG_NOTICE, "avoid_obstacle_alarm open=================\r\n")
+	}
+	else
+	{
+		if(	djisdk_state.oes_fc_controled)
+			djisdk_state.oes_fc_controled &= ~(1<< fc_obstacle_b);
+		if(flightData_zkrtctrl.x)                                                 
+			flightData_zkrtctrl.x = 0;
+		if(flightData_zkrtctrl.y)
+			flightData_zkrtctrl.y = 0;
+	}
+}
 #endif
 /**
 *   @brief  sys_ctrl_timetask 系统定时任务，秒级
@@ -409,21 +699,21 @@ void avoid_obstacle_alarm_V2(void)
 int temp_sct_i;
 void sys_ctrl_timetask(void)
 {
-	for(temp_sct_i=1; temp_sct_i< 5; temp_sct_i++)
+	for(temp_sct_i=0; temp_sct_i< 4; temp_sct_i++)
 	{
 		if(GuidanceObstacleData.constant_speed_time[temp_sct_i]--)
 		{
 			if(!GuidanceObstacleData.constant_speed_time[temp_sct_i])
 			{
-				GuidanceObstacleData.constant_speed_time_flag[temp_sct_i] = 0;
+				GuidanceObstacleData.constant_speed_time_flag[temp_sct_i] = OCS_NO_CONTROL;
 			}	
 		}
-		if(GuidanceObstacleData.obstacle_time[temp_sct_i]--)
-		{
-			if(!GuidanceObstacleData.obstacle_time[temp_sct_i])
-			{
-				GuidanceObstacleData.obstacle_time_flag[temp_sct_i] = 0;
-			}
-		}
+//		if(GuidanceObstacleData.obstacle_time[temp_sct_i]--)
+//		{
+//			if(!GuidanceObstacleData.obstacle_time[temp_sct_i])
+//			{
+//				GuidanceObstacleData.obstacle_time_flag[temp_sct_i] = 0;
+//			}
+//		}
 	}
 }
