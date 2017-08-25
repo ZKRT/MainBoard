@@ -224,7 +224,7 @@ void uart_init(void)
 
 	DMA_Cmd(DMA2_Stream1, ENABLE);                      
 	usart6_rx_buffer_pos = DMA_GetCurrDataCounter(DMA2_Stream1);
-	
+#ifdef	USE_UART3_DMA	
 	//test usart3tx dma
 	DMAX_init(DMA1_Stream3, DMA_Channel_4, (uint32_t)&USART3->DR, (uint32_t)usart3_tx_buffer, DMA_DIR_MemoryToPeripheral, 
 	USART_BUFFER_SIZE, DMA_PeripheralDataSize_Byte, DMA_MemoryDataSize_Byte, DMA_Mode_Normal, DMA_Priority_High);
@@ -241,7 +241,7 @@ void uart_init(void)
 
 	DMA_Cmd(DMA1_Stream1, ENABLE);                     
 	usart3_rx_buffer_pos = DMA_GetCurrDataCounter(DMA1_Stream1);
-	
+#endif	
 	//sbus/ppm usart4tx dma
 	DMAX_init(DMA1_Stream4, DMA_Channel_4, (uint32_t)&UART4->DR, (uint32_t)uart4_tx_buffer, DMA_DIR_MemoryToPeripheral, 
 	USART_BUFFER_SIZE, DMA_PeripheralDataSize_Byte, DMA_MemoryDataSize_Byte, DMA_Mode_Normal, DMA_Priority_High);
@@ -304,13 +304,23 @@ void uart_init(void)
 	USART_ClearFlag(USART6, USART_FLAG_TC);
 	
 	/***********TEST串口3*************/
+#ifdef	USE_UART3_DMA			
 	USART_InitStructure.USART_BaudRate = 57600;
 	USART_Init(USART3, &USART_InitStructure);
 	USART_DMACmd(USART3,USART_DMAReq_Tx,ENABLE);
 	USART_DMACmd(USART3,USART_DMAReq_Rx,ENABLE);
 	USART_Cmd(USART3, ENABLE);
 	USART_ClearFlag(USART3, USART_FLAG_TC);
-	
+#else
+  USART_InitStructure.USART_BaudRate = 57600;
+	USART_Init(USART3, &USART_InitStructure);
+  USART_ITConfig(USART3, USART_IT_RXNE, ENABLE);
+  USART_Cmd(USART3, ENABLE);  //使能串口1
+  while (USART_GetFlagStatus(USART3, USART_FLAG_TXE) != SET)
+    ;	
+	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
+	NVICX_init(NVIC_PPRIORITY_TESTUT, NVIC_SUBPRIORITY_TESTUT);
+#endif
 	/***********SBUS/PPM串口4*************/
 	USART_InitStructure.USART_BaudRate = 100000;
 	USART_Init(UART4, &USART_InitStructure);

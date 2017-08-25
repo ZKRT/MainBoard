@@ -27,6 +27,7 @@ extern "C"
 #include "undercarriageCtrl.h"
 #include "heartBeatHandle.h"
 #include "mobileDataHandle.h"
+#include "obstacleAvoid.h"
 }
 #endif
 #include <math.h>
@@ -75,6 +76,8 @@ int dji_init(void)
 	if (!v->protocolLayer->getDriver()->getDeviceStatus())
 	{
 		printf("USART communication is not working.\r\n");
+		__set_FAULTMASK(1);
+		NVIC_SystemReset();
 		delete (v);
 		return -1;
 	}
@@ -96,6 +99,8 @@ int dji_init(void)
 	v->getFwVersion() != Version::M100_31)
 	{
 		printf("Upgrade firmware using Assistant software!\n");
+		__set_FAULTMASK(1);
+		NVIC_SystemReset();
 		delete (v);
 		return -1;
 	}
@@ -170,6 +175,60 @@ void dji_process(void)
 			break;
 	}
 }
+///**
+//  * @brief  dji_flight_ctrl
+//  * @param  None
+//  * @retval None
+//  */
+//void dji_flight_ctrl(void)
+//{
+//  Telemetry::Status         status;
+//  Telemetry::RC             rc;
+//	Telemetry::SDKInfo        sdkinfo;
+//	
+//	status         = v->broadcast->getStatus();
+//	rc             = v->broadcast->getRC();
+//	sdkinfo        = v->broadcast->getSDKInfo();
+//	
+//	if(rc.mode <=0) //如果遥控器档位在P档以外，飞行控制跳过  //zkrt_todo: wait test
+//		return;
+//	
+//	if(((djisdk_state.oes_fc_controled)||(djisdk_state.last_fc_controled))
+//		&&((fc_timercnt == 0)))   //周期发送飞行控制命令
+//	//zkrt_notice: 文档建议是20ms周期控制，依文档所说来控制。https://developer.dji.com/cn/onboard-sdk/documentation/application-development-guides/programming-guide.html
+//	{
+//		fc_timercnt = FCC_TIMEROUT;
+//	}
+//	else
+//		return;
+//	
+//	if(djisdk_state.oes_fc_controled)
+//	{
+//		if(status.flight == 2) //飞行控制只在飞行状态==in_air_motor_on时才能使用
+//		{
+//			if(sdkinfo.deviceStatus!=2)  //OES掌握控制权限时=DEVICE_SDK //控制信息广播频率设置为50hz即20ms更新一次，这里控制信息发送频率为40ms，理论上不会有控制信息延迟更新影响此处逻辑的情况。
+//			{
+//        // Obtain Control Authority
+//        v->obtainCtrlAuthority();
+//				ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
+//			}
+////			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag); //zkrt_debug
+//			v->control->flightCtrl(flightData_zkrtctrl);
+//			ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
+//		}
+//	}
+//	else
+//	{
+//		if(sdkinfo.deviceStatus==2)  //OES掌握控制权限时=DEVICE_SDK
+//		{
+//			v->releaseCtrlAuthority();
+//		  ZKRT_LOG(LOG_INOTICE, "oes control closed\n");			
+//		}
+//	}
+//	
+//	if(djisdk_state.last_fc_controled != djisdk_state.oes_fc_controled)
+//		djisdk_state.last_fc_controled = djisdk_state.oes_fc_controled;  //置上次控制值=当前控制值
+//}
 /**
   * @brief  dji_flight_ctrl
   * @param  None
@@ -185,11 +244,23 @@ void dji_flight_ctrl(void)
 	rc             = v->broadcast->getRC();
 	sdkinfo        = v->broadcast->getSDKInfo();
 	
-	if(rc.mode <=0) //如果遥控器档位在P档以外，飞行控制跳过  //zkrt_todo: wait test
+	if(rc.mode <=0) 
 		return;
 	
-	if(((djisdk_state.oes_fc_controled)||(djisdk_state.last_fc_controled))
-		&&((fc_timercnt == 0)))   //周期发送飞行控制命令
+	if(status.flight != 2)
+		return;
+	
+	if(!djisdk_state.oes_fc_controled)
+	{
+		if(sdkinfo.deviceStatus==2)  
+		{
+			v->releaseCtrlAuthority();  
+		  ZKRT_LOG(LOG_INOTICE, "oes control closed\n");			
+		}
+		return;
+	}
+	
+	if((djisdk_state.oes_fc_controled)&&((fc_timercnt == 0)))   //周期发送飞行控制命令
 	//zkrt_notice: 文档建议是20ms周期控制，依文档所说来控制。https://developer.dji.com/cn/onboard-sdk/documentation/application-development-guides/programming-guide.html
 	{
 		fc_timercnt = FCC_TIMEROUT;
@@ -197,32 +268,14 @@ void dji_flight_ctrl(void)
 	else
 		return;
 	
-	if(djisdk_state.oes_fc_controled)
+	if(sdkinfo.deviceStatus!=2)  
 	{
-		if(status.flight == 2) //飞行控制只在飞行状态==in_air_motor_on时才能使用
-		{
-			if(sdkinfo.deviceStatus!=2)  //OES掌握控制权限时=DEVICE_SDK //控制信息广播频率设置为50hz即20ms更新一次，这里控制信息发送频率为40ms，理论上不会有控制信息延迟更新影响此处逻辑的情况。
-			{
-        // Obtain Control Authority
-        v->obtainCtrlAuthority();
-				ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
-			}
+		v->obtainCtrlAuthority();
+		ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
+	}
 //			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag); //zkrt_debug
-			v->control->flightCtrl(flightData_zkrtctrl);
-			ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
-		}
-	}
-	else
-	{
-		if(sdkinfo.deviceStatus==2)  //OES掌握控制权限时=DEVICE_SDK
-		{
-			v->releaseCtrlAuthority();
-		  ZKRT_LOG(LOG_INOTICE, "oes control closed\n");			
-		}
-	}
-	
-	if(djisdk_state.last_fc_controled != djisdk_state.oes_fc_controled)
-		djisdk_state.last_fc_controled = djisdk_state.oes_fc_controled;  //置上次控制值=当前控制值
+	v->control->flightCtrl(flightData_zkrtctrl);
+	ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n");
 }
 /**
   * @brief  get_flight_data_and_handle
@@ -325,7 +378,7 @@ void djizkrt_timer_task(void)
 	}
 }
 /**
-  * @brief  djizkrt_timer_task, by ostmr.c module
+  * @brief  dji_get_roll_pitch
   * @param  None
   * @retval None
   */
@@ -334,6 +387,92 @@ void dji_get_roll_pitch(double* roll, double* pitch)
 	//四元数转换而来的姿态角
 	*roll = getRoll(v->broadcast->getQuaternion());
 	*pitch = getPitch(v->broadcast->getQuaternion());
+}
+/**
+  * @brief  dji_get_flight_parm
+  * @param  None
+  * @retval None
+  */
+void dji_get_flight_parm(void *vdfs)
+{
+  Telemetry::GlobalPosition globalPosition;   
+  Telemetry::RC             rc;
+  Telemetry::Vector3f       velocity;
+  Telemetry::Quaternion     quaternion;
+	
+	globalPosition = v->broadcast->getGlobalPosition();
+	rc             = v->broadcast->getRC();
+	velocity       = v->broadcast->getVelocity();
+	quaternion     = v->broadcast->getQuaternion();
+	
+	dji_flight_status *dfs = (dji_flight_status *)vdfs;
+	dfs->roll = getRoll(v->broadcast->getQuaternion());
+	dfs->pitch = getPitch(v->broadcast->getQuaternion());
+	dfs->rc_pitch = rc.pitch;
+	dfs->rc_roll = rc.roll;
+	dfs->rc_throttle = rc.throttle;
+	dfs->rc_yaw = rc.yaw;
+	dfs->xnow = velocity.x*cos(getYaw(quaternion))+velocity.y*sin(getYaw(quaternion));
+  dfs->ynow = -velocity.x*sin(getYaw(quaternion))+velocity.y*cos(getYaw(quaternion));
+	dfs->height = globalPosition.height;
+}
+/**
+  * @brief  get_limit_vx
+  * @param  None
+  * @retval None
+  */
+float get_limit_vx(uint8_t dir)
+{
+	float vel_limiting = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+	float lv = djif_status.xnow;
+	
+	if(lv > vel_limiting)
+		lv = vel_limiting;
+	else if(lv < -vel_limiting)
+		lv = -vel_limiting;
+	else
+	{
+		if(lv >=0)
+			lv = (lv+vel_limiting+lv)/3;
+		else
+			lv = (lv+lv-vel_limiting)/3;
+	}
+	
+	if((dir == GE_DIR_FRONT)&&(lv <0))
+		lv = vel_limiting;
+	if((dir == GE_DIR_BACK)&&(lv >0))
+		lv = -vel_limiting;
+	
+	return lv;
+}
+/**
+  * @brief  get_limit_vy
+  * @param  None
+  * @retval None
+  */
+float get_limit_vy(uint8_t dir)
+{
+	float vel_limiting = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
+	float lv = djif_status.ynow;
+	
+	if(lv > vel_limiting)
+		lv = vel_limiting;
+	else if(lv < -vel_limiting)
+		lv = -vel_limiting;
+	else
+	{
+		if(lv >=0)
+			lv = (lv+lv+vel_limiting)/3;
+		else
+			lv = (lv+lv-vel_limiting)/3;
+	}
+	
+	if((dir == GE_DIR_RIGHT)&&(lv <0))
+		lv = vel_limiting;
+	if((dir == GE_DIR_LEFT)&&(lv >0))
+		lv = -vel_limiting;
+	
+	return lv;
 }
 /**
   * @}

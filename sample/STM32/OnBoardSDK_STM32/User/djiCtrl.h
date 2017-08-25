@@ -58,6 +58,9 @@ typedef struct
 int dji_init(void);
 void dji_process(void);
 void dji_get_roll_pitch(double* roll, double* pitch);
+void dji_get_flight_parm(void *vdfs);
+float get_limit_vx(uint8_t dir);
+float get_limit_vy(uint8_t dir);
 extern dji_sdk_status djisdk_state;
 #endif /* __DJICTRL_H */
 
