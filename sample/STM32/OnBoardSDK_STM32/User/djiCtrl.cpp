@@ -28,6 +28,7 @@ extern "C"
 #include "heartBeatHandle.h"
 #include "mobileDataHandle.h"
 #include "obstacleAvoid.h"
+#include "led.h"
 }
 #endif
 #include <math.h>
@@ -69,6 +70,7 @@ volatile u16 getfdata_timercnt = GETFDATA_TIMEROUT;//周期获取飞行数据时钟计数
   */
 int dji_init(void)
 {
+	_RUN_LED = 0;  //add by yanly
 	delay_nms(5000); 
 /*(1): dji requirement	*/
 	

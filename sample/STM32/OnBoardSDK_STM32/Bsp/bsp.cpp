@@ -65,7 +65,7 @@ void BSPinit()
 	DS18B20_Init();																		
 #endif	
 #ifdef _TEMPTURE_ADC_	
-	ADC1_Init();
+//	ADC1_Init();	 //zkrt_notice : HWV4.0没有ADC检测，此处暂时直接屏蔽，不用关宏定义
 #endif
 #ifdef USE_LWIP_FUN	
   lwip_comm_init();
