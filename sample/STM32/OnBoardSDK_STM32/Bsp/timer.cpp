@@ -107,15 +107,6 @@ extern "C"
  // }
  // tick++;
 //}
-void TIM1_UP_TIM10_IRQHandler(void)
-{
-  if (TIM_GetITStatus(TIM1, TIM_IT_Update) == SET)
-  {
-    virtualrc.sendData(myVRCdata);//TIM_Cmd(TIM1, DISABLE); 目前代码里定时没跑，故不会运行到这里, DJI例程是在用户串口里接收到命令后才开定时  //yanly
-  }
-  TIM_ClearFlag(TIM1, TIM_FLAG_Update);
-}
-
 //modify by yanly
 //void TIM2_IRQHandler()
 //{

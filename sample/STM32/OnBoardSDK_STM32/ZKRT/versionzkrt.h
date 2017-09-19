@@ -33,7 +33,7 @@
 
 #define  PRODUCT_NAME													"MainBoard"
 #define  PRODUCT_ID	                          "10000000"
-#define  PRODUCT_VERSION                      "V02-01"
+#define  PRODUCT_VERSION                      "HWV04-V02-02"
 /* Exported functions ------------------------------------------------------- */
 
 #endif /* __VERSIONZKRT_H */

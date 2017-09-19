@@ -18,8 +18,8 @@
 #define _FLIGHT_UART_RX_LED                          PCout(12)
 #define _TEST_UART_TX_LED                            PAout(15)
 #define _TEST_UART_RX_LED                            PDout(6)
-#define _433M_UART_TX_LED                            PAout(15)
-#define _433M_UART_RX_LED                            PDout(6)
+#define _433M_UART_TX_LED                            PDout(8)
+#define _433M_UART_RX_LED                            PDout(7)
 #define _CAN_TX_LED                                  PGout(6) 
 #define _CAN_RX_LED                                  PGout(7)
 #else
