@@ -14,10 +14,13 @@
 
 #include "LocalNavigation.h"
 #include "main.h"
+#include "hw_config.h"
 
 using namespace DJI::onboardSDK;
 extern FlightData flightData;
-
+#ifdef USE_UART3_TEST_FUN
+#include "obstacleAvoid.h"
+#endif
 /*
  * @brief Helper function to assemble two bytes into a float number
  */
@@ -154,7 +157,31 @@ void TerminalCommand::terminalCommandHandler(CoreAPI* api, Flight* flight)
       stopLocalNavExample();
     }
     break;
-
+//cmd£º FA FB AA FRONT BACK RIGHT LEFT PITCH ROLL THROTTLE YAW INT_FLAG FE
+	case 0xaa:
+#ifdef 	USE_OBSTACLE_TEST2		
+		GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = cmdIn[3]*10;
+		GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = cmdIn[4]*10;
+		GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = cmdIn[5]*10;
+		GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = cmdIn[6]*10;
+#endif
+#ifdef 	USE_OBSTACLE_TEST1	
+		int_flag = cmdIn[11];
+		if(int_flag)
+			int_flag = 1;
+		else
+			int_flag = -1;	
+		djif_status.rc_pitch = cmdIn[7]*10*int_flag;
+		djif_status.rc_roll = cmdIn[8]*10*int_flag;
+		djif_status.rc_throttle = cmdIn[9]*10*int_flag;
+		djif_status.rc_yaw = cmdIn[10]*10*int_flag;
+		djif_status.xnow = 0;
+		djif_status.ynow = 0;
+#endif		
+		printf("Receive Test UART cmd: front[%d] back[%d] right[%d] left[%d] rcPitch[%d] rcRoll[%d] rcThrottle[%d] rcYaw[%d]\n", 
+			cmdIn[3]*10,cmdIn[4]*10,cmdIn[5]*10,cmdIn[6]*10,
+			cmdIn[7]*10*int_flag,cmdIn[8]*10*int_flag,cmdIn[9]*10*int_flag,cmdIn[10]*10*int_flag);
+		break;	
   default:
     break;
   }
@@ -164,11 +191,11 @@ void TerminalCommand::terminalCommandHandler(CoreAPI* api, Flight* flight)
 extern "C"
 {
 #endif //__cplusplus
-void USART2_IRQHandler(void)
+void USART3_IRQHandler(void)
 {
-  if (USART_GetFlagStatus(USART2, USART_FLAG_RXNE) == SET)
+  if (USART_GetFlagStatus(USART3, USART_FLAG_RXNE) == SET)
   {
-    uint8_t oneByte = USART_ReceiveData(USART2);
+    uint8_t oneByte = USART_ReceiveData(USART3);
     if (myTerminal.rxIndex == 0)
     {
       if (oneByte == 0xFA)

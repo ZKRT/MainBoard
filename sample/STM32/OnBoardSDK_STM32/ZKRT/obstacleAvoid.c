@@ -29,6 +29,7 @@
 obstacleData_st GuidanceObstacleData;
 volatile uint8_t guidance_v_index=0; //数据包解包的index，解完一个字节，index指向下一个字节数据
 dji_flight_status djif_status;
+obstacleAllControl_st obstacleAllControl;  //避障算法主要控制结构体
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -65,8 +66,44 @@ void guidance_parmdata_init(void)
 void guidance_init(void)
 {
 	guidance_parmdata_init();
+	obstacle_control_parm_init();
 }
-
+/**
+*   @brief  obstacle_control_init
+  * @parm   none
+  * @retval none
+  */
+void obstacle_control_parm_init(void)
+{
+	int i;
+	for(i=0; i<4; i++)
+	{
+		obstacleAllControl.control[i].state = OCS_NO_CONTROL;
+		obstacleAllControl.control[i].last_state = obstacleAllControl.control[i].state;
+	}
+	obstacleAllControl.control[GE_DIR_FRONT-1].opposite = GE_DIR_BACK;
+	obstacleAllControl.control[GE_DIR_BACK-1].opposite = GE_DIR_FRONT;
+	obstacleAllControl.control[GE_DIR_RIGHT-1].opposite = GE_DIR_LEFT;
+	obstacleAllControl.control[GE_DIR_LEFT-1].opposite = GE_DIR_RIGHT;
+	obstacleAllControl.x_state = OCS_NO_CONTROL;
+	obstacleAllControl.y_state = OCS_NO_CONTROL;
+	
+}
+/**
+*   @brief  obstacle_control_run_reset  每次避障检测启动时都要调用此函数重置参数
+  * @parm   none
+  * @retval none
+  */
+void obstacle_control_run_reset(void)  
+{
+	int i;
+	for(i=0; i<4; i++)
+	{
+		obstacleAllControl.control[i].state = OCS_NO_CONTROL;
+	}
+	obstacleAllControl.x_state = OCS_NO_CONTROL;
+	obstacleAllControl.y_state = OCS_NO_CONTROL;
+}
 #ifndef USE_SESORINTEGRATED
 /**
 *   @brief  main_recv_decode_zkrt_dji_guidance Guidance数据包解析处理（此函数只解析处理障碍物距离数据）
@@ -300,7 +337,7 @@ unsigned char obstacle_avoidance_handle(void)
 		
 		case 3:
 ////first method			
-//			g_obstacle_move_flag = (~g_obstacle_dir)&0x0f; //zkrt_todo: 待优化 
+//			g_obstacle_move_flag = (~g_obstacle_dir)&0x0f; 
 ////second method	
 			g_obstacle_move_flag = 0x80;  //悬停
 			break;
@@ -318,6 +355,108 @@ unsigned char obstacle_avoidance_handle(void)
 	}	
 	
 	return g_obstacle_move_flag;
+}	
+/**
+*   @brief  obstacle_avoidance_handle
+躲避避障策略：
+1. 只有一个方向有障碍物时，往相反方向移动避障。
+2. 相邻两个方向有障碍物时，往相反的两个方向移动避障。
+3. 相邻三个方向有障碍物时，悬停。
+4. 相反的两个方向有障碍物时，悬停。
+5. 四个方向都有障碍物时，悬停。
+  * @parm flight_x 前后速度值，前正后负
+  * @parm flight_y 左右速度值，右正左负
+  * @retval char: the direction of need move, bit0 is front, bit1 is right, bit2 is back, bit3 is left. 
+             (0b xxxx left back right front)  
+              front:  (1<<(GE_DIR_FRONT-1))
+              right:  (1<<(GE_DIR_RIGHT-1))
+              back :  (1<<(GE_DIR_BACK-1))
+              left :  (1<<(GE_DIR_LEFT-1))
+						when retval = 0x80, 飞机悬停
+  */
+unsigned char obstacle_avoidance_self_handle(float *flight_x, float *flight_y, char *obstacle_dir)
+{
+	char temp_flag=0;  //避障算法计算出来的避障移动标记
+	g_obstacle_cnt=0;  //避障触发的方向个数
+	g_obstacle_dir=0; //障碍物方向超过阈值的标记，标记位置定义与obstacle_move_flag一样
+
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] < GuidanceObstacleData.ob_distance-50)
+	{
+		g_obstacle_cnt++;
+		g_obstacle_dir |=(1<<(GE_DIR_FRONT-1));
+		g_obstacle_move_flag = (1<<(GE_DIR_BACK-1));
+	}
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] < GuidanceObstacleData.ob_distance-50)
+	{
+		g_obstacle_cnt++;
+		g_obstacle_dir |=(1<<(GE_DIR_RIGHT-1));
+		g_obstacle_move_flag = (1<<(GE_DIR_LEFT-1));
+	}
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_BACK] < GuidanceObstacleData.ob_distance-50)
+	{
+		g_obstacle_cnt++;
+		g_obstacle_dir |=(1<<(GE_DIR_BACK-1));
+		g_obstacle_move_flag = (1<<(GE_DIR_FRONT-1));
+	}	
+	if(GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] < GuidanceObstacleData.ob_distance-50)
+	{
+		g_obstacle_cnt++;
+		g_obstacle_dir |=(1<<(GE_DIR_LEFT-1));
+		g_obstacle_move_flag = (1<<(GE_DIR_RIGHT-1));
+	}
+	
+	temp_flag = g_obstacle_move_flag;
+	switch(g_obstacle_cnt)
+	{
+		case 0:
+			temp_flag = 0;
+			g_obstacle_move_flag = 0;
+			break;
+		
+		case 1:
+			break;
+		
+		case 2:
+		  if(g_obstacle_dir==10) //0b1010: 左右相反方向处理
+			{
+				temp_flag = 0x80;  //悬停
+			}
+			else if(g_obstacle_dir == 5) //0b0101: 前后相反方向处理
+			{
+				temp_flag = 0x80;  //悬停
+			}
+			else  //相邻方向处理
+			{
+				temp_flag = ~g_obstacle_dir;  
+			}
+			break;
+		
+		case 3:
+			temp_flag = 0x80;  //悬停
+			break;
+		case 4:
+				temp_flag = 0x80;  //悬停
+			break;
+		default:
+			break;
+	}
+	//vel calculate
+	if(temp_flag)
+	{
+		if(temp_flag &(1<<(GE_DIR_FRONT-1)))                     //前后
+			*flight_x = (OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity));
+		else if(temp_flag &(1<<(GE_DIR_BACK-1)))
+			*flight_x = -(OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity));
+		else
+			*flight_x = 0;
+		if(temp_flag &(1<<(GE_DIR_RIGHT-1)))                     //左右  
+			*flight_y = (OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity));
+		else if(temp_flag &(1<<(GE_DIR_LEFT-1)))
+			*flight_y = -(OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity));
+		else
+			*flight_y = 0;
+	}
+	return temp_flag;
 }	
 /**
 *   @brief  vel_angle_checkout_in_obstacle
@@ -359,20 +498,20 @@ char vel_angle_checkout_in_obstacle(char direction, const double *roll, const do
   * @parm RCData_ch 遥控器通道值
   * @parm distance 障碍物距离
 	* @parm rad
-  * @retval 1-OES避障生效，0-避障不生效
+  * @retval 1-OES安全距离避障生效，2-限速避障生效，3-限速距离内过速避障生效，0-避障不生效
   */
 unsigned char obstacle_ctrl_check_by_rc_and_distance_V4(char direction, float *flight_ch, int16_t RCData_ch, unsigned short distance)
 {
 	char ret =0;
 	
-	if(GuidanceObstacleData.obstacle_time_flag[direction])
+	if(GuidanceObstacleData.obstacle_time_flag[direction-1])
 	{
 		goto ostacleStopKeepOn;
 	}
 	
 	if(distance > OBSTACLE_ENABLED_DISTANCE)
 	{
-		if(GuidanceObstacleData.constant_speed_time_flag[direction])
+		if(GuidanceObstacleData.constant_speed_time_flag[direction-1])
 		{
 			goto ostacleConstantSpeedKeepOn;
 		}
@@ -389,25 +528,26 @@ unsigned char obstacle_ctrl_check_by_rc_and_distance_V4(char direction, float *f
 		if(vel_angle_checkout_in_obstacle(direction, &djif_status.roll, &djif_status.pitch, &djif_status.xnow, &djif_status.ynow))
 		{
 			*flight_ch = 0;
-			GuidanceObstacleData.obstacle_time_flag[direction] = 1;
-			GuidanceObstacleData.obstacle_time[direction] = 5; //5 seconds
+			GuidanceObstacleData.obstacle_time_flag[direction-1] = 1;
+			GuidanceObstacleData.obstacle_time[direction-1] = 5; //5 seconds
+			ret = 3;
 		}
 		else
 		{
 			*flight_ch = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
-			GuidanceObstacleData.constant_speed_time_flag[direction] = 1;
-			GuidanceObstacleData.constant_speed_time[direction] = 2;	
+			GuidanceObstacleData.constant_speed_time_flag[direction-1] = 1;
+			GuidanceObstacleData.constant_speed_time[direction-1] = 2;	
+			ret = 2;
 		}
-		ret =1;
 	}
 	return ret;
 ostacleConstantSpeedKeepOn:	
 	*flight_ch = OBSTACLE_AVOID_VEL(GuidanceObstacleData.ob_velocity);
-	ret =1;
+	ret =2;
 	return ret;
 ostacleStopKeepOn:
 	*flight_ch = 0;
-	ret =1;
+	ret =3;
 	return ret;	
 }
 /**
@@ -590,8 +730,10 @@ unsigned char obstacle_avoidance_handle_V2(float *flight_x, float *flight_y,  in
 	}
   if((ret1)||(ret2))
 	{
-//		printf("x=%f,y=%f\n", *flight_x, *flight_y);
-		ret = 1;
+		if(ret1)
+			ret = ret1;
+		else if(ret2)
+			ret = ret2;
 	}
 	return ret;
 }
@@ -661,10 +803,115 @@ unsigned char obstacle_avoidance_handle_V3(float *flight_x, float *flight_y,  in
 	return ret;
 }
 /**
-*   @brief  guidance_init
+*   @brief  is_rc_goto_dir
+  * @parm   dir
+  * @retval tempflag 1->yes, 0-no
+  */
+uint8_t is_rc_goto_dir(uint8_t dir)
+{
+//前后遥控器通道值，pitch, [-10000,10000] 	Down: -10000, Up: 10000
+//左右遥控器通道值，roll, [-10000,10000] 	Left: -10000, Right: 10000
+//油门, throttle, [-10000,10000] 	Down: -10000, Up: 10000
+	uint8_t tempflag = 0;
+	switch(dir)
+	{
+		case GE_DIR_LEFT:
+			if(djif_status.rc_roll <-500)
+				tempflag = 1;
+			break;
+		case GE_DIR_RIGHT:
+			if(djif_status.rc_roll >500)
+				tempflag = 1;			
+			break;
+		case GE_DIR_BACK:
+			if(djif_status.rc_pitch <-500)
+				tempflag = 1;			
+			break;
+		case GE_DIR_FRONT:
+			if(djif_status.rc_pitch >500)
+				tempflag = 1;			
+			break;
+		case GE_DIR_THROTTLE:
+			if((djif_status.rc_throttle>500)||(djif_status.rc_throttle<-500))
+				tempflag = 1;
+			break;
+		case GE_DIR_YAW:
+			if((djif_status.rc_yaw>500)||(djif_status.rc_yaw<-500))
+				tempflag = 1;			
+			break;
+		default:break;
+	}
+	return tempflag;
+}
+/**
+*   @brief  obstacle_handle_per_dirc
   * @parm   none
   * @retval none
   */
+uint8_t obstacle_check_per_dirc(dji_flight_status *dfs, uint16_t distance, uint8_t direction)
+{
+	uint8_t rc_to_dir;
+	uint8_t c_state = obstacleAllControl.control[direction-1].state;
+	uint8_t c_laststate = obstacleAllControl.control[direction-1].last_state;
+	
+	rc_to_dir = is_rc_goto_dir(direction);
+	
+	if(rc_to_dir)  //辅助RC控制逻辑:只在RC往障碍物方向操纵时才触发辅助逻辑
+	{
+		if(distance >=OBSTACLE_ENABLED_DISTANCE)
+		{
+			c_state = GuidanceObstacleData.constant_speed_time_flag[direction-1];
+		}
+		else
+		{
+			if(distance <GuidanceObstacleData.ob_distance)
+			{
+				c_state = OCS_HOVER;
+				GuidanceObstacleData.constant_speed_time_flag[direction-1] = OCS_HOVER;
+				GuidanceObstacleData.constant_speed_time[direction-1] = 2;				
+			}
+			else
+			{
+				c_state = OCS_LIMITING_VEL;
+				GuidanceObstacleData.constant_speed_time_flag[direction-1] = OCS_LIMITING_VEL;
+				GuidanceObstacleData.constant_speed_time[direction-1] = 2;
+			}
+		}
+	}
+	
+	if(distance <OBSTACLE_RETURN_DISTANCE)
+	{
+		c_state = OCS_VOLUNTRAY_AVOID;
+	}
+	
+	if((distance <GuidanceObstacleData.ob_distance)&&(c_laststate == OCS_VOLUNTRAY_AVOID))
+	{
+		c_state = OCS_VOLUNTRAY_AVOID;
+	}
+	
+	if((distance <GuidanceObstacleData.ob_distance+50)&&(c_laststate == OCS_HOVER)&&(c_state == OCS_LIMITING_VEL))  //add logic for safe distance change to limit distance cause the flighter shake
+	{
+		c_state = OCS_HOVER;
+	}
+	
+	return c_state;
+}
+/**
+  * @brief  get_filter_ang_ob
+  * @param  None
+  * @retval None
+  */
+float get_filter_ang_ob(void)
+{
+	float ang = 10; //10 mean invalid
+	if((djif_status.height <= OBSTACLE_ENABLED_DISTANCE/100)&&(djif_status.height>0.2f))
+	{
+		ang = asin(djif_status.height/(OBSTACLE_ENABLED_DISTANCE/100));
+		if(ang >ANGLE2GREAT_CALIBRA)
+			ang -= ANGLE2GREAT_CALIBRA;
+	}
+	return ang;
+}
 /**
   * @}
   */ 

@@ -21,6 +21,7 @@ class TerminalCommand
 public:
   uint32_t cmdReadyFlag; //Rx_Handle_Flag
   uint8_t  cmdIn[MAX_RECEIVE]; //Rx_buff
+	int int_flag; //1-正数，0-负数
   int32_t  rxIndex;  //Rx_adr
   int32_t  rxLength; //Rx_length
 
