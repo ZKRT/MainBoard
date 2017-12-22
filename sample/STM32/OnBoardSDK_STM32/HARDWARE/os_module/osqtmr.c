@@ -199,7 +199,7 @@ bool_t b_systmr_deleteQuickTask(ostmrID_t *taskID)
 {  
   if(taskID->number >= NUM_OF_QTASK)
   {
-    return (FALSE_P);  
+    return (FALSE);  
   }
   
   switch(taskID->speed)
@@ -217,7 +217,7 @@ bool_t b_systmr_deleteQuickTask(ostmrID_t *taskID)
       }
       else
       {
-        return (FALSE_P);
+        return (FALSE);
       }
     }
     break;
@@ -234,14 +234,14 @@ bool_t b_systmr_deleteQuickTask(ostmrID_t *taskID)
       }
       else
       {
-        return (FALSE_P);
+        return (FALSE);
       }    	
     break;
     	    
     default:
-    return (FALSE_P);           
+    return (FALSE);           
   }
-  return (TRUE_P);
+  return (TRUE);
 }
 
 
@@ -281,12 +281,12 @@ bool_t b_systmr_init(void)
   if(b_hwtmr2_setting( _quickQTaskHandler, _fastQTaskHandler))
   {
     hwtmr2_enable();
-    return (TRUE_P);
+    return (TRUE);
   }
   else
   {
     hwtmr2_disable();
-    return (FALSE_P);
+    return (FALSE);
   }
   
 }
@@ -300,9 +300,9 @@ bool_t b_systmr_init(void)
 bool_t b_systmr_quickFinished(ostmrID_t *tmrID)
 {
   if(t_systmr_status(tmrID) == OSTMR_FINISHED)
-		return TRUE_P;
+		return TRUE;
 	else
-		return FALSE_P;
+		return FALSE;
 }
 
 void systmr_set( ostmrID_t *taskID, ostmr_t value)

@@ -66,7 +66,7 @@ bool_t b_hwtmr2_setting( vfp_t quick, vfp_t fast)
 	TimerInit_2nd(); // base:1ms , Timer2
 	TIM_NVIC_Configuration_2nd();
 
-	return (TRUE_P);
+	return (TRUE);
 }
 
 static void TimerInit_2nd(void)

@@ -131,7 +131,7 @@ void CAN1_RX0_IRQHandler(void)
 	CAN_Receive(CAN1, CAN_FIFO0, &RxMessage);
 	can1_rx_type = ((RxMessage.StdId)>>4) - 1;
 	
-	if(can1_rx_type > DEVICE_NUMBER-1)  //zkrt_add: by yanly170315
+	if(can1_rx_type > DEVICE_NUMBER-1)  
 		return;
 	
 	for (i = 0; i < RxMessage.DLC; i++)
@@ -153,7 +153,7 @@ void CAN1_RX0_IRQHandler(void)
 
 uint8_t CAN1_rx_check(uint8_t can1_rx_type)
 {
-	can1_rx_type--;
+//	can1_rx_type--;
 	if (can1_rx_buff_store[can1_rx_type] == can1_rx_buff_get[can1_rx_type])
 		return 0;
 	else 
@@ -164,7 +164,7 @@ uint8_t CAN1_rx_check(uint8_t can1_rx_type)
 uint8_t CAN1_rx_byte(uint8_t can1_rx_type)
 {
 	uint8_t ch;	
-	can1_rx_type--;
+//	can1_rx_type--;
 	ch = can1_rx_buff[can1_rx_type][can1_rx_buff_get[can1_rx_type]];
 	
 	can1_rx_buff_get[can1_rx_type]++;

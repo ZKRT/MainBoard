@@ -26,7 +26,7 @@
   * @{
   */              
 //#define _TEMPTURE_IO_           
-#define _TEMPTURE_ADC_	                //暂时不关闭，在使用集成板采集温度时
+//#define _TEMPTURE_ADC_	                
 //#define _TEMPTURE_NONE    
 //#define USE_UART1_DMA
 #define USE_CAN2_FUN                  

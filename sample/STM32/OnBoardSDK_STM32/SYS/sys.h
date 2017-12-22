@@ -2,10 +2,8 @@
 #define __SYS_H	 
 
 /* Includes ------------------------------------------------------------------*/
-#include <stdio.h>
-#include <string.h>
-#include "stm32f4xx.h"
 #include "hw_config.h"
+#include "port.h"
 #include "commonzkrt.h"
 
 /* Exported macro --------------------------------------------------------*/		
@@ -70,25 +68,25 @@
 #define MAVLINK_TX_INIT_VAL 0XFFFFFFFF 	
 
 #if defined _TEMPTURE_IO_
-#define TEMPTURE_LOW_EXTRA  -550
-#define TEMPTURE_HIGH_EXTRA 1250
-#define TEMPTURE_DIFF         8
+#define TEMPTURE_LOW_EXTRA         -550
+#define TEMPTURE_HIGH_EXTRA        1250
+#define TEMPTURE_DIFF              8
 #elif defined _TEMPTURE_ADC_
-#define TEMPTURE_CALIBRATE  100                        //校准10度
-#define TEMPTURE_LOW_EXTRA  -450+TEMPTURE_CALIBRATE    //异常值下限，-45度
-#define TEMPTURE_HIGH_EXTRA 5000+TEMPTURE_CALIBRATE    //异常值上限，500度
+#define TEMPTURE_CALIBRATE         100                        //校准10度
+#define TEMPTURE_LOW_EXTRA         -450+TEMPTURE_CALIBRATE    //异常值下限，-45度
+#define TEMPTURE_HIGH_EXTRA        5000+TEMPTURE_CALIBRATE    //异常值上限，500度
 #else
-#define TEMPTURE_LOW_EXTRA  999
-#define TEMPTURE_HIGH_EXTRA 999
+#define TEMPTURE_LOW_EXTRA         -400
+#define TEMPTURE_HIGH_EXTRA        5000
 #endif
 
 #define GLO_TEMPTURE_LOW_INIT      -450         //温度上下限初始值
-#define GLO_TEMPTURE_HIGH_INIT     6800
+#define GLO_TEMPTURE_HIGH_INIT     4800
 
 /* definition of return value */
-#define	RETURN_FAILURE                  0
-#define RETURN_SUCCESS_RES              1
-#define RETURN_SUCCESS_NONE             2
+#define	RETURN_FAILURE             0
+#define RETURN_SUCCESS_RES         1
+#define RETURN_SUCCESS_NONE        2
 
 //! This is the default status printing mechanism
 #define ZKRT_LOG(title, fmt, ...)                                  				\
@@ -155,21 +153,17 @@ extern volatile uint32_t phone_recv_flag;
 extern volatile uint32_t threemodeling_recv_flag;
 extern volatile uint32_t multicamera_recv_flag;
 extern volatile uint32_t _read_count;
+extern volatile uint32_t adc_start_count;
+extern volatile uint32_t temperature_read_count;
+extern volatile uint32_t temperature_ctrl_count;
 extern volatile uint32_t tcp_client_init_timeout;
 #ifdef CanSend2SubModule_TEST
 extern volatile uint32_t can_send_debug;
 #endif
 extern NVIC_InitTypeDef NVIC_InitStructure;
 
-
-extern short glo_tempture_low;
-extern short glo_tempture_high;
-
 extern short last_tempture0;
 extern short last_tempture1;
-
-extern short tempture0;
-extern short tempture1;
 
 extern uint8_t msg_smartbat_buffer[30];
 

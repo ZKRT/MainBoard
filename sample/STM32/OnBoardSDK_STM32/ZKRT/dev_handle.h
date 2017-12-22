@@ -1,11 +1,11 @@
 /**
   ******************************************************************************
-  * @file    versionzkrt.h 
+  * @file    dev_handle.h 
   * @author  ZKRT
-  * @version V0.0.1
-  * @date    13-December-2016
+  * @version V1.0
+  * @date    9-May-2017
   * @brief   
-  *          + (1) init
+	*					 + (1) init
   ******************************************************************************
   * @attention
   *
@@ -15,29 +15,29 @@
   */
   
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __VERSIONZKRT_H
-#define __VERSIONZKRT_H
-
+#ifndef __DEV_HANDLE_H
+#define __DEV_HANDLE_H 
 /* Includes ------------------------------------------------------------------*/
-
+#include "sys.h"
 /* Exported macro ------------------------------------------------------------*/
-/* Exported types ------------------------------------------------------------*/
-/** @defgroup something
-  * @{
-  */ 
-  
-/**
-  * @}
-  */ 
 /* Exported constants --------------------------------------------------------*/
 
-#define  PRODUCT_NAME													"MainBoard"
-#define  PRODUCT_ID	                          "10000000"
-#define  PRODUCT_VERSION                      "V05-00"
+//zkrt device info struct
+typedef struct
+{
+	short temperature1;           //温度1
+	short temperature2;           //温度2
+	short temperature_low;        //温度下限
+  short temperature_high;       //温度上限
+	u8 status_t1;                 //温度1状态
+	u8 status_t2;                 //温度2状态
+}zk_dev_info_st;
 /* Exported functions ------------------------------------------------------- */
+extern zk_dev_info_st zkrt_devinfo;
 
-#endif /* __VERSIONZKRT_H */
-
+void appdev_init(void);
+void appdev_prcs(void);
+#endif /* __DEV_HANDLE_H */
 /**
   * @}
   */ 
@@ -45,5 +45,6 @@
 /**
   * @}
   */
-
+	
 /************************ (C) COPYRIGHT ZKRT *****END OF FILE****/
+

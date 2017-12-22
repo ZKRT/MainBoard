@@ -22,7 +22,6 @@
 #include "bsp.h"
 #include "cppforstm32.h"
 #include "dji_vehicle.hpp"
-#include "stm32f4xx_conf.h"
 #include "timer.h"
 
 #include "djiCtrl.h"

@@ -10,7 +10,6 @@
  * */
 #include "stm32f4xx.h"
 #include "Activate.h"
-#include "sys.h"
 #include "djiCtrl.h"
 
 extern Vehicle  vehicle;

@@ -15,11 +15,12 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#include <math.h>
 #include "sersorIntegratedHandle.h"
 #include "can.h"
 #include "commonzkrt.h"
 #include "obstacleAvoid.h"
-#include <math.h>
+#include "dev_handle.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
@@ -46,8 +47,6 @@ void app_sersor_integrated_prcs(void)
 		guidance_parmdata_init();
 		obstacle_control_parm_init();
 		GuidanceObstacleData.online_timing = TimingDelay;
-	  tempture0 = 0;
-		tempture1 = 0;
 		ZKRT_LOG(LOG_ERROR, "sensor intergrated board not online!\n");
 	}
 	
@@ -75,8 +74,8 @@ void app_sersor_integrated_prcs(void)
 			if(djif_status.pitch <-djif_status.fiter_angle_ob)
 				GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = DISTANCE_2HIGH_BY_ANGLE;			
 			
-			tempture0 = si_data_t->body_T;
-			tempture1 = si_data_t->body_T;
+			zkrt_devinfo.temperature1 = si_data_t->body_T;
+			zkrt_devinfo.temperature2 = si_data_t->body_T;
 			si_tempdata_t.body_T = si_data_t->body_T;
 			si_tempdata_t.left_T = si_data_t->left_T;
 			si_tempdata_t.right_T = si_data_t->right_T;

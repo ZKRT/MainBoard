@@ -157,7 +157,7 @@ void dji_process(void)
       delay_nms(50);
 			
 		 // Mobile Callback set                                                     //(4)
-			v->moc->setFromMSDKCallback(parseFromMobileCallback_v2, (UserData)djidataformmobile);
+			v->moc->setFromMSDKCallback(parseFromMobileCallback_v2, (UserData)&msg_handlest);
 			delay_nms(50);
 //>>>>>dji oes standby work end
 			break;
@@ -353,9 +353,9 @@ void get_flight_data_and_handle(void)
   */
 void heartbeat_ctrl(void)
 {
-	if(zkrt_heartbeat_pack())
+	if(zkrt_heartbeat_pack(msg_handlest.data_send_app, &msg_handlest.datalen_sendapp))
 	{
-		sendToMobile((uint8_t*)&_zkrt_packet_hb, 50);
+		sendToMobile(msg_handlest.data_send_app, msg_handlest.datalen_sendapp);
 //		int k; //zkrt_debug
 //		printf("heart start_code=0x %x\r\n",_zkrt_packet_hb.start_code);
 //		for(k=0; k<30; k++)

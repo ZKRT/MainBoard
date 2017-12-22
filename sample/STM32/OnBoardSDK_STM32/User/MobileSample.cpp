@@ -1,5 +1,6 @@
 #include "stm32f4xx.h"
 #include "MobileSample.h"
+#include "zkrt.h"
 
 using namespace DJI;
 using namespace DJI::OSDK;
@@ -17,11 +18,16 @@ parseFromMobileCallback_v2(DJI::OSDK::Vehicle*      vehicle,
                         DJI::OSDK::RecvContainer recvFrame,
                         DJI::OSDK::UserData      userData)
 {
-	
-	uint8_t *data = (uint8_t*) userData;  //userData is djidataformmobile[50];
+	msg_handle_st *msgData = (msg_handle_st*) userData;
+	uint8_t *data = msgData->data_recv_app;
 	uint8_t *s_data = recvFrame.recvData.raw_ack_array;
+	uint16_t datalen = recvFrame.recvInfo.len - Protocol::PackageMin - 2; // minus cmd id and cmd set size //zkrt_test  
 	
-	memcpy(data, s_data, MOBILE_DATA_SIZE);
+	if((datalen >= ZK_FIXED_LEN)&&(datalen <= ZK_MAX_LEN))
+	{
+		memcpy(data, s_data, datalen);
+		msgData->datalen_recvapp = datalen;
+	}
 }
 
 extern "C" void sendToMobile(uint8_t *data, uint8_t len)

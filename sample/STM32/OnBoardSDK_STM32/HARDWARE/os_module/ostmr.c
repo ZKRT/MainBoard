@@ -399,7 +399,7 @@ bool_t b_ostmr_deleteTask(ostmrID_t *taskID)
   }
   else
   {
-    return (FALSE_P);
+    return (FALSE);
   }  
   
   switch(taskID->speed)
@@ -417,7 +417,7 @@ bool_t b_ostmr_deleteTask(ostmrID_t *taskID)
       }
       else
       {
-        return (FALSE_P);
+        return (FALSE);
       }
     }
     break;
@@ -435,7 +435,7 @@ bool_t b_ostmr_deleteTask(ostmrID_t *taskID)
       }
       else
       {
-        return (FALSE_P);
+        return (FALSE);
       }   
     }
     break;
@@ -453,15 +453,15 @@ bool_t b_ostmr_deleteTask(ostmrID_t *taskID)
       }
       else
       {
-        return (FALSE_P);
+        return (FALSE);
       }   
     }
     break;
     
     default:
-    return (FALSE_P);           
+    return (FALSE);           
   }
-  return (TRUE_P);
+  return (TRUE);
 }
 
 
@@ -528,12 +528,12 @@ bool_t b_ostmr_init(void)
   if(b_hwtmr0_setting( _fastTaskHandler, _slowTaskHandler, _secTaskHandler))
   {
     hwtmr0_enable();
-    return (TRUE_P);
+    return (TRUE);
   }
   else
   {
     hwtmr0_disable();
-    return (FALSE_P);
+    return (FALSE);
   }
   
 }
@@ -557,9 +557,9 @@ bool_t b_ostmr_delete(ostmrID_t *tmrID)
 bool_t b_ostmr_finished(ostmrID_t *tmrID)
 {
 	if(t_ostmr_status(tmrID) == OSTMR_FINISHED)
-		return TRUE_P;
+		return TRUE;
 	else
-		return FALSE_P;
+		return FALSE;
 }
 
 void ostmr_set( ostmrID_t *taskID, ostmr_t value)

@@ -103,6 +103,9 @@ volatile uint32_t threemodeling_recv_flag = 0XFFFFFFFF;
 volatile uint32_t multicamera_recv_flag = 0XFFFFFFFF;
 volatile uint32_t _read_count = 0; 	
 volatile uint32_t tcp_client_init_timeout;
+volatile uint32_t adc_start_count = 0xffffffff;
+volatile uint32_t temperature_read_count = 0xffffffff;
+volatile uint32_t temperature_ctrl_count = 0xffffffff;
 #ifdef CanSend2SubModule_TEST
 volatile uint32_t can_send_debug  =0XFFFFFFFF;
 #endif

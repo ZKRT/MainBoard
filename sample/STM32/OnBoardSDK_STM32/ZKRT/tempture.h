@@ -3,9 +3,7 @@
 
 #include "sys.h"
 
-
-
-void zkrt_read_tempture_ack(void);
+char read_temperature(void);
 
 #endif
 

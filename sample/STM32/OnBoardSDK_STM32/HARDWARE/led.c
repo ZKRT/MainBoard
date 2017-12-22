@@ -188,6 +188,13 @@ void led_test(void)
   */
 void led_process(void)
 {
+  if(MAVLINK_TX_INIT_VAL - TimingDelay >= 5000)  //5s延时到之后一直处理以下逻辑
+	{
+		if((mavlink_send_flag-TimingDelay) >= 800)
+		{
+			mavlink_send_flag = TimingDelay;
+		}
+	}
 	//run led control
 	if ((mavlink_send_flag-TimingDelay) < 50)  //与发送心跳包共用一个标记mavlink_send_flag，在心跳包处理里置mavlink_send_flag
 	{

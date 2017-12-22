@@ -50,6 +50,8 @@ extern "C"
 #include "sersorIntegratedHandle.h"
 #endif
 #include "iwatchdog.h"
+#include "appcan.h"
+#include "dev_handle.h"
 }
 #endif //__cplusplus
 
@@ -70,7 +72,7 @@ Control::CtrlData flightData_zkrtctrl(Control::VERTICAL_VELOCITY | Control::HORI
 
 /* Private function prototypes -----------------------------------------------*/
 void mobile_heardbeat_packet_control(void);
-void tempture_flight_control(void);
+void temperature_prcs(void);
 void avoid_temp_alarm(void);
 #ifdef USE_OBSTACLE_AVOID_FUN
 void avoid_obstacle_alarm(void);
@@ -86,6 +88,7 @@ void sys_ctrl_timetask(void);
 int main()
 {
   BSPinit();
+	msg_handle_init();
 	delay_nms(1000);
 	ZKRT_LOG(LOG_INOTICE, "==================================================\r\n"); 
 	printf("PRODUCT_NAME: %s\r\nPRODUCT_ID: %s\r\nPRODUCT_VERSION: %s\r\nPRODUCT_TIME: %s %s\r\n",PRODUCT_NAME,PRODUCT_ID,PRODUCT_VERSION,__DATE__,__TIME__);
@@ -103,6 +106,8 @@ int main()
 #ifdef USE_UNDERCARRIAGE_FUN	
 	undercarriage_init();
 #endif	
+	appdev_init();
+	appcan_init();
 	heartbeat_parm_init();   //put at last
 	t_ostmr_insertTask(sys_ctrl_timetask, 1000, OSTMR_PERIODIC);  //1000
   while (1)
@@ -111,8 +116,9 @@ int main()
 		dji_process();                        //大疆SDK处理
 #endif		
 		mobile_data_process();                //将接收到的mobile透传数据进行解析处理
-    main_zkrt_dji_recv();		              //从子模块通过CAN接收数据，将毒气、抛投数据填充到心跳包，并且相关位置一
-		tempture_flight_control();            //温度超过上下限启动逃逸功能
+		appcan_prcs();                        //can com handle for the sub device message
+		temperature_prcs();                   //温度超过上下限启动逃逸功能
+		appdev_prcs();
 #ifdef USE_OBSTACLE_AVOID_FUN	
 #ifdef USE_SESORINTEGRATED		
 		app_sersor_integrated_prcs();         //集成板数据处理
@@ -121,12 +127,9 @@ int main()
 #endif		
 #ifdef USE_UART3_TEST_FUN		
 		myTerminal.terminalCommandHandler(v);
-#endif		
-//		avoid_obstacle_alarm();               //避障检测		
-//		avoid_obstacle_alarm_V2();  		
+#endif	
     avoid_obstacle_alarm_V3();			
 #endif
-		mobile_heardbeat_packet_control();    //板子定时发送心跳包到地面站
 		led_process();                        //LED控制
 		stmflash_process();                   //用户配置信息处理
 #ifdef USE_LWIP_FUN			
@@ -142,109 +145,14 @@ int main()
   }
 }
 /**
-  * @brief  tempture_flight_control. 温度控制飞行+温度信息组包到心跳包里+电池数据检测组包
+  * @brief  温度处理流程：获取温度，避温控制
   * @param  None
   * @retval None
   */
-void tempture_flight_control(void)
+void temperature_prcs(void)
 {
-	if (_160_read_flag - TimingDelay >= 160)
-	{
-		_160_read_flag = TimingDelay;
-#ifndef USE_SESORINTEGRATED		
-		ADC_SoftwareStartConv(ADC1); /*启动ADC*/	
-#endif		
-//		ZKRT_LOG(LOG_NOTICE, "ADC_SoftwareStartConv!\r\n");	
-		if((_read_count%2) == 0)									
-		{
-#ifndef USE_SESORINTEGRATED			
-			zkrt_dji_read_heart_tempture();  /*获取温度传感器数据*/
-#endif			
-			avoid_temp_alarm();     //避温检测
-			
-			if (MAVLINK_TX_INIT_VAL - TimingDelay >= 4000)	
-			{					
-				dji_zkrt_read_heart_tempture_check();	/*将温度传感器数据填充到心跳包里面，并判断数据是否正常*/	
-			}
-		}
-		if ((_read_count%10) == 0)								
-		{
-			dji_bat_value_roll(); /*获取智能电池数据，并填充到智能电池数据数组中*/
-			dji_zkrt_read_heart_vol(); /*获取板载电压电流值*/
-
-			if (MAVLINK_TX_INIT_VAL - TimingDelay >= 4000)	
-			{
-				dji_zkrt_read_heart_vol_check();	/*对当前板载电压电流值进行判断，并作出相应操作，将结果填充到心跳包*/					
-			}
-		}
-		_read_count++;
-	}	
-}
-/**
-  * @brief  mobile_heardbeat_packet_control. 板子与地面站（手机）心跳包处理（定时发送）+ 模块在线标记置位
-  * @param  None
-  * @retval None
-  */
-void mobile_heardbeat_packet_control(void)
-{
-	if (MAVLINK_TX_INIT_VAL - TimingDelay >= 5000)  //5s延时到之后一直处理以下逻辑
-	{
-		if ((mavlink_send_flag-TimingDelay) >= 800)
-		{
-			mavlink_send_flag = TimingDelay;
-			#if 0   //zkrt_notice: send heartbeat1 at another place.
-			switch (mavlink_type_flag_dji)
-			{
-				case 0:
-					mavlink_type_flag_dji = 1;
-					dji_zkrt_read_heart_ack(); /*完成最终的数据包，并且发送出处*/
-					coreApi->sendPoll();
-					break;
-				case 1:
-					mavlink_type_flag_dji = 0;
-				  dji_bat_value_send();  /*发送智能电池数据，总共32个字节*/    //????为什么没有封装zkrt packet格式 //modify by yanly
-					coreApi->sendPoll();
-					break;
-				default:
-					break;
-			}
-			#endif
-		}
-	}	
-	
-/*根据can收到的模块信息，判断哪个模块在线后，将心跳包的在线标记置位*/	 //zkrt_add_new_module
-	if ((posion_recv_flag-TimingDelay)  >= 5000)				
-	{
-		memset((void *)(msg_smartbat_dji_buffer+10), 0, 13);
-		msg_smartbat_dji_buffer[23] &= 0XEF;					
-	}
-	if ((throw_recv_flag-TimingDelay)  >= 5000)
-	{
-		msg_smartbat_dji_buffer[23] &= 0XDF;			
-	}
-	if ((camera_recv_flag-TimingDelay) >= 5000)
-	{
-		msg_smartbat_dji_buffer[23] &= 0XF7;	
-	}
-	if ((irradiate_recv_flag-TimingDelay) >= 5000)
-	{
-		msg_smartbat_dji_buffer[24] &= 0XFE;			
-	}	
-	if ((phone_recv_flag-TimingDelay) >= 5000)
-	{
-		msg_smartbat_dji_buffer[24] &= 0XFD;
-	}
-	if ((threemodeling_recv_flag-TimingDelay) >= 5000)  //从1开始算，第12位，即Device_Status的第二个字节的第4位,即与0XF7相与。
-	{
-		msg_smartbat_dji_buffer[24] &= 0XF7;
-	}	
-	if ((multicamera_recv_flag-TimingDelay) >= 5000)   
-	{
-		msg_smartbat_dji_buffer[24] &= 0XEF;  //0b: 11101111
-	}	
-	
-	
-/*------------------------------------------------------------------*/	
+	if(read_temperature()==1)
+		avoid_temp_alarm();     //aviod temperature alarm control
 }
 /**
   * @brief  避温控制
@@ -253,15 +161,13 @@ void mobile_heardbeat_packet_control(void)
   */
 void avoid_temp_alarm(void)
 {
-	u8 status1_t0;
-	u8 status2_t1;
-	status1_t0 = msg_smartbat_dji_buffer[0];
-	status2_t1 = msg_smartbat_dji_buffer[3];
+	u8 status_t1 = zkrt_devinfo.status_t1;
+	u8 status_t2 = zkrt_devinfo.status_t2;
 	
 	if(djisdk_state.run_status !=avtivated_ok_djirs)
 		return;
 
-	if((status1_t0 == TEMP_OVER_HIGH)||(status2_t1 == TEMP_OVER_HIGH))
+	if((status_t1 == TEMP_OVER_HIGH)||(status_t2 == TEMP_OVER_HIGH))
 	{
 		djisdk_state.temp_alarmed = 1;
 		flightData_zkrtctrl.z = 1;  //1m/s
@@ -699,6 +605,7 @@ void avoid_obstacle_alarm_V3(void)
 int temp_sct_i;
 void sys_ctrl_timetask(void)
 {
+	//handle ostacle module timetask
 	for(temp_sct_i=0; temp_sct_i< 4; temp_sct_i++)
 	{
 		if(GuidanceObstacleData.constant_speed_time[temp_sct_i]--)

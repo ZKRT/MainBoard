@@ -20,7 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "sys.h"
-#include "zkrt.h"
+#include "appprotocol.h"
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported constants --------------------------------------------------------*/
@@ -55,24 +55,25 @@
 //	u16 uce_autoup_ae;      //脚架自动升起的角度值
 //	u8 reserved[7];         //备用
 //}heartv2_st;
-typedef struct
-{
-	u16 ob_distse_v[5];	    //障碍物距离
-  u8 avoid_ob_enabled;    //避障使能
-  u16 avoid_ob_distse;    //避障生效距离
-	u16 avoid_ob_velocity;  //避障速度
-	u8 uce_state;           //脚架状态
-	u8 uce_autoenabled;     //脚架自动收放的使能状态
-	u8 gas_num5;
-	u16 gas_v5;
-	u8 gas_num6;
-	u16 gas_v6;
-	u8 gas_num7;
-	u16 gas_v7;
-	u8 gas_num8;
-	u16 gas_v8;	
-	u8 reserved[1];         //备用
-}heartv2_st;
+//typedef struct
+//{
+//	u16 ob_distse_v[5];	    //障碍物距离
+//  u8 avoid_ob_enabled;    //避障使能
+//  u16 avoid_ob_distse;    //避障生效距离
+//	u16 avoid_ob_velocity;  //避障速度
+//	u8 uce_state;           //脚架状态
+//	u8 uce_autoenabled;     //脚架自动收放的使能状态
+//	u8 gas_num5;
+//	u16 gas_v5;
+//	u8 gas_num6;
+//	u16 gas_v6;
+//	u8 gas_num7;
+//	u16 gas_v7;
+//	u8 gas_num8;
+//	u16 gas_v8;	
+//	u8 reserved[1];         //备用
+//}heartv2_st;
+
 #pragma pack(pop)
 
 //定时上传序列，心跳包周期上传时间是 TIMER_MSG_TIMEOUT，不同心跳包间隔时间是 TIMER_MSG_NEXT_TIMEOUT
@@ -100,10 +101,11 @@ typedef struct
 
 /* Exported functions ------------------------------------------------------- */
 void heartbeat_parm_init(void);
-u8 zkrt_heartbeat_pack(void);
+u8 zkrt_heartbeat_pack(u8* data, u8* datalen);
 
 extern timer_upload_st hb_timer; //心跳包定时结构体
-extern heartv2_st zkrt_heartv2;  //定时发送心跳包v2的数据体缓存
+extern zd_heartv2_st zkrt_heartv2;  //定时发送心跳包v2的数据体缓存
+extern zd_heartv1_st zkrt_heartv1;
 extern zkrt_packet_t _zkrt_packet_hb;   //发送到DJI透传数据的心跳包缓存  
 
 #endif /* __UNDERCARRIAGECTRL_H */

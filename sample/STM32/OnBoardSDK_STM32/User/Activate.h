@@ -13,7 +13,6 @@
 #define ACTIVATE_H
 
 #include "dji_vehicle.hpp"
-#include "string.h"
 
 using namespace DJI::OSDK;
 void userActivate();

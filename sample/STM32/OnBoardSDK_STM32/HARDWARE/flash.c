@@ -1,6 +1,7 @@
 #include "flash.h"
 #include "undercarriageCtrl.h"
 #include "obstacleAvoid.h"
+#include "dev_handle.h"
 
 /*
 除了主存储器外，还有3闪存模块存储器组织还包括3个区域：系统存储器（30K）、OTP区域（528字）、选项字节（16字）
@@ -110,8 +111,8 @@ void STMFLASH_Init(void)
 	
 	////read flash value to global param struct
 	//temp
-	glo_tempture_low  =  flash_buffer._tempture_low;
-	glo_tempture_high =  flash_buffer._tempture_high;
+	zkrt_devinfo.temperature_low  =  flash_buffer._tempture_low;
+	zkrt_devinfo.temperature_high =  flash_buffer._tempture_high;
 	//obstacle
 	GuidanceObstacleData.ob_enabled = flash_buffer.avoid_ob_enabled;
 	GuidanceObstacleData.ob_distance = flash_buffer.avoid_ob_distse;
@@ -143,10 +144,10 @@ void STMFLASH_Erase(short sector)
   */
 void stmflash_process(void)	
 {
-	if ((flash_buffer._tempture_low != glo_tempture_low)||(flash_buffer._tempture_high != glo_tempture_high))//在这里将所有的值统一更新，否则flash写入太占时间可能导致写入错误
+	if ((flash_buffer._tempture_low != zkrt_devinfo.temperature_low)||(flash_buffer._tempture_high != zkrt_devinfo.temperature_high))//在这里将所有的值统一更新，否则flash写入太占时间可能导致写入错误
 	{
-		flash_buffer._tempture_low  = glo_tempture_low;				//步骤二：保存该变量到缓存里
-		flash_buffer._tempture_high = glo_tempture_high;
+		flash_buffer._tempture_low  = zkrt_devinfo.temperature_low;				//步骤二：保存该变量到缓存里
+		flash_buffer._tempture_high = zkrt_devinfo.temperature_high;
 		STMFLASH_Write();											//步骤三：编写flash
 	}
 }

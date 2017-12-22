@@ -41,9 +41,9 @@ void hwtmr0_init(void)
 {
   u32        __i;
    
-  _taskSeparator5ms   = TRUE_P;
-  _taskSeparator50ms  = TRUE_P;
-  _taskSeparator500ms = TRUE_P; 
+  _taskSeparator5ms   = TRUE;
+  _taskSeparator50ms  = TRUE;
+  _taskSeparator500ms = TRUE; 
   _sysTimerCnt50Ms    = 0;
   _sysTimerCntSec     = 0;   
   
@@ -166,7 +166,7 @@ bool_t b_hwtmr0_setting( vfp_t fast[], vfp_t slow[], vfp_t sec[])
   TIM_NVIC_Configuration_1st();
 	
 
-	return (TRUE_P);
+	return (TRUE);
  
 }
 

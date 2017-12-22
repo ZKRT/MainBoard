@@ -44,7 +44,7 @@ extern uint8_t Rx_length;
 extern int     Rx_adr;
 extern int     Rx_Handle_Flag;
 extern uint8_t Rx_buff[];
-extern zkrt_packet_t main_dji_rev;
+extern zkrt_packet_t *main_dji_rev;
 
 
 extern "C" void DMAX_init(DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel, uint32_t peripheral_addr, uint32_t memory_addr,uint32_t direction,

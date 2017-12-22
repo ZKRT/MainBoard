@@ -47,7 +47,7 @@ enum dji_oes_fc_controlbit
 //dji 运行状态结构体
 typedef struct
 {
-	char run_status;
+	dji_run_state run_status;
 	char temp_alarmed; //1-高温逃逸，0-正常
 	unsigned int cmdres_timeout;
 	char oes_fc_controled; //高温控制置1<<0; 避障控制置1<<1; 全部都没有控制置0

@@ -1,12 +1,10 @@
 #ifndef _PORT_H_
 #define _PORT_H_
 
-
-
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <stdbool.h>
 
 /*
 
@@ -148,8 +146,8 @@ typedef union
 
 typedef enum
 {
-	FALSE_P = 0,
-	TRUE_P  = 1
+	FALSE = 0,
+	TRUE  = 1
 }bool_t; 
 
 //#define  ENABLE     true
@@ -203,6 +201,7 @@ typedef enum
 /* Accept bit index such as 0, 1, 2, etc */
 #define setBit(x,b)         (x) |=  (1U<<(b))
 #define clearBit(x,b)		    (x) &= ~(1U<<(b))
+#define getBit(x, y)        (x &= (1 << y))
 #define flipBit(x,b)		    (x) ^=  (1U<<(b))
 #define testBit(x,b)		    ((x) &  (1U<<(b)))
 #define bitIsCleared(a,b)   (((a) & (1U << (b))) == 0)

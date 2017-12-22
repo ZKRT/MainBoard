@@ -6,29 +6,37 @@
  *  Version     :
  *  History     : <author>		<time>		<version>		<desc>
  */
-
 #include "sys.h"
-#include "adc.h"
-#include "usart.h"
 #include "zkrt.h"
-#include "djiapp.h"
-#include "flash.h"
-#include "bat.h"
+#include "can.h"
 #include "mobileDataHandle.h"
 #include "ProtocolZkrtHandle.h"
+#include "dev_handle.h"
+#include "appprotocol.h"
 
 /////////////////////////////////////////////////////////////////////valible define 
-uint8_t djidataformmobile[MOBILE_DATA_SIZE]= {0};
-zkrt_packet_t main_dji_rev;
-
+uint8_t *djidataformmobile; //point in msg_handle_init
+zkrt_packet_t *main_dji_rev; //point in msg_handle_init
 ////////////////////////////////////////////////////////////////////static function define
-static void main_dji_recv(void);
-static void copydataformmobile(void);
+static void mobile_data_handle(void);
+static void copydataformmobile(const u8* sdata, u8 sdatalen);
 
 #ifdef CanSend2SubModule_TEST
 zkrt_packet_t cansdebug;
 #endif
-
+/**
+ * @brief msg_handle_init
+ * @param   
+ * @param   
+ * @return  
+ **/
+void msg_handle_init(void)
+{
+	djidataformmobile = msg_handlest.data_recv_app;
+	main_dji_rev = &msg_handlest.recvpacket_app;
+	memset(&msg_handlest, 0x00, sizeof(msg_handlest));
+	
+}
 /*
 * @brief 将接收到的mobile透传数据进行解析处理
 	mobile数据来源是DJI串口透传数据，经过UART1中断接收解析处理过，拷贝到数组djidataformmobile[]
@@ -36,11 +44,11 @@ zkrt_packet_t cansdebug;
 void mobile_data_process(void)
 {
 	//获取从地面站软件的数据
-	if(djidataformmobile[1]!=0)
+	if(msg_handlest.datalen_recvapp!=0)
 	{
-		copydataformmobile();
-		main_dji_recv();
-		djidataformmobile[1] =0;
+		copydataformmobile(djidataformmobile, msg_handlest.datalen_recvapp);
+		mobile_data_handle();
+		msg_handlest.datalen_recvapp =0;
 	}
 #ifdef CanSend2SubModule_TEST
 	if(can_send_debug - TimingDelay > 10000)
@@ -74,56 +82,61 @@ void mobile_data_process(void)
 //zkrt_debug 
 //int dataindex;
 //short fuyang, hangxiang;
-void main_dji_recv(void)
+void mobile_data_handle(void)
 {
 	int k;
+	u8 datalen = main_dji_rev->length;
+//check length
+  if(msg_handlest.datalen_recvapp != main_dji_rev->length+ZK_FIXED_LEN)
+		return;
+//check packet format
+	if(zkrt_check_packet(main_dji_rev)==false)
+		return;
   ZKRT_LOG(LOG_NOTICE, "***************main_dji_revdata_form_mobile************************\r\n");
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.start_code=0x %x\r\n",main_dji_rev.start_code);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.ver=0x %x\r\n",main_dji_rev.ver);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.session_ack=0x %x \r\n",main_dji_rev.session_ack);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.padding_enc=0x %x\r\n",main_dji_rev.cmd);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.cmd=0x %x\r\n",main_dji_rev.ver);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.length=0x %x\r\n",main_dji_rev.length);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.seq=0x %x\r\n",main_dji_rev.seq);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.APPID[0]=0x %x \r\n",main_dji_rev.APPID[0]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.APPID[1]=0x %x \r\n",main_dji_rev.APPID[1]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.APPID[2]=0x %x \r\n",main_dji_rev.APPID[2]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[0]=0x %x \r\n",main_dji_rev.UAVID[0]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[1]=0x %x\r\n",main_dji_rev.UAVID[1]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[2]=0x %x\r\n",main_dji_rev.UAVID[2]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[3]=0x %x\r\n",main_dji_rev.UAVID[3]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[4]=0x %x\r\n",main_dji_rev.UAVID[4]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[5]=0x %x\r\n",main_dji_rev.UAVID[5]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.command=0x %x \r\n",main_dji_rev.command);
-	
-  for(k=0; k<30; k++)
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->start_code=0x %x\r\n",main_dji_rev->start_code);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->ver=0x %x\r\n",main_dji_rev->ver);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->session_ack=0x %x \r\n",main_dji_rev->session_ack);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->padding_enc=0x %x\r\n",main_dji_rev->cmd);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->cmd=0x %x\r\n",main_dji_rev->ver);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->length=0x %x\r\n",main_dji_rev->length);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->seq=0x %x\r\n",main_dji_rev->seq);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->APPID[0]=0x %x \r\n",main_dji_rev->APPID[0]);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->APPID[1]=0x %x \r\n",main_dji_rev->APPID[1]);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->APPID[2]=0x %x \r\n",main_dji_rev->APPID[2]);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[0]=0x %x \r\n",main_dji_rev->UAVID[0]);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[1]=0x %x\r\n",main_dji_rev->UAVID[1]);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[2]=0x %x\r\n",main_dji_rev->UAVID[2]);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[3]=0x %x\r\n",main_dji_rev->UAVID[3]);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[4]=0x %x\r\n",main_dji_rev->UAVID[4]);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[5]=0x %x\r\n",main_dji_rev->UAVID[5]);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->command=0x %x \r\n",main_dji_rev->command);
+  for(k=0; k<datalen; k++)
   {
-    ZKRT_LOG(LOG_NOTICE,"main_dji_rev.data[%d]=0x %x\r\n",k,main_dji_rev.data[k]);
+    ZKRT_LOG(LOG_NOTICE,"main_dji_rev->data[%d]=0x %x\r\n",k,main_dji_rev->data[k]);
   }
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.crc=0x %x\r\n",main_dji_rev.crc);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.end_code=0x %x\r\n",main_dji_rev.end_code);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->crc=0x %x\r\n",main_dji_rev->crc);
+  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->end_code=0x %x\r\n",main_dji_rev->end_code);
 
-	switch(main_dji_rev.UAVID[3])
+	switch(main_dji_rev->UAVID[ZK_DINDEX_DEVTYPE])
 	{
 		case DEVICE_TYPE_TEMPERATURE:
-			ZKRT_LOG(LOG_NOTICE,"&&&&&&&&&&&&&&\r\n");
-			glo_tempture_low =  ((main_dji_rev.data[1])<<8)+(main_dji_rev.data[0]);
-			glo_tempture_high = ((main_dji_rev.data[3])<<8)+(main_dji_rev.data[2]);
+			zkrt_devinfo.temperature_low =  ((main_dji_rev->data[1])<<8)+(main_dji_rev->data[0]);
+			zkrt_devinfo.temperature_high = ((main_dji_rev->data[3])<<8)+(main_dji_rev->data[2]);
 			break;
 		case DEVICE_TYPE_MAINBOARD:
-	    if(main_dji_rev.data[0] <= MAX_MBDH_NUM)
-				mb_self_handle_fun[main_dji_rev.data[0]-1](main_dji_rev.data+1);
+	    if(main_dji_rev->data[0] <= MAX_MBDH_NUM)
+				mb_self_handle_fun[main_dji_rev->data[0]-1](main_dji_rev->data+1);
 			//zkrt_debug
 //			printf("=================control data: ");
-//			printf("%x ", main_dji_rev.data[0]);
-//			printf("%x ", main_dji_rev.data[1]);
-//			printf("%x ", main_dji_rev.data[2]);
-//			printf("%x ", main_dji_rev.data[3]);
-//			printf("%x ", main_dji_rev.data[4]);
-//			printf("%x ", main_dji_rev.data[5]);
-//			printf("%x ", main_dji_rev.data[6]);
-//			printf("%x ", main_dji_rev.data[7]);
-//			printf("%x ", main_dji_rev.data[8]);
+//			printf("%x ", main_dji_rev->data[0]);
+//			printf("%x ", main_dji_rev->data[1]);
+//			printf("%x ", main_dji_rev->data[2]);
+//			printf("%x ", main_dji_rev->data[3]);
+//			printf("%x ", main_dji_rev->data[4]);
+//			printf("%x ", main_dji_rev->data[5]);
+//			printf("%x ", main_dji_rev->data[6]);
+//			printf("%x ", main_dji_rev->data[7]);
+//			printf("%x ", main_dji_rev->data[8]);
 //			printf("===========================\r\n");
 			break;
 		//zkrt_debug
@@ -131,126 +144,27 @@ void main_dji_recv(void)
 //			printf("[start]   ");
 //			for(dataindex=0; dataindex<30; dataindex++)
 //		  {
-//				printf("%x ", main_dji_rev.data[dataindex]);
+//				printf("%x ", main_dji_rev->data[dataindex]);
 //			}
 //			printf("\r\n");
-//			memcpy(&hangxiang, &main_dji_rev.data[0], 2);
-//			memcpy(&fuyang, &main_dji_rev.data[2], 2);
+//			memcpy(&hangxiang, &main_dji_rev->data[0], 2);
+//			memcpy(&fuyang, &main_dji_rev->data[2], 2);
 //			printf("hangxiang=%d ", hangxiang);
 //			printf("fuyang=%d ", fuyang);
 //			printf("   [end]\r\n");			
-//		  CAN1_send_message_fun((uint8_t *)(&main_dji_rev), _TOTAL_LEN, (main_dji_rev.UAVID[3]));/*通过CAN总线发送数据*/
+//		  CAN1_send_message_fun((uint8_t *)(&main_dji_rev), _TOTAL_LEN, (main_dji_rev->UAVID[3]));/*通过CAN总线发送数据*/
 //			break;
 		default:
 			ZKRT_LOG(LOG_NOTICE,"CAN1_send_message_fun\r\n");
-		  CAN1_send_message_fun((uint8_t *)(&main_dji_rev), _TOTAL_LEN, (main_dji_rev.UAVID[3]));/*通过CAN总线发送数据*/
-			break;		
+		  CAN1_send_message_fun(djidataformmobile, msg_handlest.datalen_recvapp, (main_dji_rev->UAVID[ZK_DINDEX_DEVTYPE]));/*通过CAN总线发送数据*/
+			break;
 	}
 }
-//void main_dji_recv(void)   //old 170325
-//{
-//	int k;
-//	//memcpy((void *)&main_dji_rev, (void *)&(Rx_buff[5]), 40);
-////  printf("***************main_dji_revdata_form_mobile************************\r\n");
-////  printf("main_dji_rev.start_code=0x %x\r\n",main_dji_rev.start_code);
-////  printf("main_dji_rev.ver=0x %x\r\n",main_dji_rev.ver);
-////  printf("main_dji_rev.session_ack=0x %x \r\n",main_dji_rev.session_ack);
-////  printf("main_dji_rev.padding_enc=0x %x\r\n",main_dji_rev.cmd);
-////  printf("main_dji_rev.cmd=0x %x\r\n",main_dji_rev.ver);
-////  printf("main_dji_rev.length=0x %x\r\n",main_dji_rev.length);
-////  printf("main_dji_rev.seq=0x %x\r\n",main_dji_rev.seq);
-////  printf("main_dji_rev.APPID[0]=0x %x \r\n",main_dji_rev.APPID[0]);
-////  printf("main_dji_rev.APPID[1]=0x %x \r\n",main_dji_rev.APPID[1]);
-////  printf("main_dji_rev.APPID[2]=0x %x \r\n",main_dji_rev.APPID[2]);
-////  printf("main_dji_rev.UAVID[0]=0x %x \r\n",main_dji_rev.UAVID[0]);
-////  printf("main_dji_rev.UAVID[1]=0x %x\r\n",main_dji_rev.UAVID[1]);
-////  printf("main_dji_rev.UAVID[2]=0x %x\r\n",main_dji_rev.UAVID[2]);
-////  printf("main_dji_rev.UAVID[3]=0x %x\r\n",main_dji_rev.UAVID[3]);
-////  printf("main_dji_rev.UAVID[4]=0x %x\r\n",main_dji_rev.UAVID[4]);
-////  printf("main_dji_rev.UAVID[5]=0x %x\r\n",main_dji_rev.UAVID[5]);
-////  printf("main_dji_rev.command=0x %x \r\n",main_dji_rev.command);
-//  ZKRT_LOG(LOG_NOTICE, "***************main_dji_revdata_form_mobile************************\r\n");
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.start_code=0x %x\r\n",main_dji_rev.start_code);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.ver=0x %x\r\n",main_dji_rev.ver);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.session_ack=0x %x \r\n",main_dji_rev.session_ack);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.padding_enc=0x %x\r\n",main_dji_rev.cmd);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.cmd=0x %x\r\n",main_dji_rev.ver);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.length=0x %x\r\n",main_dji_rev.length);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.seq=0x %x\r\n",main_dji_rev.seq);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.APPID[0]=0x %x \r\n",main_dji_rev.APPID[0]);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.APPID[1]=0x %x \r\n",main_dji_rev.APPID[1]);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.APPID[2]=0x %x \r\n",main_dji_rev.APPID[2]);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[0]=0x %x \r\n",main_dji_rev.UAVID[0]);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[1]=0x %x\r\n",main_dji_rev.UAVID[1]);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[2]=0x %x\r\n",main_dji_rev.UAVID[2]);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[3]=0x %x\r\n",main_dji_rev.UAVID[3]);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[4]=0x %x\r\n",main_dji_rev.UAVID[4]);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.UAVID[5]=0x %x\r\n",main_dji_rev.UAVID[5]);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.command=0x %x \r\n",main_dji_rev.command);
-//	
-//  for(k=0; k<30; k++)
-//  {
-//    ZKRT_LOG(LOG_NOTICE,"main_dji_rev.data[%d]=0x %x\r\n",k,main_dji_rev.data[k]);
-//  }
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.crc=0x %x\r\n",main_dji_rev.crc);
-//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev.end_code=0x %x\r\n",main_dji_rev.end_code);
-
-//  if (main_dji_rev.UAVID[3] == DEVICE_TYPE_TEMPERATURE) /*设置温度最低值和最高值*/
-//  {
-//    ZKRT_LOG(LOG_NOTICE,"&&&&&&&&&&&&&&\r\n");
-//    glo_tempture_low =  ((main_dji_rev.data[1])<<8)+(main_dji_rev.data[0]);
-//    glo_tempture_high = ((main_dji_rev.data[3])<<8)+(main_dji_rev.data[2]);
-//  }
-//	//屏蔽爆闪灯，主模块不再搭载爆闪灯 //by yanly
-////  else if (main_dji_rev.UAVID[3] == DEVICE_TYPE_BAOSHAN)/*设置爆闪灯*/
-////  {
-////    ZKRT_LOG(LOG_NOTICE,"###############\r\n");
-////    if (main_dji_rev.data[0] == 0X00)
-////    {
-////      GPIO_ResetBits(GPIOE, GPIO_Pin_2 | GPIO_Pin_9);
-////      delay_ms(1000);
-////      msg_smartbat_dji_buffer[24] &= 0XF7;
-////    }
-////    else if (main_dji_rev.data[0] == 0X01)
-////    {
-////      GPIO_SetBits(GPIOE, GPIO_Pin_2 | GPIO_Pin_9);
-////      delay_ms(1000);
-////      msg_smartbat_dji_buffer[24] |= 0X08;
-////    }
-////  }
-//  else
-//  {
-//    ZKRT_LOG(LOG_NOTICE,"CAN1_send_message_fun\r\n");
-//    CAN1_send_message_fun((uint8_t *)(&main_dji_rev), _TOTAL_LEN, (main_dji_rev.UAVID[3]));/*通过CAN总线发送数据*/
-//  }
-//}
 /* 
 * @brief: mobile数组数据 转存到 zkrt_packet_t格式的全局结构体里
 */
-void copydataformmobile(void)
+void copydataformmobile(const u8* sdata, u8 sdatalen)
 {
-	u32 j;
-	main_dji_rev.start_code=djidataformmobile[0];
-	main_dji_rev.ver=djidataformmobile[1];
-	main_dji_rev.session_ack=djidataformmobile[2];
-	main_dji_rev.padding_enc=djidataformmobile[3];
-	main_dji_rev.cmd=djidataformmobile[4];
-	main_dji_rev.length=djidataformmobile[5];
-	main_dji_rev.seq=djidataformmobile[6];
-	main_dji_rev.APPID[0]=djidataformmobile[7];
-	main_dji_rev.APPID[1]=djidataformmobile[8];
-	main_dji_rev.APPID[2]=djidataformmobile[9];
-	for(j=0;j<6;j++)
-	{
-		main_dji_rev.UAVID[j]=djidataformmobile[10+j];
-	}
-	main_dji_rev.command=djidataformmobile[16]; //modify by yanly1221
-	for(j=0;j<30;j++)
-	{
-		main_dji_rev.data[j]=djidataformmobile[17+j];
-	}
-	main_dji_rev.crc=djidataformmobile[47];
-	main_dji_rev.crc|=djidataformmobile[48]<<8;
-	main_dji_rev.end_code=djidataformmobile[49];
+//copy data to packet
+	zkrt_data2_packet(sdata, sdatalen, main_dji_rev);
 }
-

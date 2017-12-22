@@ -968,26 +968,6 @@
               <FilePath>..\HARDWARE\sbus.h</FilePath>
             </File>
             <File>
-              <FileName>bat.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HARDWARE\bat.c</FilePath>
-            </File>
-            <File>
-              <FileName>bat.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\HARDWARE\bat.h</FilePath>
-            </File>
-            <File>
-              <FileName>app.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\HARDWARE\app.c</FilePath>
-            </File>
-            <File>
-              <FileName>app.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\HARDWARE\app.h</FilePath>
-            </File>
-            <File>
               <FileName>lan8720.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\ETHERNET\lan8720.c</FilePath>
@@ -1090,71 +1070,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>MAVLINK</GroupName>
-          <Files>
-            <File>
-              <FileName>mavlink.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\MAVLINK\mavlink.c</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\MAVLINK\mavlink.h</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_msg_heartbeat.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\MAVLINK\mavlink_msg_heartbeat.c</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_msg_heartbeat.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\MAVLINK\mavlink_msg_heartbeat.h</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_msg_management_module.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\MAVLINK\mavlink_msg_management_module.c</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_msg_management_module.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\MAVLINK\mavlink_msg_management_module.h</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_msg_smartbat_text.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\MAVLINK\mavlink_msg_smartbat_text.c</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_msg_smartbat_text.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\MAVLINK\mavlink_msg_smartbat_text.h</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_msg_statustext .c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\MAVLINK\mavlink_msg_statustext .c</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_msg_statustext.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\MAVLINK\mavlink_msg_statustext.h</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_msg_statustext-ref.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\MAVLINK\mavlink_msg_statustext-ref.h</FilePath>
-            </File>
-            <File>
-              <FileName>mavlink_types.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\MAVLINK\mavlink_types.h</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>ZKRT</GroupName>
           <Files>
             <File>
@@ -1166,26 +1081,6 @@
               <FileName>zkrt.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\ZKRT\zkrt.h</FilePath>
-            </File>
-            <File>
-              <FileName>djiapp.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ZKRT\djiapp.c</FilePath>
-            </File>
-            <File>
-              <FileName>djiapp.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\ZKRT\djiapp.h</FilePath>
-            </File>
-            <File>
-              <FileName>heart.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\ZKRT\heart.c</FilePath>
-            </File>
-            <File>
-              <FileName>heart.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\ZKRT\heart.h</FilePath>
             </File>
             <File>
               <FileName>tempture.c</FileName>
@@ -1281,6 +1176,21 @@
               <FileName>sersorIntegratedHandle.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ZKRT\sersorIntegratedHandle.c</FilePath>
+            </File>
+            <File>
+              <FileName>appprotocol.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\ZKRT\appprotocol.h</FilePath>
+            </File>
+            <File>
+              <FileName>appcan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ZKRT\appcan.c</FilePath>
+            </File>
+            <File>
+              <FileName>dev_handle.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ZKRT\dev_handle.c</FilePath>
             </File>
           </Files>
         </Group>

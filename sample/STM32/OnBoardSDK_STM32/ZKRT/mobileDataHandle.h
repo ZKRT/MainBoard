@@ -1,10 +1,9 @@
 #ifndef __MOBILE_DATA_HANDLE_H
 #define __MOBILE_DATA_HANDLE_H 
 
-#define MOBILE_DATA_SIZE 		50
-
-
+void msg_handle_init(void);
 void mobile_data_process(void);
-extern unsigned char djidataformmobile[MOBILE_DATA_SIZE];
+
+extern unsigned char *djidataformmobile;
 #endif
 

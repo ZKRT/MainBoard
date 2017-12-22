@@ -1,104 +1,89 @@
-#include "tempture.h"
 #include "ds18b20.h"									
 #include "adc.h"
-#include "Mavlink_msg_statustext.h"		
-#include "zkrt.h"											
+#include "dev_handle.h"
+#include "appprotocol.h"
+#include "tempture.h"
 
+static u8 temperature_value_check(short *value);
 
-
-uint8_t error_count = 0;
-
-void zkrt_read_tempture_ack(void)
+/**
+  * @brief  read temperture in adc or ds18b20 or sensor board by #define
+  * @param  None
+  * @retval None 1-value readed,  0-value not readed
+  */
+char read_temperature(void)
 {
-	uint8_t i;
-	zkrt_packet_t packet;
-	
-#if defined _TEMPTURE_IO_	
-	tempture0 = DS18B20_Get_Temp(DS18B20_NUM1);									
-	tempture1 = DS18B20_Get_Temp(DS18B20_NUM2);
-#elif defined _TEMPTURE_ADC_
-	tempture0 = ADC1_get_value(_T1_value);								
-	tempture1 = ADC1_get_value(_T1_value);
-	ZKRT_LOG(LOG_NOTICE, "tempture0= %d   tempture1= %d!\r\n",tempture0,tempture1);
-//	   printf("tempture0= %d   tempture1= %d!\r\n",tempture0,tempture1);
-#endif
-	
-	if (tempture0 < TEMPTURE_LOW_EXTRA)
-		tempture0 = TEMPTURE_LOW_EXTRA;
-	if (tempture0 > TEMPTURE_HIGH_EXTRA)
-		tempture0 = TEMPTURE_HIGH_EXTRA;
-	if (tempture1 < TEMPTURE_LOW_EXTRA)
-		tempture1 = TEMPTURE_LOW_EXTRA;
-	if (tempture1 > TEMPTURE_HIGH_EXTRA)
-		tempture1 = TEMPTURE_HIGH_EXTRA;
-	
-	packet.cmd = UAV_TO_APP;   
-	packet.command= DEFAULT_NUM;
-	
-	packet.UAVID[0] = now_uav_type;                
-	packet.UAVID[1] = (uint8_t)(now_uav_num&0xff);	
-	packet.UAVID[2] = (uint8_t)(now_uav_num>>8);
-	packet.UAVID[3] = DEVICE_TYPE_TEMPERATURE;		
-	packet.UAVID[4] = DEFAULT_NUM;									
-	packet.UAVID[5] = DEFAULT_NUM;
-	
-	packet.data[0] = 0XFE;
-	packet.data[1] = (uint8_t)(tempture0&0xff);
-	packet.data[2] = (uint8_t)(tempture0>>8);
-	packet.data[3] = 0XFE;
-	packet.data[4] = (uint8_t)(tempture1&0xff);
-	packet.data[5] = (uint8_t)(tempture1>>8);
-	
-	for(i=6;i<25;i++)
+	short *t1 = &zkrt_devinfo.temperature1;
+	short *t2 = &zkrt_devinfo.temperature2;
+#ifdef _TEMPTURE_ADC_	
+	if(adc_start_count -TimingDelay >=160)
 	{
-		packet.data[i] = 0;
+		adc_start_count = TimingDelay;
+		ADC_SoftwareStartConv(ADC1); 		/*启动ADC*/
 	}
+#endif	
 	
+	if(temperature_read_count -TimingDelay <320)
+		return 0;
 	
-	if ((MAVLINK_TX_INIT_VAL-TimingDelay) > 5000)
-	{
-#if defined _TEMPTURE_IO_		
-		if ((tempture0>last_tempture0+TEMPTURE_DIFF)||(tempture0<last_tempture0-TEMPTURE_DIFF)
-		||(tempture1>last_tempture1+TEMPTURE_DIFF)||(tempture1<last_tempture1-TEMPTURE_DIFF))
-		{
-			error_count++;
-			if (error_count == 2)
-			{
-				error_count = 0;
-				packet.data[25] = 0XFD;
-			}
-			//packet.data[25] = 0XFD;
-		}
-		else //modify by yanly
-		{
-			error_count = 0;
-			packet.data[25] = 0XFE;
-		}
-#elif defined _TEMPTURE_ADC_
-		if (1 > 0)
-		{
-			packet.data[25] = 0XFE;
-		}
+	temperature_read_count = TimingDelay;
+	
+#ifdef _TEMPTURE_IO_
+  *t1 = DS18B20_Get_Temp(DS18B20_NUM1);
+  *t2 = DS18B20_Get_Temp(DS18B20_NUM2);
+	if ((*t0==0XFFFF)||(*t1==0XFFFF))
+		_ALARM_LED = 0;	
+  else
+		_ALARM_LED = 1;
 #endif
-		if ((tempture0>glo_tempture_high)||(tempture0<glo_tempture_low)||(tempture1>glo_tempture_high)||(tempture1<glo_tempture_low))
-		{
-			packet.data[25] = 0XFD;
-		}
+	
+#ifdef _TEMPTURE_ADC_
+  *t1 = ADC1_get_value(_T1_value)-TEMPTURE_CALIBRATE;    //zkrt_notice: 温度补偿处理，由于AD采集温度受芯片内部温度的影响，实际运行一段时间后，芯片内部温度上升，导致AD采集温度过高，故减10度补偿。
+  *t2 = ADC1_get_value(_T2_value)-TEMPTURE_CALIBRATE;
+#endif
+	
+#ifdef USE_SESORINTEGRATED
+	//because temperature read in sersorIntegratedHandle, so there not need read //zkrt_todo
+	
+#endif
+	
+	//check value is ok
+  zkrt_devinfo.status_t1 = temperature_value_check(t1);
+  zkrt_devinfo.status_t2 = temperature_value_check(t2);
+	
+	ZKRT_LOG(LOG_NOTICE,"[read temperature] t0:%d, t1:%d!\r\n", *t1, *t2);
+	return 1;
+}
+/**
+  * @brief  check the temperature value, see if it's in the normal range 
+  * @param  None
+  * @retval None 温度值的有效状态
+  */
+static u8 temperature_value_check(short *value)
+{
+	u8 status = TEMP_NOMAL;
+	short tv = *value;
+	short tempture_low = zkrt_devinfo.temperature_low;
+	short tempture_high = zkrt_devinfo.temperature_high;
+	
+	if(tv <= TEMPTURE_LOW_EXTRA) 
+	{
+		status = TEMP_INVALID;
+	}
+	else if (tv >= TEMPTURE_HIGH_EXTRA)
+	{
+		status = TEMP_INVALID;
+	}
+	else if (tv < tempture_low)
+	{
+		status = TEMP_OVER_LOW;
+	}
+	else if (tv > tempture_high)
+	{
+		status = TEMP_OVER_HIGH;
 	}
 	else
-	{
-		packet.data[25] = 0XFE;
-	}
+		status = TEMP_NOMAL;
 	
-	last_tempture0 = tempture0;
-	last_tempture1 = tempture1;
-	
-	packet.data[26] = (uint8_t)(glo_tempture_low&0xff);
-	packet.data[27] = (uint8_t)(glo_tempture_low>>8);
-	packet.data[28] = (uint8_t)(glo_tempture_high&0xff);
-	packet.data[29] = (uint8_t)(glo_tempture_high>>8);
-	
-	zkrt_final_encode(&packet);
-	
-	mavlink_msg_statustext_send(MAVLINK_COMM_0, DEVICE_TYPE_TEMPERATURE, (const char*)(&packet));//通过status_text发送packet
+	return status;
 }
