@@ -20,6 +20,7 @@
 #include "appcan.h"
 #include "appprotocol.h"
 #include "heartBeatHandle.h"
+#include "mobileDataHandle.h"
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 can_msg_handle_st canmsg_hst={0};

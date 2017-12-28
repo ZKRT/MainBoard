@@ -96,7 +96,7 @@ int main()
 #ifdef USE_DJI_FUN	
 	if(dji_init()<0)
 		return -1;
-#endif 
+#endif
 #ifdef USE_LWIP_FUN	
 	lwip_prcs_init();
 #endif	
@@ -114,7 +114,7 @@ int main()
   {
 #ifdef USE_DJI_FUN			
 		dji_process();                        //大疆SDK处理
-#endif		
+#endif	
 		mobile_data_process();                //将接收到的mobile透传数据进行解析处理
 		appcan_prcs();                        //can com handle for the sub device message
 		temperature_prcs();                   //温度超过上下限启动逃逸功能

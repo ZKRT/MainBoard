@@ -77,9 +77,9 @@ void heartbeat_parm_init(void)
 	hb_timer.timer_msg_timecnt = 	TIMER_MSG_TIMEOUT + 5000;
 
 	//heartbeat data
+	zkrt_init_packet(&_zkrt_packet_hb);
   _zkrt_packet_hb.cmd = UAV_TO_APP;
   _zkrt_packet_hb.command= DEFAULT_NUM;
-
   _zkrt_packet_hb.UAVID[0] = 0;                 //ÄÄÖÖ·É»ú
   _zkrt_packet_hb.UAVID[1] = (uint8_t)(0&0xff);	//·É»ú±àºÅ
   _zkrt_packet_hb.UAVID[2] = (uint8_t)(0>>8);

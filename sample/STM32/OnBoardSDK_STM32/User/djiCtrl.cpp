@@ -57,7 +57,7 @@ void heartbeat_ctrl(void);
 dji_sdk_status djisdk_state = {init_none_djirs, 0, 0xffffffff, 0, 0};  //dji sdk 运行状态
 
 //#define FCC_TIMEROUT         10  //200ms
-#define FCC_TIMEROUT         1  //20ms //zkrt_todo : 发送周期待测试
+#define FCC_TIMEROUT         1  //20ms //
 #define GETFDATA_TIMEROUT    10  //200ms
 volatile u16 fc_timercnt = FCC_TIMEROUT;//飞控周期控制时钟计数
 volatile u16 getfdata_timercnt = GETFDATA_TIMEROUT;//周期获取飞行数据时钟计数
@@ -138,7 +138,7 @@ int dji_init(void)
   * @retval None
   */
 void dji_process(void)
-{			
+{
 	switch(djisdk_state.run_status)
 	{
 		case init_none_djirs:
@@ -192,7 +192,7 @@ void dji_process(void)
 //	rc             = v->broadcast->getRC();
 //	sdkinfo        = v->broadcast->getSDKInfo();
 //	
-//	if(rc.mode <=0) //如果遥控器档位在P档以外，飞行控制跳过  //zkrt_todo: wait test
+//	if(rc.mode <=0) //如果遥控器档位在P档以外，飞行控制跳过  
 //		return;
 //	
 //	if(((djisdk_state.oes_fc_controled)||(djisdk_state.last_fc_controled))

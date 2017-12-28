@@ -60,7 +60,7 @@ void BSPinit()
 	Usart_DJI_Config();
 #endif	
 	uart_init();
-	can_all_init();
+	can_all_init(); 
 #ifdef _TEMPTURE_IO_
 	DS18B20_Init();																		
 #endif	

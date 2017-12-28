@@ -115,18 +115,6 @@ typedef struct _zkrt_packet_t
 
 #pragma pack(pop)
 
-//message protocol handle flag and buffer struct
-typedef struct
-{
-  zkrt_packet_t recvpacket_app;  //with app
-	zkrt_packet_t sendpacket_app;  //with app	
-	u8 data_recv_app[ZK_MAX_LEN];
-	u8 data_send_app[ZK_MAX_LEN];
-	u8 datalen_recvapp;
-  u8 datalen_sendapp;
-//u8 data[ZK_MAX_LEN];
-}msg_handle_st;
-
 //get zkrt packet in can buffer relevant handle struct
 typedef struct
 {
@@ -137,8 +125,6 @@ typedef struct
 	u8 dat_index;	
 	zkrt_packet_t packet;  //receive packet 
 }recv_zkrt_packet_handlest;
-
-extern msg_handle_st msg_handlest; 
 
 void crc_accumulate(uint8_t data, uint16_t *crcAccum);
 void crc_accumulate_buffer(uint16_t *crcAccum, const char *pBuffer, uint16_t length);

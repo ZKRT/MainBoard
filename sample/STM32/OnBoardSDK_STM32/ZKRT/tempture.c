@@ -43,7 +43,7 @@ char read_temperature(void)
 #endif
 	
 #ifdef USE_SESORINTEGRATED
-	//because temperature read in sersorIntegratedHandle, so there not need read //zkrt_todo
+	//because temperature read in sersorIntegratedHandle, so there not need read 
 	
 #endif
 	

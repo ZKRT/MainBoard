@@ -15,7 +15,7 @@
 #include "appprotocol.h"
 
 /////////////////////////////////////////////////////////////////////valible define 
-uint8_t *djidataformmobile; //point in msg_handle_init
+msg_handle_st msg_handlest; //消息处理
 zkrt_packet_t *main_dji_rev; //point in msg_handle_init
 ////////////////////////////////////////////////////////////////////static function define
 static void mobile_data_handle(void);
@@ -32,21 +32,19 @@ zkrt_packet_t cansdebug;
  **/
 void msg_handle_init(void)
 {
-	djidataformmobile = msg_handlest.data_recv_app;
 	main_dji_rev = &msg_handlest.recvpacket_app;
 	memset(&msg_handlest, 0x00, sizeof(msg_handlest));
-	
 }
 /*
 * @brief 将接收到的mobile透传数据进行解析处理
-	mobile数据来源是DJI串口透传数据，经过UART1中断接收解析处理过，拷贝到数组djidataformmobile[]
+	mobile数据来源是DJI串口透传数据，经过UART1中断接收解析处理过，拷贝到数组
 */
 void mobile_data_process(void)
 {
 	//获取从地面站软件的数据
 	if(msg_handlest.datalen_recvapp!=0)
 	{
-		copydataformmobile(djidataformmobile, msg_handlest.datalen_recvapp);
+		copydataformmobile(msg_handlest.data_recv_app, msg_handlest.datalen_recvapp);
 		mobile_data_handle();
 		msg_handlest.datalen_recvapp =0;
 	}
@@ -156,7 +154,7 @@ void mobile_data_handle(void)
 //			break;
 		default:
 			ZKRT_LOG(LOG_NOTICE,"CAN1_send_message_fun\r\n");
-		  CAN1_send_message_fun(djidataformmobile, msg_handlest.datalen_recvapp, (main_dji_rev->UAVID[ZK_DINDEX_DEVTYPE]));/*通过CAN总线发送数据*/
+		  CAN1_send_message_fun(msg_handlest.data_recv_app, msg_handlest.datalen_recvapp, (main_dji_rev->UAVID[ZK_DINDEX_DEVTYPE]));/*通过CAN总线发送数据*/
 			break;
 	}
 }

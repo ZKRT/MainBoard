@@ -13,7 +13,6 @@
 #include "zkrt.h"
 //序列号全局定义，然后递增
 uint8_t zkrt_tx_seq[DEVICE_NUMBER];               		//字节6，帧序列号，为了区分，每个操作需要1个专门的序列号
-msg_handle_st msg_handlest; //消息处理
 /**
  * @brief Accumulate the X.25 CRC by adding one char at a time.
  *
@@ -243,6 +242,8 @@ void zkrt_update_checksum(zkrt_packet_t* packet, uint8_t ch)
 //#if ZK_CRC_ENABLE		
 //		if(ch == (uint8_t)((packet->crc)&0xff))
 //			zkrt_curser_state = 12;
+//		else
+//			goto recv_failed;
 //#else
 //		  packet->crc = ch&0xff;
 //			zkrt_curser_state = 12;		
@@ -253,6 +254,8 @@ void zkrt_update_checksum(zkrt_packet_t* packet, uint8_t ch)
 //#if ZK_CRC_ENABLE				
 //		if(ch == (uint8_t)((packet->crc)>>8))
 //			zkrt_curser_state = 13;
+//		else
+//			goto recv_failed;
 //#else
 //		  packet->crc = (packet->crc)|(ch<<8);
 //			zkrt_curser_state = 13;
@@ -266,13 +269,17 @@ void zkrt_update_checksum(zkrt_packet_t* packet, uint8_t ch)
 //	}
 //	else
 //	{
+//		goto recv_failed;
+//	}
+//	
+//	return zkrt_recv_success;
+//	
+//recv_failed:
 //		zkrt_curser_state = 0;
 //		zkrt_app_index = 0;
 //		zkrt_uav_index = 0;
 //		zkrt_dat_index = 0;
-//	}
-//	
-//	return zkrt_recv_success;
+//		return 	zkrt_recv_success;
 //}
 /**
  * @brief 解析收到的char值，是否满足zkrt packet格式
@@ -372,6 +379,8 @@ uint8_t zkrt_decode_char_v2(recv_zkrt_packet_handlest *rh, uint8_t ch)
 #if ZK_CRC_ENABLE		
 		if(ch == (uint8_t)((packet->crc)&0xff))
 			rh->curser_state = 12;
+		else
+			goto recv_failed;
 #else
 		  packet->crc = ch&0xff;
 			rh->curser_state = 12;		
@@ -382,6 +391,8 @@ uint8_t zkrt_decode_char_v2(recv_zkrt_packet_handlest *rh, uint8_t ch)
 #if ZK_CRC_ENABLE				
 		if(ch == (uint8_t)((packet->crc)>>8))
 			rh->curser_state = 13;
+		else
+			goto recv_failed;
 #else
 		  packet->crc = (packet->crc)|(ch<<8);
 			rh->curser_state = 13;
@@ -395,12 +406,16 @@ uint8_t zkrt_decode_char_v2(recv_zkrt_packet_handlest *rh, uint8_t ch)
 	}
 	else
 	{
+		goto recv_failed;
+	}
+	return rh->recv_ok;
+
+recv_failed:
 		rh->curser_state = 0;
 		rh->app_index = 0;
 		rh->uav_index = 0;
 		rh->dat_index = 0;
-	}
-	return rh->recv_ok;
+		return 	rh->recv_ok;
 }
 /**
  * @brief zkrt_check_packet
