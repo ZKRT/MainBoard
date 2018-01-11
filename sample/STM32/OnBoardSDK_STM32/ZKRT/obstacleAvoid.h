@@ -22,7 +22,7 @@
 #include "sys.h"
 /* Exported macro ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-#define OB_ENABLED_INIT                 0      //zkrt_debug
+#define OB_ENABLED_INIT                 0      //
 #define CAMERA_PAIR_NUM                 5      //5个传感器
 #define GUIDANCE_ONLINE_TIMEOUT         5000   //5s
 #define OBSTACLE_ALARM_DISTANCE         500    //500cm 
@@ -33,7 +33,7 @@
 #define OBSTACLE_SAFE_DISTANCE	        OBSTACLE_ALARM_DISTANCE    //避障绝对安全距离
 #define OBSTACLE_RETURN_DISTANCE	      200    //主动避障生效距离
 #define OBSTACLE_SAFEH_VEL	            3      //避障最高安全速度3m/s   
-#define OBSTACLE_ENABLED_DISTANCE	      1000   //避障新算法，避障的生效距离 15米 //zkrt_debug
+#define OBSTACLE_ENABLED_DISTANCE	      1000   //避障新算法，避障的生效距离 10米 
 #define RC_H_VEL	                      13     //遥控器最高时速 //zkrt_notice 测试结果？
 #define RC_H_VEL_IN5000CH	              3     //遥控器最高时速在遥控器阈值在5000以内时
 

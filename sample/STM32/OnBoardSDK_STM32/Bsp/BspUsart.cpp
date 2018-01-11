@@ -75,7 +75,7 @@ void USART1_Config(void)
   //USART端口配置
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10; //PA9、PA10
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用功能
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;	//速度50MHz
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//速度50MHz
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; //推挽复用输出
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; //上拉
   GPIO_Init(GPIOA,&GPIO_InitStructure); //初始化琍PA9，PA10

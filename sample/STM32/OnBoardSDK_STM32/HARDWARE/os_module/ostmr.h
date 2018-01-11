@@ -11,10 +11,10 @@ Purpose:      OS timer header files for application purpose only
 #ifndef   _OSTMR_H_
 #define   _OSTMR_H_
 
-#include "sys.h"
+#include "hw_config.h"
 #include "port.h"
 
-typedef u32 ostmr_t;
+typedef uint32_t ostmr_t;
 
 typedef enum
 {
@@ -39,10 +39,8 @@ typedef enum
 typedef struct 
 {
   volatile ostmrSpeed_t  speed;
-  volatile u16          number;
+  volatile uint16_t          number;
 }ostmrID_t;
-
-
 
 typedef enum
 {

@@ -16,21 +16,20 @@
 static volatile vfp_t _qTask;
 static volatile vfp_t _fTask;
 
-static volatile u16 _sysTimerCnt10ms;
+static volatile uint16_t _sysTimerCnt10ms;
 
 //void TIM2_IRQHandler(void);
 static void TimerInit_2nd(void);
 static void TIM_NVIC_Configuration_2nd(void);
 
-
 void hwtmr2_enable(void)
 {
-  TIM_Cmd(TIMER_CHANNEL_2ND, ENABLE);  
+  TIM_Cmd(QTTC_TIM_NUM, ENABLE);  
 }
 
 void hwtmr2_disable(void)
 {
-  TIM_Cmd(TIMER_CHANNEL_2ND, DISABLE); 
+  TIM_Cmd(QTTC_TIM_NUM, DISABLE); 
 }
 
 void hwtmr2_init(void)
@@ -43,7 +42,7 @@ void hwtmr2_init(void)
 //void hwtmr2_irqHandler(void)
 void TIM8_TRG_COM_TIM14_IRQHandler()  
 {  
-	if (TIM_GetITStatus(TIMER_CHANNEL_2ND, TIM_IT_Update) != RESET)
+	if (TIM_GetITStatus(QTTC_TIM_NUM, TIM_IT_Update) != RESET)
 	{
 		_sysTimerCnt10ms++;
 		/* 1ms task */
@@ -53,7 +52,7 @@ void TIM8_TRG_COM_TIM14_IRQHandler()
 			(*_fTask)();
 			_sysTimerCnt10ms = 0;
 		}
-		TIM_ClearITPendingBit(TIMER_CHANNEL_2ND, TIM_IT_Update);
+		TIM_ClearITPendingBit(QTTC_TIM_NUM, TIM_IT_Update);
 	}	
 }
 
@@ -74,27 +73,27 @@ static void TimerInit_2nd(void)
   TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
 
   /* TIM2 clock enable */
-  RCC_APB1PeriphClockCmd(RCC_TIMER_2ND, ENABLE);
+  RCC_APB1PeriphClockCmd(QTTC_RCC_CLK, ENABLE);
   
   /* Time base configuration */  //这里定时器的时钟频率为84Mhz
 	
   TIM_TimeBaseStructure.TIM_Period = (1000 - 1); //1ms base 
  
-  TIM_TimeBaseStructure.TIM_Prescaler = (APB1_TIMER_CLK - 1); 
+  TIM_TimeBaseStructure.TIM_Prescaler = (QTTC_TIMER_CLK - 1); 
 
   TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 
   TIM_TimeBaseStructure.TIM_CounterMode = TIM_CounterMode_Up;
 
-  TIM_TimeBaseInit(TIMER_CHANNEL_2ND, &TIM_TimeBaseStructure);
+  TIM_TimeBaseInit(QTTC_TIM_NUM, &TIM_TimeBaseStructure);
 
-  TIM_ClearITPendingBit(TIMER_CHANNEL_2ND, TIM_IT_Update);
+  TIM_ClearITPendingBit(QTTC_TIM_NUM, TIM_IT_Update);
 
   /* TIM IT enable */
-  TIM_ITConfig(TIMER_CHANNEL_2ND, TIM_IT_Update, ENABLE);
+  TIM_ITConfig(QTTC_TIM_NUM, TIM_IT_Update, ENABLE);
 
   /* TIM5 enable counter */
-  TIM_Cmd(TIMER_CHANNEL_2ND, ENABLE);  
+  TIM_Cmd(QTTC_TIM_NUM, ENABLE);  
 }
 /*******************************************************************************
 * Function Name  : TIM_NVIC_Configuration

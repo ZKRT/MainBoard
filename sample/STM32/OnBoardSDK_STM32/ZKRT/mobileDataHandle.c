@@ -108,10 +108,15 @@ void mobile_data_handle(void)
   ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[4]=0x %x\r\n",main_dji_rev->UAVID[4]);
   ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[5]=0x %x\r\n",main_dji_rev->UAVID[5]);
   ZKRT_LOG(LOG_NOTICE,"main_dji_rev->command=0x %x \r\n",main_dji_rev->command);
+  for(k=0; k<msg_handlest.datalen_recvapp; k++)  //zkrt_debug
+  {
+    printf("%x ", msg_handlest.data_recv_app[k]);
+  }
+  printf("\n");
   for(k=0; k<datalen; k++)
   {
     ZKRT_LOG(LOG_NOTICE,"main_dji_rev->data[%d]=0x %x\r\n",k,main_dji_rev->data[k]);
-  }
+  }  
   ZKRT_LOG(LOG_NOTICE,"main_dji_rev->crc=0x %x\r\n",main_dji_rev->crc);
   ZKRT_LOG(LOG_NOTICE,"main_dji_rev->end_code=0x %x\r\n",main_dji_rev->end_code);
 

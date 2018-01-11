@@ -52,6 +52,7 @@ extern "C"
 #include "iwatchdog.h"
 #include "appcan.h"
 #include "dev_handle.h"
+#include "appgas.h"
 }
 #endif //__cplusplus
 
@@ -87,7 +88,7 @@ void sys_ctrl_timetask(void);
   */
 int main()
 {
-  BSPinit();
+    BSPinit();
 	msg_handle_init();
 	delay_nms(1000);
 	ZKRT_LOG(LOG_INOTICE, "==================================================\r\n"); 
@@ -108,41 +109,43 @@ int main()
 #endif	
 	appdev_init();
 	appcan_init();
+	appgas_init();
 	heartbeat_parm_init();   //put at last
 	t_ostmr_insertTask(sys_ctrl_timetask, 1000, OSTMR_PERIODIC);  //1000
-  while (1)
-  {
-#ifdef USE_DJI_FUN			
+	while (1)
+	{
+		appgas_prcs();
+		#ifdef USE_DJI_FUN			
 		dji_process();                        //大疆SDK处理
-#endif	
+		#endif	
 		mobile_data_process();                //将接收到的mobile透传数据进行解析处理
 		appcan_prcs();                        //can com handle for the sub device message
 		temperature_prcs();                   //温度超过上下限启动逃逸功能
 		appdev_prcs();
-#ifdef USE_OBSTACLE_AVOID_FUN	
-#ifdef USE_SESORINTEGRATED		
+		#ifdef USE_OBSTACLE_AVOID_FUN	
+		#ifdef USE_SESORINTEGRATED		
 		app_sersor_integrated_prcs();         //集成板数据处理
-#else
+		#else
 		main_recv_decode_zkrt_dji_guidance(); //Guidance数据包解析处理
-#endif		
-#ifdef USE_UART3_TEST_FUN		
+		#endif		
+		#ifdef USE_UART3_TEST_FUN		
 		myTerminal.terminalCommandHandler(v);
-#endif	
-    avoid_obstacle_alarm_V3();			
-#endif
+		#endif	
+		avoid_obstacle_alarm_V3();			
+		#endif
 		led_process();                        //LED控制
 		stmflash_process();                   //用户配置信息处理
-#ifdef USE_LWIP_FUN			
+		#ifdef USE_LWIP_FUN			
 		lwip_prcs();													//网络流程
-#endif
-#ifdef USE_USB_FUN			
+		#endif
+		#ifdef USE_USB_FUN			
 		usb_user_prcs();                      //USB流程
-#endif    
-#ifdef USE_UNDERCARRIAGE_FUN
-    undercarriage_process();              //起落架处理
-#endif
-	  IWDG_Feed();
-  }
+		#endif    
+		#ifdef USE_UNDERCARRIAGE_FUN
+		undercarriage_process();              //起落架处理
+		#endif
+		IWDG_Feed();
+	}
 }
 /**
   * @brief  温度处理流程：获取温度，避温控制

@@ -121,7 +121,7 @@ static void app_dev_state_handle(void)
 	}
 	//obstacle online check and temperature check again
 #ifdef USE_SESORINTEGRATED		
-	if(GuidanceObstacleData.online_flag !=1)
+	if(GuidanceObstacleData.online_flag == DV_ONLINE)
 	{
 		zkrt_heartv1.dev_online_s.valuebit.obstacle = DV_ONLINE;  //避障在线标记
 	}

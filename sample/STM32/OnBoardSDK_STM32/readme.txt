@@ -86,3 +86,8 @@ V04 TO V05》开始通信协议改版；
 2017-12-26:
 *修改通信包解析的bug；
 
+2018-01-11:
+*修改中间层串口驱动；
++增加保时安气体设备通信功能；
++文件appgas.c,appgas.h,baoshian.c,baoshian.h,osusartX.c,osusartX.h,hw_usart.h路径修改；
+-文件hw_usart.c,osuart4\5\1.c.h；

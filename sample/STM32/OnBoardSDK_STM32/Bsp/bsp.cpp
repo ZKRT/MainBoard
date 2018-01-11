@@ -28,6 +28,7 @@ extern "C"
 #include "ostmr.h"
 #include "sram.h"
 #include "malloc.h"
+#include "osusart.h"
 #ifdef USE_LWIP_FUN			
 #include "lwip_comm.h"
 #endif
@@ -40,7 +41,6 @@ extern "C"
 
 void BSPinit()
 {
-//  RCC_Configuration();                                  //配置成内部时钟 
 	SystickConfig();
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
 	b_ostmr_init();                                         //fast timer
@@ -59,7 +59,8 @@ void BSPinit()
 #ifdef USE_DJI_FUN	
 	Usart_DJI_Config();
 #endif	
-	uart_init();
+	os_usart_init();  //usart os task init
+	usart_config();
 	can_all_init(); 
 #ifdef _TEMPTURE_IO_
 	DS18B20_Init();																		
@@ -68,10 +69,10 @@ void BSPinit()
 //	ADC1_Init();	 //zkrt_notice : HWV4.0没有ADC检测，此处暂时直接屏蔽，不用关宏定义
 #endif
 #ifdef USE_LWIP_FUN	
-  lwip_comm_init();
+	lwip_comm_init();
 #endif
 #ifdef USE_USB_FUN
  	exfuns_init();			                                   //为fatfs相关变量申请内存 
-  USBH_Init(&USB_OTG_Core,USB_OTG_FS_CORE_ID,&USB_Host,&USBH_MSC_cb,&USR_Callbacks);  //初始化USB主机
+	USBH_Init(&USB_OTG_Core,USB_OTG_FS_CORE_ID,&USB_Host,&USBH_MSC_cb,&USR_Callbacks);  //初始化USB主机
 #endif
 }

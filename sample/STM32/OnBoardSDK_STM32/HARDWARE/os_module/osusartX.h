@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    osprintf.h
+  * @file    osusartX.h
   * @author  yanly
   * @version 
   * @date    
@@ -8,24 +8,21 @@
   ******************************************************************************
   */ 
 
-#ifndef __OSUSART1_H
-#define __OSUSART1_H
+#ifndef __OSUSARTX_H
+#define __OSUSARTX_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "hw_usart.h"
-
-//#define DEBUG_PRINTF  
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 
-extern void os_usart1(void);
-extern scommReturn_t  t_hwuart1_ReceiveMessage(scommRcvBuf_t *rxMsg);
-extern scommReturn_t  t_hwuart1_SendMessage(scommTxBuf_t*  txMsg);
-extern u8  u1_hwuart1_txing(void);
-extern void os_reset_rcvstate_u1(void);
-extern u8 os_get_uart_chls_u1(void);
+void os_usartX(void);
+scommReturn_t  t_hwuartX_SendMessage(scommTxBuf_t*  txMsg, uint8_t ustate_item, USART_TypeDef* COM);
+scommReturn_t  t_hwuartX_ReceiveMessage(scommRcvBuf_t *rxMsg, uint8_t ustate_item, USART_TypeDef* COM);
+uint8_t  u1_hwuartX_txing(uint8_t ustate_item, USART_TypeDef* COM);
+uint8_t whatis_arrynum_of_USART(USART_TypeDef* COM);
 /**
   * @}
   */ 

@@ -130,6 +130,7 @@ static void app_can_recv_handle(void)
 					//send packet to app
 					msg_handlest.datalen_sendapp = zkrt_packet2_data(msg_handlest.data_send_app, packet);
 					sendToMobile(msg_handlest.data_send_app, msg_handlest.datalen_sendapp);
+					printf("len=%d\n", msg_handlest.datalen_sendapp); //zkrt_debug
 				}
 				else if(packet->cmd == SUBDEV_TO_UAV)
 				{

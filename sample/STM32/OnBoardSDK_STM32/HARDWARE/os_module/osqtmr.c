@@ -15,7 +15,7 @@
 /*
   Macros
 */
-#define NUM_OF_QTASK     10
+#define NUM_OF_QTASK     10   //code_notice
 
 
 /*
@@ -35,8 +35,8 @@
 /*
   Local variables
 */
-static	u16	volatile	_quickQTaskCnt;
-static	u16	volatile	_fastQTaskCnt;
+static	uint16_t	volatile	_quickQTaskCnt;
+static	uint16_t	volatile	_fastQTaskCnt;
 static sysTimer_t		  _quickQTasks[NUM_OF_QTASK];
 static sysTimer_t		  _fastQTasks[NUM_OF_QTASK];
 
@@ -72,7 +72,7 @@ static ostmrStatus_t t_systmr_status(ostmrID_t *taskID)
 
 static void systmr_quickQTaskHandler(void)
 {
-  u8 __i;
+  uint8_t __i;
 
   for(__i=0; __i<NUM_OF_QTASK; __i++)
   {
@@ -103,7 +103,7 @@ static void systmr_quickQTaskHandler(void)
 
 static void systmr_fastQTaskHandler(void)
 {
-  u8 __i;
+  uint8_t __i;
 
   for(__i=0; __i<NUM_OF_QTASK; __i++)
   {
@@ -135,11 +135,11 @@ static void systmr_fastQTaskHandler(void)
 
 ostmrID_t t_systmr_insertQuickTask(vfp_t taskHandler, ostmr_t value, ostmrMode_t mode)
 {
-  u32 __cnt;
+  uint32_t __cnt;
   ostmrID_t  __tmpTmrID;
   sysTimer_t *__ptimer;
-  volatile  u16 *__ptaskCnt;
-  u16 __ajustValue;
+  volatile  uint16_t *__ptaskCnt;
+  uint16_t __ajustValue;
   
   if(value == 0 or value >= 1000)
   {
@@ -248,7 +248,7 @@ bool_t b_systmr_deleteQuickTask(ostmrID_t *taskID)
 
 bool_t b_systmr_init(void)
 {
-  u32 __i;  
+  uint32_t __i;  
   hwtmr2_init();
   _quickQTaskCnt= 0;
   _fastQTaskCnt= 0;
@@ -426,7 +426,7 @@ void systmr_disable(void)
 
 void systmr_releaseTask(void)
 {
-  u32 __i;  
+  uint32_t __i;  
   _quickQTaskCnt= 0;
   _fastQTaskCnt= 0;
   for(__i =0; __i<(NUM_OF_QTASK); __i++)

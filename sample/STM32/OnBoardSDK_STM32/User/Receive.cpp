@@ -186,7 +186,7 @@ TerminalCommand::terminalCommandHandler(Vehicle* vehicle)
       break;
   }
 }
-
+#ifdef USE_UART3_TEST_FUN
 #ifdef __cplusplus
 extern "C" {
 #endif //__cplusplus
@@ -228,3 +228,4 @@ USART3_IRQHandler(void)
 #ifdef __cplusplus
 }
 #endif //__cplusplus
+#endif

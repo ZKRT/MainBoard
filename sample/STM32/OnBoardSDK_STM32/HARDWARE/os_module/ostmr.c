@@ -12,14 +12,11 @@
 /*
   Macros
 */
-#define NUM_OF_TASK     10
+#define NUM_OF_TASK     10   //code_notice
 
 /* 
   Local types
 */
-
-
-
 
 /*
   Exported variables
@@ -28,7 +25,7 @@
 /*
   Local variables
 */
-static u16 volatile _fastTaskCnt[NUM_OF_HW_TMR_SEPARATOR], _slowTaskCnt[NUM_OF_HW_TMR_SEPARATOR], _secTaskCnt[NUM_OF_HW_TMR_SEPARATOR];
+static uint16_t volatile _fastTaskCnt[NUM_OF_HW_TMR_SEPARATOR], _slowTaskCnt[NUM_OF_HW_TMR_SEPARATOR], _secTaskCnt[NUM_OF_HW_TMR_SEPARATOR];
 static sysTimer_t		_fastTasks[NUM_OF_HW_TMR_SEPARATOR][NUM_OF_TASK/2];
 static sysTimer_t		_slowTasks[NUM_OF_HW_TMR_SEPARATOR][NUM_OF_TASK/2];
 static sysTimer_t		_secTasks[NUM_OF_HW_TMR_SEPARATOR][NUM_OF_TASK/2];
@@ -42,7 +39,7 @@ static void ostmr_dummp(void)
 
 static ostmrStatus_t t_ostmr_status(ostmrID_t *taskID)
 {
-  u32        __taskodd,__tasknum;
+  uint32_t        __taskodd,__tasknum;
     
   if(taskID->number < NUM_OF_TASK)
   {
@@ -82,7 +79,7 @@ static ostmrStatus_t t_ostmr_status(ostmrID_t *taskID)
 
 static void ostmr_fastTaskHandler0(void)
 {
-  u32 __i;
+  uint32_t __i;
   
   for(__i=0; __i<(NUM_OF_TASK/2); __i++)
   {
@@ -114,7 +111,7 @@ static void ostmr_fastTaskHandler0(void)
 
 static void ostmr_fastTaskHandler1(void)
 {
-  u32 __i;
+  uint32_t __i;
   
   for(__i=0; __i<(NUM_OF_TASK/2); __i++)
   {
@@ -145,7 +142,7 @@ static void ostmr_fastTaskHandler1(void)
 
 static void ostmr_slowTaskHandler0(void)
 {
-  u32 __i;
+  uint32_t __i;
   
   for(__i=0; __i<(NUM_OF_TASK/2); __i++)
   {
@@ -176,7 +173,7 @@ static void ostmr_slowTaskHandler0(void)
 
 static void ostmr_slowTaskHandler1(void)
 {
-  u32 __i;
+  uint32_t __i;
   
   for(__i=0; __i<(NUM_OF_TASK/2); __i++)
   {
@@ -207,7 +204,7 @@ static void ostmr_slowTaskHandler1(void)
 
 static void ostmr_secTaskHandler0(void)
 {
-  u32 __i;
+  uint32_t __i;
   
   for(__i=0; __i<(NUM_OF_TASK/2); __i++)
   {
@@ -238,7 +235,7 @@ static void ostmr_secTaskHandler0(void)
 
 static void ostmr_secTaskHandler1(void)
 {
-  u32 __i;
+  uint32_t __i;
   
   for(__i=0; __i<(NUM_OF_TASK/2); __i++)
   {
@@ -272,9 +269,9 @@ ostmrID_t t_ostmr_insertTask(vfp_t taskHandler, ostmr_t value, ostmrMode_t mode)
 
   ostmrID_t  __tmpTmrID;
   ostmr_t    __tmpValue;
-  u32       __cnt,__tasknum,__ajustValue;
+  uint32_t       __cnt,__tasknum,__ajustValue;
   sysTimer_t *__ptimer;
-  u16       *__ptaskCnt;
+  uint16_t       *__ptaskCnt;
   
   __tmpValue = value%10;
   if(__tmpValue > 0 or value<10)
@@ -303,7 +300,7 @@ ostmrID_t t_ostmr_insertTask(vfp_t taskHandler, ostmr_t value, ostmrMode_t mode)
       {
         goto insertErr;
       }
-      __ptaskCnt = (u16 *) &_fastTaskCnt[__tasknum];
+      __ptaskCnt = (uint16_t *) &_fastTaskCnt[__tasknum];
       __ptimer = &_fastTasks[__tasknum][0];
       __ajustValue = 1;
     }
@@ -326,7 +323,7 @@ ostmrID_t t_ostmr_insertTask(vfp_t taskHandler, ostmr_t value, ostmrMode_t mode)
       {
         goto insertErr;
       }
-      __ptaskCnt = (u16 *) &_slowTaskCnt[__tasknum];
+      __ptaskCnt = (uint16_t *) &_slowTaskCnt[__tasknum];
       __ptimer = &_slowTasks[__tasknum][0];    
       __ajustValue = 10;
     }
@@ -349,7 +346,7 @@ ostmrID_t t_ostmr_insertTask(vfp_t taskHandler, ostmr_t value, ostmrMode_t mode)
       {
         goto insertErr;
       }
-      __ptaskCnt = (u16 *) &_secTaskCnt[__tasknum];
+      __ptaskCnt = (uint16_t *) &_secTaskCnt[__tasknum];
       __ptimer = &_secTasks[__tasknum][0];     
       __ajustValue = 100;
     }
@@ -382,7 +379,7 @@ insertErr:
 
 bool_t b_ostmr_deleteTask(ostmrID_t *taskID)
 {  
-  u32        __taskodd,__tasknum;
+  uint32_t        __taskodd,__tasknum;
     
   if(taskID->number < NUM_OF_TASK)
   {
@@ -468,7 +465,7 @@ bool_t b_ostmr_deleteTask(ostmrID_t *taskID)
 
 bool_t b_ostmr_init(void)
 {
-  u32 __i, __j;  
+  uint32_t __i, __j;  
   hwtmr0_init();
   for(__j=0; __j<NUM_OF_HW_TMR_SEPARATOR; __j++)
   {
@@ -564,7 +561,7 @@ bool_t b_ostmr_finished(ostmrID_t *tmrID)
 
 void ostmr_set( ostmrID_t *taskID, ostmr_t value)
 {
-  u32        __taskodd,__tasknum;
+  uint32_t        __taskodd,__tasknum;
     
   if(taskID->number < NUM_OF_TASK)
   {
@@ -612,7 +609,7 @@ void ostmr_set( ostmrID_t *taskID, ostmr_t value)
 
 ostmr_t t_ostmr_getValue( ostmrID_t *taskID)
 {
-  u32        __taskodd,__tasknum;
+  uint32_t        __taskodd,__tasknum;
     
   if(taskID->number < NUM_OF_TASK)
   {
@@ -673,7 +670,7 @@ void ostmr_wait(ostmr_t value)
 
 void ostmr_taskStatusChange(ostmrID_t *taskID, ostmrStatus_t status)
 {
-  u32        __taskodd,__tasknum;
+  uint32_t        __taskodd,__tasknum;
     
   if(taskID->number < NUM_OF_TASK)
   {
@@ -736,7 +733,7 @@ void ostmr_enable(void)
 
 void ostmr_releaseTask(void)
 {
-  u32 __i, __j;  
+  uint32_t __i, __j;  
   for(__j=0; __j<NUM_OF_HW_TMR_SEPARATOR; __j++)
   {
     _fastTaskCnt[__j]  = 0;
