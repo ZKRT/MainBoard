@@ -22,12 +22,19 @@
 /* Exported macro ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
+//////////////////////////////////////////////////////special define
+//gas
+#define MAX_CHANNEL_GAS              8
+
+//////////////////////////////////////////////////////
+
 //#define TN_HEARTBEAT                  1
 //type num enum
 typedef enum
 { 
 	TN_None =0,
 	TN_HEARTBEAT,
+	TN_GetDevInfo,
 	TN_MAX
 }TypeNumEnum;
 
@@ -142,6 +149,43 @@ typedef struct
 	u16 gas_v8;	
 	u8 reserved[1];         //备用
 }zd_heartv2_st;
+//the device relevant of heartbeat protocol in version3.3
+typedef struct
+{
+  devicestatus_un dev_online_s;
+	feedback_un feedback_s;
+}hb_devinfo_st;
+//the temperature relevant of heartbeat protocol in version3.3
+typedef struct
+{
+	u16 t_value;
+	u8 t_status;
+	u16 t_low;
+	u16 t_high;
+}hb_temper_st;
+//the obstacle avoidance relevant of heartbeat protocol in version3.3
+typedef struct
+{
+	u16 ob_distse_v[5];	    //障碍物距离	
+  u8 avoid_ob_enabled;    //避障使能
+  u16 avoid_ob_distse;    //避障生效距离
+	u16 avoid_ob_velocity;  //避障速度	
+}hb_obstacle_st;
+//the gas relevant of heartbeat protocol in version3.3
+typedef struct
+{
+	u8 ch_num;
+	u16 ch_status;
+	u32 gas_value[MAX_CHANNEL_GAS];  //max channel num is 8
+}hb_gas_st;
+//the heartbeat protocol in version3.3
+typedef struct
+{
+	hb_devinfo_st dev;
+	hb_temper_st temper;
+	hb_obstacle_st obstacle;
+	hb_gas_st gas;
+}zd_heartv3_3_st;
 ///////////////////////////////app to uav zkrt data struct
 ////command=normal command, device type=temperture
 typedef struct
@@ -227,7 +271,65 @@ typedef struct
 	u8 gas8;
 	u16 gas8v;
 }gas_hbccplst;
+
+typedef hb_gas_st gas_v3_3_hbccplst;
 ///////////////////////////////app to subdev zkrt data struct
+////command=specify command
+//respond flag
+#define NEED_RETRUN                   1
+#define NOTNEED_RETRUN                0
+
+#define RES_HEADER_LEN  2  //equal to control num+status
+//type num enum
+typedef enum
+{ 
+	NONE_GASCN =0,
+	GETCHNUM_GASCN =1,
+	GETCHINFO_GASCN,
+	MAX_GASCN
+}gas_ctrlnume;
+//gas respond status enum
+typedef enum
+{ 
+	S_Success_Gas,
+	S_Fail_Gas,          
+	S_FailNoDev_Gas,       
+	S_FailNoChannel_Gas
+}ResStatusEnumGas;
+typedef struct
+{
+	u8 control_num;
+	u8 other_data[ZK_DATA_MAX_LEN-1];
+}send_comspec_plst;
+typedef struct
+{
+	u8 control_num;
+	u8 status;
+	u8 other_data[ZK_DATA_MAX_LEN-2];
+}respond_comspec_plst;
+//////send and respond sub 
+////device type=gas type
+//get gas channel num  --not send, have respond
+typedef struct
+{
+	u8 ch_num;
+}rgetchnum_gas_comspecplst;
+//get gas channel info
+typedef struct
+{
+	u8 ch;
+}getchinfo_gas_comspecplst;
+typedef struct
+{
+	u8 ch;
+	u8 reseved[2];
+	u32 value;
+	u8 reseved2[2];
+	u16 sensor_type;
+	u16 unit_type;
+	u32 range;
+	u8 reserved3;
+}rgetchinfo_gas_comspecplst;
 ///////////////////////////////subdev to app zkrt data struct
 ///////////////////////////////
 #pragma pack() 

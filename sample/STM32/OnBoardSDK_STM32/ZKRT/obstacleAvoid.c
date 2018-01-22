@@ -44,7 +44,7 @@ void guidance_parmdata_init(void)
 	GuidanceObstacleData.g_distance_value[2] = OBSTACLE_DISTACNE_INITV;
 	GuidanceObstacleData.g_distance_value[3] = OBSTACLE_DISTACNE_INITV;
 	GuidanceObstacleData.g_distance_value[4] = OBSTACLE_DISTACNE_INITV; 
-//	//zkrt_debug
+	
 //	GuidanceObstacleData.g_distance_value[0] = 2000;
 //	GuidanceObstacleData.g_distance_value[1] = 2000;
 //	GuidanceObstacleData.g_distance_value[2] = 1500;

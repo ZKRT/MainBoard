@@ -22,6 +22,8 @@
 #include "hw_usart.h"
 /* Exported macro ------------------------------------------------------------*/
 
+#define BSA_GAS_NUM    4    //relevantion with bsa_dev_info.channel_num, BSA_GAS_NUM must be > bsa_dev_info.channel_num, user should define correct //zkrt_notice
+
 //length
 //#define BAOSHIAN_HEADER_LEN                 8
 //#define BAOSHIAN_TAIL_LEN                   2
@@ -63,23 +65,23 @@ typedef enum{
 //sensor type
 typedef enum
 {
-	co2_bsast=0,
+	co_bsast=0,
 	h2s_bsast,
 	ex_bsast,
-	o2_basst,
-	so2_basst,
-	ch4_basst,
-	no_basst,
-	no2_basst,
-	cl2_basst,
-	nh3_basst,
-	h2_basst,
-	hcn_basst,
-	hcl_basst,
-	ph3_basst,
-	o3_basst,
-	clo2_basst,
-	c2h40_basst	
+	o2_bsast,
+	so2_bsast,
+	ch4_bsast,
+	no_bsast,
+	no2_bsast,
+	cl2_bsast,
+	nh3_bsast,
+	h2_bsast,
+	hcn_bsast,
+	hcl_bsast,
+	ph3_bsast,
+	o3_bsast,
+	clo2_bsast,
+	c2h40_bsast
 }bsa_sensortype;
 //unit type
 typedef enum
@@ -89,7 +91,8 @@ typedef enum
 	LELpercent_bsaunit,
 	PPM_bsaunit,
 	mgdivied10cube_bsaunit,
-	percent_bsaunit
+	percent_bsaunit,
+	tenpowernegative6_bsaunit
 }bsa_unit;
 //decimal accuracy
 typedef enum
@@ -155,7 +158,7 @@ typedef struct
 	u8 sensor_type;
 	u8 unit_type;
 	u8 decimal_accuracy;
-    u32 low_alarm;
+  u32 low_alarm;
 	u32 high_alarm;
 	u32 measure_range;
 	u32 whatmean; //not define in the baoshian protocol
@@ -168,7 +171,7 @@ typedef struct
 	u8 update_flag;  //not use
 	u32 gas_value;  //format is 32 bit float, need to change
 	u16 decimal_accuracy;
-    u16 state;
+  u16 state;
 	u16 sensor_type;
 	u16 unit_type;
 	u32 measure_range; //the byte num is differnt with protocol document, because document error //zkrt_notice: it is like gas_value, format is 32 bit float
@@ -178,7 +181,11 @@ typedef struct
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////  dev info global use struct
 //dev info
-typedef r_get_devinfo_bsapl bsa_devinfo_st;
+typedef struct 
+{
+	r_get_devinfo_bsapl bsa_fixed_dev;
+	u16 ch_status;
+}bsa_devinfo_st ;
 //gas info
 typedef r_get_chgasvalue_bsa_pl bsa_gas_chinfo_st;
 
@@ -189,7 +196,8 @@ struct bsa_prcs_handles
 {
 	u8 gas_online_flag;         //
 	u8 gas_update_flag;         //when got the gas info, flag set 1, and clear to 0 when local application update the gas info
-	volatile u8 get_channel_info_period; //when period > 200ms
+	volatile u8 get_channel_info_period; //when period 500ms
+	volatile u16 reconnect_period; //when guorui not online and baoshian not online, period is 10000ms
 };
 ////baoshian recv handle struct
 //struct baoshian_recv_handle
@@ -209,6 +217,10 @@ struct bsa_prcs_handles
 void baoshian_init(void);
 void baoshian_prcs(void);
 char baoshian_send(const u8 *data, u8 datalen, u8 flag);
+void baoshian_reset(void);
+extern struct bsa_prcs_handles bsa_prcs_handle;
+extern bsa_gas_chinfo_st bsa_chgas_info[BSA_GAS_NUM];
+extern bsa_devinfo_st bsa_dev_info;
 #endif /* __BAOSHIAN_H */
 /**
   * @}

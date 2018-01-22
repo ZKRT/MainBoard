@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    appgas.c 
+  * @file    baoshian.c 
   * @author  ZKRT
   * @version V1.0
   * @date    5-January-2018
@@ -19,6 +19,8 @@
 #include "baoshian.h"
 #include "osusart.h"
 #include "osqtmr.h"
+#include "dev_handle.h"
+#include "guorui.h"
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -54,7 +56,6 @@ baoshian_header_ptcl *bsa_recv_header;
 baoshian_tailer_ptcl *bsa_recv_tailer;
 u8 *bsa_recv_data;
 ////baoshian dev and channel gas info of global
-#define BSA_GAS_NUM    4    //relevantion with bsa_dev_info.channel_num, zkrt_notice: if actual num > BSA_GAS_NUM, only use BSA_GAS_NUM in program
 bsa_devinfo_st bsa_dev_info;
 bsa_gas_chinfo_st bsa_chgas_info[BSA_GAS_NUM];
 ////baoshian process handle of global
@@ -79,7 +80,7 @@ void baoshian_init(void)
 	bsa_prcs_handle.gas_update_flag = 0;
 	bsa_prcs_handle.get_channel_info_period = 0;
 	//info parm
-	bsa_dev_info.channel_num = BSA_GAS_NUM;
+	bsa_dev_info.bsa_fixed_dev.channel_num = 0;//BSA_GAS_NUM; 
 	
 	////
 	t_systmr_insertQuickTask(bsa_timer_task, 10, OSTMR_PERIODIC);   
@@ -96,6 +97,21 @@ void baoshian_prcs(void)
 	baoshian_recv_handle();       //fixed invoke
 	baoshian_sendqueue_handle();  //fixed invoke
 	baoshian_period_send_get_ch_data();  //app
+	baoshian_reset();
+}
+/**
+  * @brief  当系统不存在气体设备，没隔10s查询一次设备是否有连接
+  * @param  None
+  * @retval None
+  */
+void baoshian_reset(void)
+{
+	if((bsa_prcs_handle.reconnect_period >1000)&&(bsa_prcs_handle.gas_online_flag==0))
+	{
+		bsa_prcs_handle.reconnect_period = 0;
+		baoshian_send(bsa_connec_scmd, sizeof(bsa_connec_scmd), 1);
+		baoshian_send(bsa_getdevinfo_scmd, sizeof(bsa_getdevinfo_scmd), 1);
+	}
 }
 /**
   * @brief  
@@ -146,34 +162,45 @@ static char baoshian_recv_handle(void)
 	{					
 		case connec_bsafid:
 			printf("connected bsa\n");  //zkrt_debug
+		  if(gr_handle.gas_online_flag ==0)
+			{
+				zkrt_devinfo.devself->dev.dev_online_s.valuebit.gas = DV_ONLINE;
+				posion_recv_flag = TimingDelay;	//timer set , when timeout, dev is offline		
+			}
 			break;
 		case disconnec_bsafid:
 			break;
 		case readdevinfo_bsafid:
 			if((sizeof(r_get_devinfo_bsapl)+BAOSHIAN_LEN_NOT_VALID_DATA_LEN) == bsa_recv_header->length)
 			{//valid
-				memcpy((void*)&bsa_dev_info, bsa_recv_data, sizeof(r_get_devinfo_bsapl));
+				memcpy((void*)&bsa_dev_info.bsa_fixed_dev, bsa_recv_data, sizeof(r_get_devinfo_bsapl));
+				if(bsa_dev_info.bsa_fixed_dev.channel_num >BSA_GAS_NUM) 
+					bsa_dev_info.bsa_fixed_dev.channel_num = BSA_GAS_NUM;	//zkrt_notice: defend array outsteam
 				printf("readdevinfo_bsafid bsa\n"); //zkrt_debug
-				printf("version[%d], channel num[%d], model[%s]\n", bsa_dev_info.version, bsa_dev_info.channel_num, bsa_dev_info.model);				
-				bsa_dev_info.channel_num = bsa_dev_info.channel_num >BSA_GAS_NUM ? BSA_GAS_NUM:bsa_dev_info.channel_num;
+				printf("version[%d], channel num[%d], model[%s]\n", bsa_dev_info.bsa_fixed_dev.version, bsa_dev_info.bsa_fixed_dev.channel_num, bsa_dev_info.bsa_fixed_dev.model);				
 			}
 			break;
 		case readchgasdata_bsafid:
 			if((sizeof(r_get_chgasvalue_bsa_pl)+BAOSHIAN_LEN_NOT_VALID_DATA_LEN) == bsa_recv_header->length)
 			{//valid
-				if(bsa_recv_data[0] < BSA_GAS_NUM)
+				if(bsa_recv_data[0] < bsa_dev_info.bsa_fixed_dev.channel_num)
 				{
-					float value;
+//					float value;
 					memcpy((void*)&bsa_chgas_info[bsa_recv_data[0]], bsa_recv_data, sizeof(r_get_chgasvalue_bsa_pl));
-					//set gas update flag 
-					bsa_prcs_handle.gas_update_flag = 1;
-					//set baoshian gas online flag
-					bsa_prcs_handle.gas_online_flag = 1;
-					memcpy((void*)&value, (void*)&bsa_chgas_info[bsa_recv_data[0]].gas_value, 4);
-					printf("readchgasdata_bsafid bsa, ch%d, value:%f, type[%d], unit[%d], decimal[%d], ", bsa_recv_data[0], value,  //zkrt_debug
-					bsa_chgas_info[bsa_recv_data[0]].sensor_type, bsa_chgas_info[bsa_recv_data[0]].unit_type, bsa_chgas_info[bsa_recv_data[0]].decimal_accuracy);
-					memcpy((void*)&value, (void*)&bsa_chgas_info[bsa_recv_data[0]].measure_range, 4);
-					printf("range[%f]\n", value);
+					setBit(bsa_dev_info.ch_status, bsa_recv_data[0]); //set gas channel status
+					//zkrt_notice: special handle  //机体毒气模块比挂载的毒气模块优先级低
+					if(gr_handle.gas_online_flag ==0)
+					{
+						bsa_prcs_handle.gas_update_flag = 1; //set gas update flag 
+						bsa_prcs_handle.gas_online_flag = 1; //set baoshian gas online flag
+						zkrt_devinfo.devself->dev.dev_online_s.valuebit.gas = DV_ONLINE;
+						posion_recv_flag = TimingDelay;	//timer set , when timeout, dev is offline
+					}
+//					memcpy((void*)&value, (void*)&bsa_chgas_info[bsa_recv_data[0]].gas_value, 4);
+//					printf("readchgasdata_bsafid bsa, ch%d, value:%f, type[%d], unit[%d], decimal[%d], ", bsa_recv_data[0], value,  //zkrt_debug
+//					bsa_chgas_info[bsa_recv_data[0]].sensor_type, bsa_chgas_info[bsa_recv_data[0]].unit_type, bsa_chgas_info[bsa_recv_data[0]].decimal_accuracy);
+//					memcpy((void*)&value, (void*)&bsa_chgas_info[bsa_recv_data[0]].measure_range, 4);
+//					printf("range[%f]\n", value);
 				}
 			}
 			break;
@@ -231,6 +258,7 @@ static void bsa_timer_task(void)
 			bsa_senqueue_active = 1;
 	}
 	bsa_prcs_handle.get_channel_info_period++;
+	bsa_prcs_handle.reconnect_period++;
 }
 /**
 * @brief  
@@ -281,10 +309,10 @@ static void baoshian_sendqueue_handle(void)
 static void baoshian_period_send_get_ch_data(void)
 {
 	int i;
-	if((bsa_prcs_handle.get_channel_info_period >BSA_GET_ALLINFO_PERIOD)&&(BSA_SENDQUEUE_NUM-bsa_sendqueue_cnt)>=BSA_GAS_NUM)
+	if((bsa_prcs_handle.get_channel_info_period >BSA_GET_ALLINFO_PERIOD)&&((BSA_SENDQUEUE_NUM-bsa_sendqueue_cnt)>=bsa_dev_info.bsa_fixed_dev.channel_num))
 	{
 		bsa_prcs_handle.get_channel_info_period = 0;
-		for(i=0; i<BSA_GAS_NUM; i++)
+		for(i=0; i<bsa_dev_info.bsa_fixed_dev.channel_num; i++)
 		{
 			bsa_getchdata_scmd_pack(i);
 			baoshian_send(bsa_getchdata_scmd, sizeof(bsa_getchdata_scmd), 1);	

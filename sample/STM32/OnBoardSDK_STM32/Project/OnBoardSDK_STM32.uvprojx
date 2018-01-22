@@ -1207,6 +1207,11 @@
               <FileType>1</FileType>
               <FilePath>..\MANUFACTURER\baoshian.c</FilePath>
             </File>
+            <File>
+              <FileName>guorui.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MANUFACTURER\guorui.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

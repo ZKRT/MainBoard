@@ -96,6 +96,24 @@
 
 //packet max num
 #pragma pack(push, 1)
+typedef struct 
+{
+	uint8_t start_code; 		      
+	uint8_t ver;		   						 
+	uint8_t session_ack;	          
+	uint8_t padding_enc;            
+	uint8_t cmd;             		  
+	uint8_t length;    //length -- [data length]       		
+	uint8_t seq;               		
+	uint8_t APPID[3];      			   
+	uint8_t UAVID[6];        			
+	uint8_t command;
+}zkrtpacket_header;
+typedef struct
+{
+	uint16_t crc;      //[Start Code~Data[n]]        		
+	uint8_t end_code; 
+}zkrtpacket_tailer;
 typedef struct _zkrt_packet_t
 {
 	uint8_t start_code; 		        //×Ö½Ú0£¬Ö¡ÆğÊ¼Âë£¬0XEB

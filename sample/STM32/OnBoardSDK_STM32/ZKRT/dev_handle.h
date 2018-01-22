@@ -19,12 +19,14 @@
 #define __DEV_HANDLE_H 
 /* Includes ------------------------------------------------------------------*/
 #include "sys.h"
+#include "appprotocol.h"
 /* Exported macro ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
-
+typedef zd_heartv3_3_st* dev_inof_sp;
 //zkrt device info struct
 typedef struct
 {
+	dev_inof_sp devself;
 	short temperature1;           //温度1
 	short temperature2;           //温度2
 	short temperature_low;        //温度下限

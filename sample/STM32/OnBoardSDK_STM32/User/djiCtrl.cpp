@@ -356,11 +356,18 @@ void heartbeat_ctrl(void)
 	if(zkrt_heartbeat_pack(msg_handlest.data_send_app, &msg_handlest.datalen_sendapp))
 	{
 		sendToMobile(msg_handlest.data_send_app, msg_handlest.datalen_sendapp);
-//		int k; //zkrt_debug
-//		printf("heart start_code=0x %x\r\n",_zkrt_packet_hb.start_code);
-//		for(k=0; k<30; k++)
-//			printf("%x ",_zkrt_packet_hb.data[k]);
-//		printf("\r\n");
+		zd_heartv3_3_st *hb; //zkrt_debug
+		float gas_v[8];
+		int i;
+		hb = (zd_heartv3_3_st*)(msg_handlest.data_send_app+ZK_HEADER_LEN);
+		for(i=0; i<8; i++)
+			memcpy(&gas_v[i], &hb->gas.gas_value[i], 4);
+		
+		printf("heart start_code=0x %x\r\n",_zkrt_packet_hb.start_code);
+		printf("online[%x], feedback[%x], temper[v %x,s %x,h %x,l %x], distance[f %d, r %d, b %d, l %d, enbale %d, effec %d, vel %d], gas[num %d, , ch0:%f, ch1:%f, ch2:%f, ch3:%f, ch4:%f, ch5:%f, ch6:%f, ch7:%f]\n", 
+		hb->dev.dev_online_s, hb->dev.feedback_s, hb->temper.t_value, hb->temper.t_status, hb->temper.t_high, hb->temper.t_low, 
+		hb->obstacle.ob_distse_v[1], hb->obstacle.ob_distse_v[2],hb->obstacle.ob_distse_v[3], hb->obstacle.ob_distse_v[4], hb->obstacle.avoid_ob_enabled, hb->obstacle.avoid_ob_distse, hb->obstacle.avoid_ob_velocity,
+		hb->gas.ch_num, gas_v[0], gas_v[1], gas_v[2], gas_v[3], gas_v[4], gas_v[5], gas_v[6], gas_v[7]);
 	}
 }
 /**

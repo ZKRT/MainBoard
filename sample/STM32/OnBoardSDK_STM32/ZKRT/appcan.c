@@ -21,6 +21,8 @@
 #include "appprotocol.h"
 #include "heartBeatHandle.h"
 #include "mobileDataHandle.h"
+#include "guorui.h"
+#include "dev_handle.h"
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 can_msg_handle_st canmsg_hst={0};
@@ -198,7 +200,7 @@ static char signlecamera_chbptf(const void *data, u8 len, u8 type)
 		return 0;
 	
 	//online value
-	zkrt_heartv1.dev_online_s.valuebit.siglecamera = DV_ONLINE;
+	zkrt_devinfo.devself->dev.dev_online_s.valuebit.siglecamera = DV_ONLINE;
 	//timer set , when timeout, dev is offline
 	camera_recv_flag = TimingDelay;
 	
@@ -212,34 +214,18 @@ static char signlecamera_chbptf(const void *data, u8 len, u8 type)
   */
 static char gas_chbptf(const void *data, u8 len, u8 type)
 {
-	gas_hbccplst* hbd = (gas_hbccplst*)data;
+	gas_v3_3_hbccplst* hbd = (gas_v3_3_hbccplst*)data;
 	
-	if(len !=sizeof(gas_hbccplst))
+	if(len !=sizeof(gas_v3_3_hbccplst))
 		return 0;
-	
 	//value set
-	zkrt_heartv1.gas_status.int8u = hbd->status;
-	zkrt_heartv1.gas_num1 = hbd->gas1;
-	zkrt_heartv1.gas_num2 = hbd->gas2;
-	zkrt_heartv1.gas_num3 = hbd->gas3;
-	zkrt_heartv1.gas_num4 = hbd->gas4;
-	zkrt_heartv1.gas_v1 = hbd->gas1v;
-	zkrt_heartv1.gas_v2 = hbd->gas2v;
-	zkrt_heartv1.gas_v3 = hbd->gas3v;
-	zkrt_heartv1.gas_v4 = hbd->gas4v;
-	zkrt_heartv2.gas_num5 = hbd->gas5;
-	zkrt_heartv2.gas_num6 = hbd->gas6;
-	zkrt_heartv2.gas_num7 = hbd->gas7;
-	zkrt_heartv2.gas_num8 = hbd->gas8;
-	zkrt_heartv2.gas_v5 = hbd->gas5v;
-	zkrt_heartv2.gas_v6 = hbd->gas6v;
-	zkrt_heartv2.gas_v7 = hbd->gas7v;
-	zkrt_heartv2.gas_v8 = hbd->gas8v;
+	guorui_gas_info = *hbd;
+	gr_handle.gas_update_flag = 1;
 	//online value
-	zkrt_heartv1.dev_online_s.valuebit.gas = DV_ONLINE;
+	zkrt_devinfo.devself->dev.dev_online_s.valuebit.gas = DV_ONLINE;
+	gr_handle.gas_online_flag = 1;
 	//timer set , when timeout, dev is offline
 	posion_recv_flag = TimingDelay;
-	
 	return 1;
 }
 /**
@@ -256,11 +242,11 @@ static char throw_chbptf(const void *data, u8 len, u8 type)
 		return 0;
 	
 	//value set
-	zkrt_heartv1.feedback_s.valuebit.throw1_s = (hbd->v1) &0x01;
-	zkrt_heartv1.feedback_s.valuebit.throw2_s = (hbd->v2) &0x01;
-	zkrt_heartv1.feedback_s.valuebit.throw3_s = (hbd->v3) &0x01;
+	zkrt_devinfo.devself->dev.feedback_s.valuebit.throw1_s = (hbd->v1) &0x01;
+	zkrt_devinfo.devself->dev.feedback_s.valuebit.throw2_s = (hbd->v2) &0x01;
+	zkrt_devinfo.devself->dev.feedback_s.valuebit.throw3_s = (hbd->v3) &0x01;
 	//online value
-	zkrt_heartv1.dev_online_s.valuebit.throwd = DV_ONLINE;
+	zkrt_devinfo.devself->dev.dev_online_s.valuebit.throwd = DV_ONLINE;
 	//timer set , when timeout, dev is offline
 	throw_recv_flag = TimingDelay;
 	
@@ -280,9 +266,9 @@ static char irradiate_chbptf(const void *data, u8 len, u8 type)
 		return 0;
 	
 	//value set
-	zkrt_heartv1.feedback_s.valuebit.irradiate_s = (hbd->value) &0x01;
+	zkrt_devinfo.devself->dev.feedback_s.valuebit.irradiate_s = (hbd->value) &0x01;
 	//online value
-	zkrt_heartv1.dev_online_s.valuebit.irradiate = DV_ONLINE;
+	zkrt_devinfo.devself->dev.dev_online_s.valuebit.irradiate = DV_ONLINE;
 	//timer set , when timeout, dev is offline
 	irradiate_recv_flag = TimingDelay;
 	
@@ -299,7 +285,7 @@ static char megaphone_chbptf(const void *data, u8 len, u8 type)
 	if(len !=0)
 		return 0;
 	//online value
-	zkrt_heartv1.dev_online_s.valuebit.megaphone = DV_ONLINE;
+	zkrt_devinfo.devself->dev.dev_online_s.valuebit.megaphone = DV_ONLINE;
 	//timer set , when timeout, dev is offline
 	phone_recv_flag = TimingDelay;
 	
@@ -318,9 +304,9 @@ static char threedmodeling_chbptf(const void *data, u8 len, u8 type)
 		return 0;
 	
 	//value set
-	zkrt_heartv1.feedback_s.valuebit.threemodeling_photo_s = (hbd->value) &0x01;
+	zkrt_devinfo.devself->dev.feedback_s.valuebit.threemodeling_photo_s = (hbd->value) &0x01;
 	//online value
-	zkrt_heartv1.dev_online_s.valuebit.threemodelling = DV_ONLINE;
+	zkrt_devinfo.devself->dev.dev_online_s.valuebit.threemodelling = DV_ONLINE;
 	//timer set , when timeout, dev is offline
 	threemodeling_recv_flag = TimingDelay;
 	
@@ -338,7 +324,7 @@ static char multicamera_chbptf(const void *data, u8 len, u8 type)
 		return 0;
 	
 	//online value
-	zkrt_heartv1.dev_online_s.valuebit.multicamera = DV_ONLINE;
+	zkrt_devinfo.devself->dev.dev_online_s.valuebit.multicamera = DV_ONLINE;
 	//timer set , when timeout, dev is offline
 	multicamera_recv_flag = TimingDelay;
 	

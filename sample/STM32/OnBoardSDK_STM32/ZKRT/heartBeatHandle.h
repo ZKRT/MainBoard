@@ -104,8 +104,9 @@ void heartbeat_parm_init(void);
 u8 zkrt_heartbeat_pack(u8* data, u8* datalen);
 
 extern timer_upload_st hb_timer; //心跳包定时结构体
-extern zd_heartv2_st zkrt_heartv2;  //定时发送心跳包v2的数据体缓存
-extern zd_heartv1_st zkrt_heartv1;
+//extern zd_heartv2_st zkrt_heartv2;  //定时发送心跳包v2的数据体缓存
+//extern zd_heartv1_st zkrt_heartv1;
+extern zd_heartv3_3_st zkrt_heartbeat;
 extern zkrt_packet_t _zkrt_packet_hb;   //发送到DJI透传数据的心跳包缓存  
 
 #endif /* __UNDERCARRIAGECTRL_H */
