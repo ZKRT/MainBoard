@@ -1,6 +1,7 @@
 #include "stm32f4xx.h"
 #include "MobileSample.h"
 #include "zkrt.h"
+#include <string.h>
 
 using namespace DJI;
 using namespace DJI::OSDK;
@@ -8,6 +9,7 @@ using namespace DJI::OSDK;
 extern Vehicle  vehicle;
 extern Vehicle* v;
 
+use_broad_data_st dji_broaddata;
 ////////////////////////////////////////////////////////////////////////////////////zkrt use
 #include "mobileDataHandle.h"
 #include "sys.h"
@@ -180,4 +182,14 @@ actionMobileCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
   {
     DERROR("ACK is exception, sequence %d\n", recvFrame.recvInfo.seqNumber);
   }
+}
+
+void djiBroadcastCallback(DJI::OSDK::Vehicle*      vehicle,
+                        DJI::OSDK::RecvContainer recvFrame,
+                        DJI::OSDK::UserData      userData)
+{
+	use_broad_data_st *ub = (use_broad_data_st*)&userData;
+	Telemetry::Gimbal data = v->broadcast->getGimbal();
+  memcpy((uint8_t*)&ub->gimbal, (uint8_t*)&data, sizeof(Gimbalst));
+	ZKRT_LOG(LOG_DEBUG,"gimbal[roll/pitch/yaw]=%f,%f,%f\n", ub->gimbal.roll, ub->gimbal.pitch, ub->gimbal.yaw);
 }

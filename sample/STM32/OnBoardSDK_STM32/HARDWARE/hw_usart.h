@@ -15,9 +15,9 @@
 #include "hw_config.h"
 #include "port.h"
 
-#define USART_MAX_INDEX             4  //zkrt_notice
+#define USART_MAX_INDEX             4  //zkrt_notice: 根据芯片自定义
 
-#define USART_DATA_SIZE      		200
+#define USART_DATA_SIZE      		200   //zkrt_notice: 根据芯片自定义
 
 #define USART_TX_DATA_SIZE          USART_DATA_SIZE
 #define USART_RX_DATA_SIZE          USART_DATA_SIZE
@@ -70,4 +70,5 @@ typedef enum
 }scommReturn_t;
 
 extern USART_TypeDef* UsartInstance[USART_MAX_INDEX];
+extern const uint32_t uart_baudrate[USART_MAX_INDEX];
 #endif

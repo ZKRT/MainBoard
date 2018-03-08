@@ -578,7 +578,7 @@ unsigned char obstacle_ctrl_check_by_rc_and_distance(float *flight_ch, int16_t R
 	{
 //		safe_vel = (float)(OBSTACLE_SAFEH_VEL*(distance-OBSTACLE_SAFE_DISTANCE))/(OBSTACLE_ENABLED_DISTANCE-OBSTACLE_SAFE_DISTANCE);
 //		rcdata_vel = (float)(RCData_ch*RC_H_VEL)/10000;
-//		printf("safe_vel:%f,rcdata_vel:%f\n", safe_vel,rcdata_vel);  //zkrt_debug
+//		printf("safe_vel:%f,rcdata_vel:%f\n", safe_vel,rcdata_vel);
 //		if(fabs(rcdata_vel)<=safe_vel)
 //		{
 //			ret =0;

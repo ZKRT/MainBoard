@@ -1212,6 +1212,11 @@
               <FileType>1</FileType>
               <FilePath>..\MANUFACTURER\guorui.c</FilePath>
             </File>
+            <File>
+              <FileName>pelcod.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\MANUFACTURER\pelcod.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

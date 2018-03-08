@@ -77,7 +77,7 @@ int dji_init(void)
 	// Check USART communication
 	if (!v->protocolLayer->getDriver()->getDeviceStatus())
 	{
-		printf("USART communication is not working.\r\n");
+		ZKRT_LOG(LOG_ERROR,"USART communication is not working.\r\n");
 		__set_FAULTMASK(1);
 		NVIC_SystemReset();
 		delete (v);
@@ -100,7 +100,7 @@ int dji_init(void)
 	if (v->getFwVersion() < extendedVersionBase &&
 	v->getFwVersion() != Version::M100_31)
 	{
-		printf("Upgrade firmware using Assistant software!\n");
+		ZKRT_LOG(LOG_ERROR, "version unmath, Upgrade firmware using Assistant software!\n");
 		__set_FAULTMASK(1);
 		NVIC_SystemReset();
 		delete (v);
@@ -155,7 +155,9 @@ void dji_process(void)
 			// Re-set Broadcast frequencies to their default values
 			ACK::ErrorCode ack = v->broadcast->setBroadcastFreqDefaults(20);	    //(3)
       delay_nms(50);
-			
+		  //Broadcast Callback set
+//			v->broadcast->setUserBroadcastCallback(djiBroadcastCallback, &dji_broaddata);  //zkrt_test zkrt_debug
+//			delay_nms(10);
 		 // Mobile Callback set                                                     //(4)
 			v->moc->setFromMSDKCallback(parseFromMobileCallback_v2, (UserData)&msg_handlest);
 			delay_nms(50);
@@ -165,7 +167,6 @@ void dji_process(void)
 			if(djisdk_state.cmdres_timeout - TimingDelay >= 5000) //激活不成功时，每5秒重新激活一次
 			{
 				djisdk_state.run_status = init_none_djirs;
-//				heartbeat_ctrl(); //zkrt_debug
 			}
 			break;
 		case avtivated_ok_djirs:
@@ -214,7 +215,6 @@ void dji_process(void)
 //        v->obtainCtrlAuthority();
 //				ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
 //			}
-////			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag); //zkrt_debug
 //			v->control->flightCtrl(flightData_zkrtctrl);
 //			ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n")			
 //		}
@@ -275,7 +275,7 @@ void dji_flight_ctrl(void)
 		v->obtainCtrlAuthority();
 		ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
 	}
-//			printf("x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag); //zkrt_debug
+//	ZKRT_LOG(LOG_DEBUG, "x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag);
 	v->control->flightCtrl(flightData_zkrtctrl);
 	ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n");
 }
@@ -353,18 +353,17 @@ void get_flight_data_and_handle(void)
   */
 void heartbeat_ctrl(void)
 {
+	zd_heartv3_3_st *hb;
+	float gas_v[8];
+	int i;	
 	if(zkrt_heartbeat_pack(msg_handlest.data_send_app, &msg_handlest.datalen_sendapp))
 	{
 		sendToMobile(msg_handlest.data_send_app, msg_handlest.datalen_sendapp);
-		zd_heartv3_3_st *hb; //zkrt_debug
-		float gas_v[8];
-		int i;
+
 		hb = (zd_heartv3_3_st*)(msg_handlest.data_send_app+ZK_HEADER_LEN);
 		for(i=0; i<8; i++)
 			memcpy(&gas_v[i], &hb->gas.gas_value[i], 4);
-		
-		printf("heart start_code=0x %x\r\n",_zkrt_packet_hb.start_code);
-		printf("online[%x], feedback[%x], temper[v %x,s %x,h %x,l %x], distance[f %d, r %d, b %d, l %d, enbale %d, effec %d, vel %d], gas[num %d, , ch0:%f, ch1:%f, ch2:%f, ch3:%f, ch4:%f, ch5:%f, ch6:%f, ch7:%f]\n", 
+		ZKRT_LOG(LOG_DEBUG, "online[%x], feedback[%x], temper[v %x,s %x,h %x,l %x], distance[f %d, r %d, b %d, l %d, enbale %d, effec %d, vel %d], gas[num %d, , ch0:%f, ch1:%f, ch2:%f, ch3:%f, ch4:%f, ch5:%f, ch6:%f, ch7:%f]\n", 
 		hb->dev.dev_online_s, hb->dev.feedback_s, hb->temper.t_value, hb->temper.t_status, hb->temper.t_high, hb->temper.t_low, 
 		hb->obstacle.ob_distse_v[1], hb->obstacle.ob_distse_v[2],hb->obstacle.ob_distse_v[3], hb->obstacle.ob_distse_v[4], hb->obstacle.avoid_ob_enabled, hb->obstacle.avoid_ob_distse, hb->obstacle.avoid_ob_velocity,
 		hb->gas.ch_num, gas_v[0], gas_v[1], gas_v[2], gas_v[3], gas_v[4], gas_v[5], gas_v[6], gas_v[7]);

@@ -53,6 +53,7 @@ extern "C"
 #include "appcan.h"
 #include "dev_handle.h"
 #include "appgas.h"
+#include "pelcod.h"
 }
 #endif //__cplusplus
 
@@ -112,6 +113,9 @@ int main()
 	appgas_init();
 	heartbeat_parm_init();   //put at last
 	t_ostmr_insertTask(sys_ctrl_timetask, 1000, OSTMR_PERIODIC);  //1000
+#ifdef USE_PELCOD_FUN	
+	pelcod_init();
+#endif	
 	while (1)
 	{
 		appgas_prcs();
@@ -576,10 +580,7 @@ void avoid_obstacle_alarm_V3(void)
 	{
 		obstacleAllControl.control[i].last_state = obstacleAllControl.control[i].state;
 	}
-	
-	//zkrt_debug
-//	printf("control:%d,Vx=%f,Vy=%f,Vz=%f\n", ctrl_flag, fl_x, fl_y, fl_z);
-//	printf("height:%f, angle:%f\n", djif_status.height, djif_status.fiter_angle_ob);
+
 	if(ctrl_flag)
 	{ 
 		flightData_zkrtctrl.x = fl_x;

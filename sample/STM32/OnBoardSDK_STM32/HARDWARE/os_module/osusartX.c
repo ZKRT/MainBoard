@@ -40,6 +40,7 @@ typedef struct
 
 static osusartx_st osusartX_state[USART_MAX_INDEX];
 USART_TypeDef* UsartInstance[USART_MAX_INDEX] = {USART2, USART3, UART4, USART6}; //zkrt_notice: 根据芯片自定义
+const uint32_t uart_baudrate[USART_MAX_INDEX] ={115200, 115200, 115200, 2400} ;//zkrt_notice: 根据芯片自定义
 
 //task init
 static void UsartXTaskInit(void);
@@ -110,7 +111,10 @@ static  void  UsartXRstVariable_num(uint8_t ustate_item, osusartx_st * ustate, U
 	
 	USART_ITConfig(UsartInstance[ustate_item], USART_IT_TXE, DISABLE);
 	
-  ustate->_u1CharTmrRestart = UART0_CHAR_TMR_RESTART;     //default set
+	if(uart_baudrate[ustate_item] >= 4800)
+		ustate->_u1CharTmrRestart = UART0_CHAR_TMR_RESTART;
+	else
+		ustate->_u1CharTmrRestart = UART0_CHAR_TMR_RESTART+3;
 //	ustate->_u1com1_state = UART_CHANNEL_IDLE;
 //	ustate->_u1com1_state_tmrcnt = 0;
 //  ustate->_u1FrameTmrRestart = UART0_FRM_TMR_RESTART;     //default set	
@@ -437,7 +441,7 @@ void _USARTX_IRQHandler(USART_TypeDef* COM)
   * @param  None
   * @retval None
   */
-void USART2_IRQHandler(void) 
+void USART2_IRQHandler(void) //zkrt_notice: 根据芯片自定义
 {
 	_USARTX_IRQHandler(USART2);
 }
@@ -446,7 +450,7 @@ void USART2_IRQHandler(void)
   * @param  None
   * @retval None
   */
-void USART3_IRQHandler(void) 
+void USART3_IRQHandler(void) //zkrt_notice: 根据芯片自定义
 {
 	_USARTX_IRQHandler(USART3);
 }
@@ -455,7 +459,7 @@ void USART3_IRQHandler(void)
   * @param  None
   * @retval None
   */
-void UART4_IRQHandler(void) 
+void UART4_IRQHandler(void) //zkrt_notice: 根据芯片自定义
 {
 	_USARTX_IRQHandler(UART4);
 }
@@ -464,7 +468,7 @@ void UART4_IRQHandler(void)
   * @param  None
   * @retval None
   */
-void USART6_IRQHandler(void) 
+void USART6_IRQHandler(void) //zkrt_notice: 根据芯片自定义
 {
 	_USARTX_IRQHandler(USART6);
 }

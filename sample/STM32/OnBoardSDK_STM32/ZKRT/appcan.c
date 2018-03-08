@@ -96,7 +96,7 @@ static void zkrt_common_data_parse(const u8* data, u8 datalen, u8 dev_type)
 			if(chbda->hb_flag !=TNHB_FLAG)
 				break;
 			cmon_hb_ptcol_fun[dev_type](chbda->hb_data, datalen-THHB_FIXED_LEN, dev_type);
-			printf("dev:%d online\n",dev_type+1);
+			ZKRT_LOG(LOG_DEBUG, "dev:%d online\n",dev_type+1); 
 			break;
 		default:break;
 	}
@@ -132,7 +132,7 @@ static void app_can_recv_handle(void)
 					//send packet to app
 					msg_handlest.datalen_sendapp = zkrt_packet2_data(msg_handlest.data_send_app, packet);
 					sendToMobile(msg_handlest.data_send_app, msg_handlest.datalen_sendapp);
-					printf("len=%d\n", msg_handlest.datalen_sendapp); //zkrt_debug
+					ZKRT_LOG(LOG_DEBUG,"len=%d\n", msg_handlest.datalen_sendapp);
 				}
 				else if(packet->cmd == SUBDEV_TO_UAV)
 				{

@@ -161,7 +161,7 @@ static char baoshian_recv_handle(void)
 	switch(bsa_recv_header->fun_id)
 	{					
 		case connec_bsafid:
-			printf("connected bsa\n");  //zkrt_debug
+			ZKRT_LOG(LOG_DEBUG, "connected bsa\n");
 		  if(gr_handle.gas_online_flag ==0)
 			{
 				zkrt_devinfo.devself->dev.dev_online_s.valuebit.gas = DV_ONLINE;
@@ -176,8 +176,8 @@ static char baoshian_recv_handle(void)
 				memcpy((void*)&bsa_dev_info.bsa_fixed_dev, bsa_recv_data, sizeof(r_get_devinfo_bsapl));
 				if(bsa_dev_info.bsa_fixed_dev.channel_num >BSA_GAS_NUM) 
 					bsa_dev_info.bsa_fixed_dev.channel_num = BSA_GAS_NUM;	//zkrt_notice: defend array outsteam
-				printf("readdevinfo_bsafid bsa\n"); //zkrt_debug
-				printf("version[%d], channel num[%d], model[%s]\n", bsa_dev_info.bsa_fixed_dev.version, bsa_dev_info.bsa_fixed_dev.channel_num, bsa_dev_info.bsa_fixed_dev.model);				
+//				printf("readdevinfo_bsafid bsa\n");
+//				printf("version[%d], channel num[%d], model[%s]\n", bsa_dev_info.bsa_fixed_dev.version, bsa_dev_info.bsa_fixed_dev.channel_num, bsa_dev_info.bsa_fixed_dev.model);				
 			}
 			break;
 		case readchgasdata_bsafid:
@@ -197,7 +197,7 @@ static char baoshian_recv_handle(void)
 						posion_recv_flag = TimingDelay;	//timer set , when timeout, dev is offline
 					}
 //					memcpy((void*)&value, (void*)&bsa_chgas_info[bsa_recv_data[0]].gas_value, 4);
-//					printf("readchgasdata_bsafid bsa, ch%d, value:%f, type[%d], unit[%d], decimal[%d], ", bsa_recv_data[0], value,  //zkrt_debug
+//					printf("readchgasdata_bsafid bsa, ch%d, value:%f, type[%d], unit[%d], decimal[%d], ", bsa_recv_data[0], value, 
 //					bsa_chgas_info[bsa_recv_data[0]].sensor_type, bsa_chgas_info[bsa_recv_data[0]].unit_type, bsa_chgas_info[bsa_recv_data[0]].decimal_accuracy);
 //					memcpy((void*)&value, (void*)&bsa_chgas_info[bsa_recv_data[0]].measure_range, 4);
 //					printf("range[%f]\n", value);

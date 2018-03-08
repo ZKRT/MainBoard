@@ -650,7 +650,6 @@ void usart_config(void)
 	
 	uart_gpio_init();
 	
-	USART_InitStructure.USART_BaudRate = 115200;
 	USART_InitStructure.USART_WordLength = USART_WordLength_8b;
 	USART_InitStructure.USART_StopBits = USART_StopBits_1;
 	USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -660,8 +659,8 @@ void usart_config(void)
 	/* Prepare all uart to receive a data packet */
 	for(UsartIndex = 0; UsartIndex < USART_MAX_INDEX; UsartIndex++)
 	{
+		USART_InitStructure.USART_BaudRate = uart_baudrate[UsartIndex];
 		USART_Init(UsartInstance[UsartIndex], &USART_InitStructure);
-
 		/* Enable 8xUSARTs Receive interrupts */
 		USART_ITConfig(UsartInstance[UsartIndex], USART_IT_RXNE, ENABLE);
 		USART_ITConfig(UsartInstance[UsartIndex], USART_IT_TXE, DISABLE);

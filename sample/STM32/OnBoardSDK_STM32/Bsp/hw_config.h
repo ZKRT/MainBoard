@@ -42,6 +42,7 @@
 //#define USE_EXTRAM_FUN
 //#define USE_USB_FUN
 //#define USE_LWIP_FUN
+//#define USE_PELCOD_FUN
 //#define HWTEST_FUN
 
 //unit test debug

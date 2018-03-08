@@ -516,7 +516,7 @@ DataBroadcast::setFreqDefaults(uint8_t* freq)
   freq[7]  = FREQ_0HZ; // Don't send RTK
   freq[8]  = FREQ_0HZ; // Don't send Mag
   freq[9]  = FREQ_50HZ;
-  freq[10] = FREQ_0HZ;
+  freq[10] = FREQ_50HZ;
   freq[11] = FREQ_10HZ;
   freq[12] = FREQ_0HZ;
   freq[13] = FREQ_50HZ;

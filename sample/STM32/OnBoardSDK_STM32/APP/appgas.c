@@ -84,7 +84,7 @@ void appgas_prcs(void)
   */
 u8 appgas_message_handle(zkrt_packet_t* recvpack, u8* respond_data, u8* reslen)
 {
-	u8 ret =NEED_RETRUN;
+	u8 ret =NOTNEED_RETRUN;
 	u8 respacket_len;
 	send_comspec_plst *comspec = (send_comspec_plst*)recvpack->data;
 	respond_comspec_plst *rcomspec = (respond_comspec_plst*)(respond_data+sizeof(zkrtpacket_header));

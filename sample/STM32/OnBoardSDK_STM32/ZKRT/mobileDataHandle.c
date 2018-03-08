@@ -20,6 +20,7 @@ msg_handle_st msg_handlest; //消息处理
 zkrt_packet_t *main_dji_rev; //point in msg_handle_init
 
 extern u8 which_gas_manu;   //使用哪个厂家的气体探测器
+extern void sendToMobile(uint8_t *data, uint8_t len);
 ////////////////////////////////////////////////////////////////////static function define
 static void mobile_data_handle(void);
 static void copydataformmobile(const u8* sdata, u8 sdatalen);
@@ -81,7 +82,6 @@ void mobile_data_process(void)
     说     明：
 
 ************************************************************************/
-//zkrt_debug
 //int dataindex;
 //short fuyang, hangxiang;
 void mobile_data_handle(void)
@@ -94,29 +94,29 @@ void mobile_data_handle(void)
 //check packet format
   if(zkrt_check_packet(main_dji_rev)==false)
     return;
-  ZKRT_LOG(LOG_NOTICE, "***************main_dji_revdata_form_mobile************************\r\n");
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->start_code=0x %x\r\n",main_dji_rev->start_code);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->ver=0x %x\r\n",main_dji_rev->ver);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->session_ack=0x %x \r\n",main_dji_rev->session_ack);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->padding_enc=0x %x\r\n",main_dji_rev->cmd);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->cmd=0x %x\r\n",main_dji_rev->ver);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->length=0x %x\r\n",main_dji_rev->length);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->seq=0x %x\r\n",main_dji_rev->seq);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->APPID[0]=0x %x \r\n",main_dji_rev->APPID[0]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->APPID[1]=0x %x \r\n",main_dji_rev->APPID[1]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->APPID[2]=0x %x \r\n",main_dji_rev->APPID[2]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[0]=0x %x \r\n",main_dji_rev->UAVID[0]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[1]=0x %x\r\n",main_dji_rev->UAVID[1]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[2]=0x %x\r\n",main_dji_rev->UAVID[2]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[3]=0x %x\r\n",main_dji_rev->UAVID[3]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[4]=0x %x\r\n",main_dji_rev->UAVID[4]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[5]=0x %x\r\n",main_dji_rev->UAVID[5]);
-  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->command=0x %x \r\n",main_dji_rev->command);
-  for(k=0; k<msg_handlest.datalen_recvapp; k++)  //zkrt_debug
+//  ZKRT_LOG(LOG_NOTICE, "***************main_dji_revdata_form_mobile************************\r\n");
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->start_code=0x %x\r\n",main_dji_rev->start_code);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->ver=0x %x\r\n",main_dji_rev->ver);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->session_ack=0x %x \r\n",main_dji_rev->session_ack);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->padding_enc=0x %x\r\n",main_dji_rev->cmd);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->cmd=0x %x\r\n",main_dji_rev->ver);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->length=0x %x\r\n",main_dji_rev->length);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->seq=0x %x\r\n",main_dji_rev->seq);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->APPID[0]=0x %x \r\n",main_dji_rev->APPID[0]);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->APPID[1]=0x %x \r\n",main_dji_rev->APPID[1]);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->APPID[2]=0x %x \r\n",main_dji_rev->APPID[2]);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[0]=0x %x \r\n",main_dji_rev->UAVID[0]);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[1]=0x %x\r\n",main_dji_rev->UAVID[1]);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[2]=0x %x\r\n",main_dji_rev->UAVID[2]);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[3]=0x %x\r\n",main_dji_rev->UAVID[3]);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[4]=0x %x\r\n",main_dji_rev->UAVID[4]);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->UAVID[5]=0x %x\r\n",main_dji_rev->UAVID[5]);
+//  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->command=0x %x \r\n",main_dji_rev->command);
+  for(k=0; k<msg_handlest.datalen_recvapp; k++)  
   {
-    printf("%x ", msg_handlest.data_recv_app[k]);
+    ZKRT_LOG(LOG_DEBUG, "%x ", msg_handlest.data_recv_app[k]);
   }
-  printf("\n");
+  ZKRT_LOG(LOG_DEBUG, "\n");
   for(k=0; k<datalen; k++)
   {
     ZKRT_LOG(LOG_NOTICE,"main_dji_rev->data[%d]=0x %x\r\n",k,main_dji_rev->data[k]);
@@ -133,18 +133,6 @@ void mobile_data_handle(void)
   case DEVICE_TYPE_MAINBOARD:
     if(main_dji_rev->data[0] <= MAX_MBDH_NUM)
       mb_self_handle_fun[main_dji_rev->data[0]-1](main_dji_rev->data+1);
-    //zkrt_debug
-//      printf("=================control data: ");
-//      printf("%x ", main_dji_rev->data[0]);
-//      printf("%x ", main_dji_rev->data[1]);
-//      printf("%x ", main_dji_rev->data[2]);
-//      printf("%x ", main_dji_rev->data[3]);
-//      printf("%x ", main_dji_rev->data[4]);
-//      printf("%x ", main_dji_rev->data[5]);
-//      printf("%x ", main_dji_rev->data[6]);
-//      printf("%x ", main_dji_rev->data[7]);
-//      printf("%x ", main_dji_rev->data[8]);
-//      printf("===========================\r\n");
     break;
   //zkrt_debug
 //    case DEVICE_TYPE_MULTICAMERA:
@@ -167,7 +155,8 @@ void mobile_data_handle(void)
 											(main_dji_rev->UAVID[ZK_DINDEX_DEVTYPE]));
 		else
 		{
-			appgas_message_handle(main_dji_rev, msg_handlest.data_send_app, &msg_handlest.datalen_sendapp);
+			if(appgas_message_handle(main_dji_rev, msg_handlest.data_send_app, &msg_handlest.datalen_sendapp)==NEED_RETRUN)
+				sendToMobile(msg_handlest.data_send_app, msg_handlest.datalen_sendapp);
 		}
 		break;
   default:
