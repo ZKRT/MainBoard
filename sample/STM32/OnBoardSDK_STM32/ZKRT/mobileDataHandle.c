@@ -114,9 +114,13 @@ void mobile_data_handle(void)
 //  ZKRT_LOG(LOG_NOTICE,"main_dji_rev->command=0x %x \r\n",main_dji_rev->command);
   for(k=0; k<msg_handlest.datalen_recvapp; k++)  
   {
-    ZKRT_LOG(LOG_DEBUG, "%x ", msg_handlest.data_recv_app[k]);
+#ifdef LOG_DEBUG_DATA	  
+    printf("%x ", msg_handlest.data_recv_app[k]);
+#endif	  
   }
-  ZKRT_LOG(LOG_DEBUG, "\n");
+#ifdef LOG_DEBUG_DATA	    
+  printf("\n");
+#endif
   for(k=0; k<datalen; k++)
   {
     ZKRT_LOG(LOG_NOTICE,"main_dji_rev->data[%d]=0x %x\r\n",k,main_dji_rev->data[k]);
