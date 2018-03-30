@@ -98,8 +98,13 @@ void main_dji_recv(void)
 	
   for(k=0; k<30; k++)
   {
-    ZKRT_LOG(LOG_NOTICE,"main_dji_rev.data[%d]=0x %x\r\n",k,main_dji_rev.data[k]);
+#ifdef LOG_DEBUG_DATA	  
+    printf("%x ", main_dji_rev.data[k]);
+#endif  
   }
+#ifdef LOG_DEBUG_DATA	  
+    printf("\n");
+#endif  
   ZKRT_LOG(LOG_NOTICE,"main_dji_rev.crc=0x %x\r\n",main_dji_rev.crc);
   ZKRT_LOG(LOG_NOTICE,"main_dji_rev.end_code=0x %x\r\n",main_dji_rev.end_code);
 
