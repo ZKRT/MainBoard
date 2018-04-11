@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    ProtocolZkrtHandle.h 
+  * @file    ProtocolZkrtHandle.h
   * @author  ZKRT
   * @version V1.0.0
   * @date    25-March-2017
@@ -13,7 +13,7 @@
   *
   ******************************************************************************
   */
-  
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __PROTOCOLZKRTHANDLE_H
 #define __PROTOCOLZKRTHANDLE_H
@@ -25,7 +25,7 @@
 /* Exported types ------------------------------------------------------------*/
 /**
 *   @brief  mainboard self msg to handle someting by protocol from mobile
-  * @param1 u8* data, 
+  * @param1 u8* data,
   * @retval none
   */
 typedef void (*MB_SELF_MSG_FUN)(u8*);
@@ -45,7 +45,7 @@ extern const MB_SELF_MSG_FUN mb_self_handle_fun[MAX_MBDH_NUM];
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}

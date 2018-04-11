@@ -5,7 +5,25 @@
  *  @brief
  *  Vehicle API for DJI onboardSDK library
  *
- *  @copyright 2017 DJI. All right reserved.
+ *  @Copyright (c) 2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -15,31 +33,43 @@
 using namespace DJI;
 using namespace DJI::OSDK;
 
-Vehicle::Vehicle(const char* device, uint32_t baudRate, bool threadSupport)
+Vehicle::Vehicle(const char* device,
+		 uint32_t baudRate,
+		 bool threadSupport,
+                 bool enableAdvancedSensing)
   : protocolLayer(NULL)
   , subscribe(NULL)
   , broadcast(NULL)
   , control(NULL)
   , camera(NULL)
+#ifdef ADVANCED_SENSING
+  , advancedSensing(NULL)
+  , advSensingErrorPrintOnce(false)
+#endif
   , gimbal(NULL)
   , mfio(NULL)
   , moc(NULL)
   , missionManager(NULL)
   , hardSync(NULL)
-  , readThread(NULL)
+  , virtualRC(NULL)
+  , UARTSerialReadThread(NULL)
   , callbackThread(NULL)
+  , advancedSensingEnabled(enableAdvancedSensing)
+  , USBReadThread(NULL)
+  , USBThreadReady(false)
 {
   if (!device)
+  {
     DERROR("Illegal serial device handle!\n");
+  }
 
   this->threadSupported = threadSupport;
   this->device          = device;
   this->baudRate        = baudRate;
   callbackId            = 0;
-  ackErrorCode.data     = OpenProtocol::ErrorCode::CommonACK::NO_RESPONSE_ERROR;
+  ackErrorCode.data = OpenProtocolCMD::ErrorCode::CommonACK::NO_RESPONSE_ERROR;
 
   mandatorySetUp();
-  functionalSetUp();
 }
 
 Vehicle::Vehicle(bool threadSupport)
@@ -52,7 +82,8 @@ Vehicle::Vehicle(bool threadSupport)
   , moc(NULL)
   , missionManager(NULL)
   , hardSync(NULL)
-  , readThread(NULL)
+  , virtualRC(NULL)
+  , UARTSerialReadThread(NULL)
   , callbackThread(NULL)
 {
   this->threadSupported = threadSupport;
@@ -71,7 +102,7 @@ Vehicle::mandatorySetUp()
   {
     // We only need a buffer of recvContainers if we are using threads
     this->nbCallbackRecvContainer = new RecvContainer[200];
-    this->circularBuffer = new CircularBuffer();
+    this->circularBuffer          = new CircularBuffer();
   }
 
   /*
@@ -96,26 +127,30 @@ Vehicle::mandatorySetUp()
   /*
    * @note Initialize read thread
    */
-  if (!initPlatformSupport())
+  if (!initMainReadThread())
   {
-    DERROR("Failed to initialize platform support!\n");
+    DERROR("Failed to initialize main read thread!\n");
   }
 }
 
-
-void
+int
 Vehicle::functionalSetUp()
 {
   if (!initVersion())
   {
-    DERROR("Failed to initialize Version! Please exit.\n");
-    return;
+    return 1;
   }
-  else if(this->getFwVersion() < extendedVersionBase &&
-      this->getFwVersion() != Version::M100_31)
+  else if (this->getFwVersion() < extendedVersionBase &&
+           this->getFwVersion() != Version::M100_31 && !(this->isLegacyM600()))
   {
     DERROR("Upgrade firmware using Assistant software!\n");
-    return;
+    return 1;
+  }
+
+  if(!initFullPlatformSupport())
+  {
+    DERROR("Failed to initialize full platform support!\n");
+    return 1;
   }
 
   /*
@@ -123,15 +158,17 @@ Vehicle::functionalSetUp()
    */
   if (!initSubscriber())
   {
-    DSTATUS("Subscriber not supported!\n");
-  }
+    DERROR("Failed to initialize subscriber!\n");
+    return 1;
+   }
 
   /*
    * Initialize broadcast if supported
    */
   if (!initBroadcast())
   {
-    DSTATUS("Broadcast not supported!\n");
+    DERROR("Failed to initialize Broadcast!\n");
+    return 1;
   }
 
   /*
@@ -139,7 +176,8 @@ Vehicle::functionalSetUp()
    */
   if (!initControl())
   {
-    DERROR("Control not supported!\n");
+    DERROR("Failed to initialize Control!\n");
+    return 1;
   }
 	//modify by yanly //zkrt_notice:屏蔽不必要的功能
 //  /*
@@ -161,7 +199,8 @@ Vehicle::functionalSetUp()
    */
   if (!initMFIO())
   {
-    DSTATUS("MFIO not supported!\n");
+    DERROR("Failed to initialize MFIO!\n");
+    return 1;
   }
 
   /*
@@ -170,50 +209,79 @@ Vehicle::functionalSetUp()
   if (!initMOC())
   {
     DERROR("Failed to initialize MobileCommunication!\n");
+    return 1;
   }
 
   if (!initMissionManager())
   {
     DERROR("Failed to initialize Mission Manager!\n");
+    return 1;
   }
 
   if (!initHardSync())
   {
-    DERROR("Hardware Sync not supported!\n");
+    DERROR("Failed to initialize HardSync!\n");
+    return 1;
   }
 
   if (!initVirtualRC())
   {
-    DERROR("Virtual RC not supported!\n");
+    DERROR("Failed to initiaze VirtualRC!\n");
+    return 1;
   }
+
+#ifdef ADVANCED_SENSING
+  if (advancedSensingEnabled)
+  {
+    if (!initAdvancedSensing())
+    {
+      DERROR("Failed to initialize AdvancedSensing!\n");
+      return 1;
+    }
+    else
+    {
+      if (this->advancedSensing->getAdvancedSensingProtocol())
+      {
+        this->USBThreadReady = true;
+      }
+      else
+      {
+        this->USBThreadReady = false;
+        return 1;
+      }
+    }
+  }
+#endif
+
+  return 0;
 }
 
 void
 Vehicle::initCMD_SetSupportMatrix()
 {
-  cmd_setSupportMatrix[0].cmdSet    = OpenProtocol::CMDSet::activation;
+  cmd_setSupportMatrix[0].cmdSet    = OpenProtocolCMD::CMDSet::activation;
   cmd_setSupportMatrix[0].fwVersion = mandatoryVersionBase;
 
-  cmd_setSupportMatrix[1].cmdSet    = OpenProtocol::CMDSet::control;
+  cmd_setSupportMatrix[1].cmdSet    = OpenProtocolCMD::CMDSet::control;
   cmd_setSupportMatrix[1].fwVersion = mandatoryVersionBase;
 
-  cmd_setSupportMatrix[2].cmdSet    = OpenProtocol::CMDSet::broadcast;
+  cmd_setSupportMatrix[2].cmdSet    = OpenProtocolCMD::CMDSet::broadcast;
   cmd_setSupportMatrix[2].fwVersion = mandatoryVersionBase;
 
-//  cmd_setSupportMatrix[3].cmdSet    = OpenProtocol::CMDSet::mission;    //modify by yanly  //zkrt_notice 屏蔽不必要的功能
+//  cmd_setSupportMatrix[3].cmdSet    = OpenProtocolCMD::CMDSet::mission; //modify by yanly //zkrt_notice 屏蔽不必要的功能
 //  cmd_setSupportMatrix[3].fwVersion = mandatoryVersionBase;
 
-//  cmd_setSupportMatrix[4].cmdSet    = OpenProtocol::CMDSet::hardwareSync;    //modify by yanly //zkrt_notice 屏蔽不必要的功能
+//  cmd_setSupportMatrix[4].cmdSet    = OpenProtocolCMD::CMDSet::hardwareSync; //modify by yanly //zkrt_notice 屏蔽不必要的功能
 //  cmd_setSupportMatrix[4].fwVersion = extendedVersionBase;
 
   // Not supported in extendedVersionBase
-  cmd_setSupportMatrix[5].cmdSet    = OpenProtocol::CMDSet::virtualRC;
+  cmd_setSupportMatrix[5].cmdSet    = OpenProtocolCMD::CMDSet::virtualRC;
   cmd_setSupportMatrix[5].fwVersion = mandatoryVersionBase;
 
-//  cmd_setSupportMatrix[7].cmdSet    = OpenProtocol::CMDSet::mfio;    //modify by yanly //zkrt_notice 屏蔽不必要的功能
+//  cmd_setSupportMatrix[7].cmdSet    = OpenProtocolCMD::CMDSet::mfio;//modify by yanly //zkrt_notice 屏蔽不必要的功能
 //  cmd_setSupportMatrix[7].fwVersion = extendedVersionBase;
 
-  cmd_setSupportMatrix[8].cmdSet    = OpenProtocol::CMDSet::subscribe;
+  cmd_setSupportMatrix[8].cmdSet    = OpenProtocolCMD::CMDSet::subscribe;
   cmd_setSupportMatrix[8].fwVersion = extendedVersionBase;
 }
 
@@ -238,39 +306,99 @@ Vehicle::callbackPoll()
 
 Vehicle::~Vehicle()
 {
+  if (this->subscribe)
+  {
+    subscribe->reset(1);
+  }
   if (threadSupported)
   {
-    this->readThread->stopThread();
-    this->callbackThread->stopThread();
+    if (this->UARTSerialReadThread)
+    {
+      this->UARTSerialReadThread->stopThread();
+      delete this->UARTSerialReadThread;
+    }
+    if (this->callbackThread)
+    {
+      this->callbackThread->stopThread();
+      delete this->callbackThread;
+    }
+    if (this->USBReadThread)
+    {
+      this->USBReadThread->stopThread();
+      delete this->USBReadThread;
+    }
     delete[](nbCallbackRecvContainer);
+
+    if (this->circularBuffer)
+    {
+      delete this->circularBuffer;
+    }
   }
-  delete this->camera;
-  delete this->gimbal;
-  delete this->control;
+
+  if(this->camera)
+  {
+    delete this->camera;
+  }
+  
+  if(this->gimbal)
+  {
+    delete this->gimbal;
+  }
+  
+  if(this->control)
+  {
+    delete this->control;
+  }
+  
   if (this->mfio)
+  {
     delete this->mfio;
+  }
+
   if (this->moc)
+  {
     delete this->moc;
+  }
   if (this->broadcast)
+  {
     delete this->broadcast;
+  }
   if (this->subscribe)
   {
     delete this->subscribe;
-    this->subscribe = NULL;
   }
-  if (hardSync)
+#ifdef ADVANCED_SENSING
+  if (this->advancedSensing)
+    delete this->advancedSensing;
+#endif
+  if (this->hardSync)
+  {
     delete this->hardSync;
-  delete this->missionManager;
-  delete this->protocolLayer;
-  if (threadSupported)
-    delete this->readThread;
+  }
+  if (this->missionManager)
+  {
+    delete this->missionManager;
+  }
+  if (this->protocolLayer)
+  {
+    delete this->protocolLayer;
+  }
+  if (this->platformManager)
+  {
+    delete this->platformManager;
+  }
+
+  this->USBThreadReady = false;
 }
 
 bool
 Vehicle::initOpenProtocol()
 {
-  this->protocolLayer =
-    new (std::nothrow) Protocol(this->device, this->baudRate);
+  //Initialize platform manager before passing pointer to OpenProtocol constructor
+  this->platformManager = new PlatformManager();
+
+  this->protocolLayer = new (std::nothrow)
+    OpenProtocol(this->platformManager, this->device, this->baudRate);
   if (this->protocolLayer == 0)
   {
     return false;
@@ -279,68 +407,84 @@ Vehicle::initOpenProtocol()
   return true;
 }
 
+bool
+Vehicle::initMainReadThread()
+{
+  if (threadSupported)
+  {
+    this->UARTSerialReadThread = platformManager->addThread(
+      this, PlatformManager::UART_SERIAL_READ_THREAD);
+    if (this->UARTSerialReadThread == NULL)
+    {
+      DERROR("Failed to initialize UART serial read thread!\n");
+      return false;
+    }
+  }
+  else
+  {
+    this->UARTSerialReadThread = NULL;
+    return true;
+  }
+
+#if defined(STM32) || defined(__arm__) || defined(QT)
+#else
+  DDEBUG("Set serial driver to nonblocking mode");
+  dynamic_cast<DJI::OSDK::LinuxSerialDevice*>(this->protocolLayer->getDriver())->setSerialPureTimedRead();
+#endif
+  return UARTSerialReadThread->createThread();
+}
 
 bool
-Vehicle::initPlatformSupport()
+Vehicle::initFullPlatformSupport()
 {
-#ifdef QT
-  if (threadSupported)
+  if(this->callbackThread)
   {
-    OSDKThread* readThreadPtr = new (std::nothrow) OSDKThread(this, 2);
-    if (readThreadPtr == 0)
-    {
-      DERROR("Failed to initialize read thread!\n");
-    }
-    else
-    {
-      QThread* qReadThread = new QThread;
-      readThreadPtr->setQThreadPtr(qReadThread);
-      readThreadPtr->moveToThread(qReadThread);
-      QObject::connect(qReadThread, SIGNAL(started()), readThreadPtr, SLOT(run()));
-      QObject::connect(qReadThread, SIGNAL(finished()), qReadThread, SLOT(deleteLater()));
-      qReadThread->start();
-      this->readThread = readThreadPtr;
-    }
-
-    OSDKThread* cbThreadPtr = new (std::nothrow) OSDKThread(this, 3);
-    if (cbThreadPtr == 0)
-    {
-      DERROR("Failed to initialize callback thread!\n");
-    }
-    else
-    {
-      QThread* qCbThread = new QThread;
-      cbThreadPtr->setQThreadPtr(qCbThread);
-      cbThreadPtr->moveToThread(qCbThread);
-      QObject::connect(qCbThread, SIGNAL(started()), cbThreadPtr, SLOT(run()));
-      QObject::connect(qCbThread, SIGNAL(finished()), qCbThread, SLOT(deleteLater()));
-      qCbThread->start();
-      this->callbackThread = cbThreadPtr;
-    }
+    DDEBUG("vehicle->callbackThread already initalized!");
+    return true;
   }
-#elif STM32
-  //! Threads not supported by default
-  this->readThread = NULL;
-  return true;
-#elif defined(__linux__)
+
   if (threadSupported)
   {
-    this->callbackThread = new (std::nothrow) PosixThread(this, 3);
-    if (this->callbackThread == 0)
+    this->callbackThread =
+      platformManager->addThread(this, PlatformManager::CALLBACK_THREAD);
+    if (this->callbackThread == NULL)
     {
       DERROR("Failed to initialize read callback thread!\n");
+      return false;
     }
-
-    this->readThread = new (std::nothrow) PosixThread(this, 2);
-    if (this->readThread == 0)
+#ifdef ADVANCED_SENSING
+    if (this->advancedSensingEnabled)
     {
-      DERROR("Failed to initialize read thread!\n");
+      this->USBReadThread =
+        platformManager->addThread(this, PlatformManager::USB_READ_THREAD);
+      if (this->USBReadThread == NULL)
+      {
+        DERROR("Failed to initialize USB read thread!\n");
+        return false;
+      }
     }
+#endif
+  }
+  else
+  {
+    this->callbackThread       = NULL;
+    this->USBReadThread        = NULL;
+    return true;
+  }
+
+  bool cbThreadStatus       = callbackThread->createThread();
+  bool USBReadThreadStatus;
+
+#ifdef ADVANCED_SENSING
+  if (this->advancedSensingEnabled)
+  {
+    USBReadThreadStatus = USBReadThread->createThread();
+
+    return (USBReadThreadStatus && cbThreadStatus);
   }
 #endif
-  bool readThreadStatus = readThread->createThread();
-  bool cbThreadStatus   = callbackThread->createThread();
-  return (readThreadStatus && cbThreadStatus);
+
+  return cbThreadStatus;
 }
 
 bool
@@ -349,23 +493,19 @@ Vehicle::initVersion()
 #if STM32
   //! Non blocking call for STM32 as it does not support multi-thread
   getDroneVersion();
-  STM32F4::delay_nms(2000);
-#elif defined(QT)
-  //! Non-blocking call for QT sample, thread sync not supported yet
-  getDroneVersion();
-  QThread::msleep(200);
-
-#else
-  ACK::DroneVersion ack = getDroneVersion(wait_timeout);
-#endif
-  if (this->getFwVersion() == 0)
-  {
-    return false;
-  }
-  else
+  this->platformManager->millisecSleep(2000);
+  if(this->getFwVersion() > 0)
   {
     return true;
   }
+#else
+  ACK::DroneVersion rc = getDroneVersion(wait_timeout);
+  if (!ACK::getError(rc.ack))
+  {
+    return true;
+  }
+#endif
+  return false;
 }
 
 bool
@@ -392,8 +532,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
     ackPtr++;
     if (ackPtr - startPtr > 18)
     {
-      DERROR("Drone version was not obtained. Please restart the program or "
-             "call getDroneVersion\n");
       return false;
     }
   }
@@ -410,8 +548,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
     ackPtr++;
     if (ackPtr - startPtr > 64)
     {
-      DERROR("Drone version was not obtained. Please restart the program or "
-             "call getDroneVersion\n");
       return false;
     }
   } //! Found first space ("SDK-v1.x")
@@ -422,8 +558,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
     ackPtr++;
     if (ackPtr - startPtr > 64)
     {
-      DERROR("Drone version was not obtained. Please restart the program or "
-             "call getDroneVersion\n");
       return false;
     }
   } //! Found second space ("BETA")
@@ -438,8 +572,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
     j++;
     if (ackPtr - startPtr > 64)
     {
-      DERROR("Drone version was not obtained. Please restart the program or "
-             "call getDroneVersion\n");
       return false;
     }
   }
@@ -457,8 +589,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
     ackPtr++;
     if (ackPtr - startPtr > 64)
     {
-      DERROR("Drone version was not obtained. Please restart the program or "
-             "call getDroneVersion\n");
       return false;
     }
   }
@@ -469,8 +599,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
     ackPtr++;
     if (ackPtr - startPtr > 64)
     {
-      DERROR("Drone version was not obtained. Please restart the program or "
-             "call getDroneVersion\n");
       return false;
     }
   }
@@ -481,8 +609,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
     ackPtr++;
     if (ackPtr - startPtr > 64)
     {
-      DERROR("Drone version was not obtained. Please restart the program or "
-             "call getDroneVersion\n");
       return false;
     }
   }
@@ -493,8 +619,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
     ackPtr++;
     if (ackPtr - startPtr > 64)
     {
-      DERROR("Drone version was not obtained. Please restart the program or "
-             "call getDroneVersion\n");
       return false;
     }
   }
@@ -533,7 +657,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
       id_ptr++;
       if (id_ptr - &crc_id[4] > 12)
       {
-        DERROR("Drone ID was not obtained.\n");
         return false; //! Not catastrophic error
       }
     }
@@ -553,7 +676,6 @@ Vehicle::parseDroneVersionInfo(Version::VersionData& versionData,
       id_ptr++;
       if (id_ptr - &crc_id[0] > 16)
       {
-        DERROR("Drone ID was not obtained.\n");
         return false; //! Not catastrophic error
       }
     }
@@ -592,7 +714,13 @@ Vehicle::initCallbacks()
 bool
 Vehicle::initSubscriber()
 {
-  if (isCmdSetSupported(OpenProtocol::CMDSet::subscribe))
+  if(this->subscribe)
+  {
+    DDEBUG("vehicle->subscribe already initalized!");
+    return true;
+  }
+
+  if (isCmdSetSupported(OpenProtocolCMD::CMDSet::subscribe))
   {
     this->subscribe = new DataSubscription(this);
     if (this->subscribe == 0)
@@ -600,10 +728,17 @@ Vehicle::initSubscriber()
       DERROR("Failed to allocate memory for Subscriber!\n");
       return false;
     }
+
+    /*
+     * Wait for 1.2 seconds, so we can detect all leftover
+     * packages from unclean quit, and remove them properly
+     */
+    this->platformManager->millisecSleep(1200);
+    this->subscribe->removeLeftOverPackages();
   }
   else
   {
-    return false;
+    DSTATUS("Telemetry subscription mechanism is not supported on this platform!\n");
   }
 
   return true;
@@ -612,7 +747,13 @@ Vehicle::initSubscriber()
 bool
 Vehicle::initBroadcast()
 {
-  if (isCmdSetSupported(OpenProtocol::CMDSet::broadcast))
+  if(this->broadcast)
+  {
+    DDEBUG("vehicle->broadcast already initalized!");
+    return true;
+  }
+
+  if (isCmdSetSupported(OpenProtocolCMD::CMDSet::broadcast))
   {
     this->broadcast = new (std::nothrow) DataBroadcast(this);
     if (this->broadcast == 0)
@@ -623,7 +764,7 @@ Vehicle::initBroadcast()
   }
   else
   {
-    return false;
+    DSTATUS("Telemetry broadcast is not supported on this platform!\n");
   }
 
   return true;
@@ -632,7 +773,13 @@ Vehicle::initBroadcast()
 bool
 Vehicle::initControl()
 {
-  if (isCmdSetSupported(OpenProtocol::CMDSet::control))
+  if(this->control)
+  {
+    DDEBUG("vehicle->control already initalized!");
+    return true;
+  }
+
+  if (isCmdSetSupported(OpenProtocolCMD::CMDSet::control))
   {
     this->control = new (std::nothrow) Control(this);
     if (this->control == 0)
@@ -643,7 +790,7 @@ Vehicle::initControl()
   }
   else
   {
-    return false;
+    DSTATUS("Control functionalities are not supported on this platform!\n");
   }
 
   return true;
@@ -652,6 +799,12 @@ Vehicle::initControl()
 bool
 Vehicle::initCamera()
 {
+  if(this->camera)
+  {
+    DDEBUG("vehicle->camera already initalized!");
+    return true;
+  }
+
   this->camera = new (std::nothrow) Camera(this);
 
   if (this->camera == 0)
@@ -665,30 +818,44 @@ Vehicle::initCamera()
 bool
 Vehicle::initGimbal()
 {
-  // Gimbal information via subscription
-  Telemetry::TypeMap<Telemetry::TOPIC_GIMBAL_STATUS>::type
-      subscriptionGimbal;
+  int pkgNumber = 0;
+  ACK::ErrorCode ack;
 
-  if(this->getFwVersion() != Version::M100_31)
+  // Gimbal information via subscription
+  Telemetry::TypeMap<Telemetry::TOPIC_GIMBAL_STATUS>::type subscriptionGimbal;
+
+  if (isLegacyM600())
   {
-    ACK::ErrorCode ack = this->subscribe->verify(wait_timeout);
-    if(ACK::getError(ack))
+    this->gimbal = new (std::nothrow) Gimbal(this);
+    if (this->gimbal == 0)
+    {
+      DERROR("Failed to allocate memory for Gimbal!\n");
+      return false;
+    }
+    return true;
+  }
+  else if (this->getFwVersion() != Version::M100_31)
+  {
+    ack = this->subscribe->verify(wait_timeout);
+    if (ACK::getError(ack))
     {
       DERROR("Failed to verify subscription!\n");
       return false;
     }
 
     Telemetry::TopicName topicList0[] = { Telemetry::TOPIC_GIMBAL_STATUS };
-    int nTopic0 = sizeof(topicList0) / sizeof(topicList0[0]);
+    int                  nTopic0 = sizeof(topicList0) / sizeof(topicList0[0]);
 
     bool result =
-      this->subscribe->initPackageFromTopicList(0, nTopic0, topicList0, 0, 50);
+      this->subscribe->initPackageFromTopicList(pkgNumber, nTopic0, topicList0, 0, 50);
     if (result)
     {
-      ack = this->subscribe->startPackage(0, wait_timeout);
-      if(ACK::getError(ack))
+      DSTATUS("Checking if gimbal is connected ...");
+      ack = this->subscribe->startPackage(pkgNumber, wait_timeout);
+      if (ACK::getError(ack))
       {
         DERROR("Failed to start subscription package!\n");
+        return false;
       }
     }
     else
@@ -698,28 +865,23 @@ Vehicle::initGimbal()
     }
 
     // Wait for telemetry data
-#ifdef QT
-    QThread::msleep(200);
-#elif STM32
-    STM32F4::delay_nms(500);
-#else
-    sleep(2);
-#endif
-    subscriptionGimbal =
-	  this->subscribe->getValue<Telemetry::TOPIC_GIMBAL_STATUS>();
+    this->platformManager->millisecSleep(2000);
 
-    this->subscribe->removePackage(0, wait_timeout);
-#ifdef QT
-    QThread::msleep(100);
-#elif STM32
-    STM32F4::delay_nms(500);
-#else
-    sleep(2);
-#endif
+    subscriptionGimbal =
+      this->subscribe->getValue<Telemetry::TOPIC_GIMBAL_STATUS>();
+
+    ack = this->subscribe->removePackage(pkgNumber, wait_timeout);
+    if (ACK::getError(ack))
+    {
+      DERROR("Failed to unsubscribe package!\n");
+      return false;
+    }
+
+    this->platformManager->millisecSleep(2000);
   }
 
-  if((this->getFwVersion() != Version::M100_31 &&
-      subscriptionGimbal.mountStatus == GIMBAL_MOUNTED) ||
+  if ((this->getFwVersion() != Version::M100_31 &&
+       subscriptionGimbal.mountStatus == GIMBAL_MOUNTED) ||
       this->getFwVersion() == Version::M100_31)
   {
     this->gimbal = new (std::nothrow) Gimbal(this);
@@ -732,16 +894,43 @@ Vehicle::initGimbal()
   }
   else
   {
-    DERROR("Gimbal not mounted!\n");
+    DSTATUS("Gimbal not mounted!\n");
   }
 
-  return false;
+  return true;
 }
+
+#ifdef ADVANCED_SENSING
+bool
+Vehicle::initAdvancedSensing()
+{
+  if(this->advancedSensing)
+  {
+    DDEBUG("vehicle->advancedSensing already initalized!");
+    return true;
+  }
+
+  this->advancedSensing = new (std::nothrow) AdvancedSensing(this);
+  if (this->advancedSensing == 0)
+  {
+    DERROR("Failed to allocate memory for AdvancedSensing!\n");
+    return false;
+  }
+
+  return true;
+}
+#endif
 
 bool
 Vehicle::initMFIO()
 {
-  if (isCmdSetSupported(OpenProtocol::CMDSet::mfio))
+  if(this->mfio)
+  {
+    DDEBUG("vehicle->mfio already initalized!");
+    return true;
+  }
+
+  if (isCmdSetSupported(OpenProtocolCMD::CMDSet::mfio))
   {
     mfio = new (std::nothrow) MFIO(this);
     if (this->mfio == 0)
@@ -752,7 +941,7 @@ Vehicle::initMFIO()
   }
   else
   {
-    return false;
+    DSTATUS("MFIO is not supported on this platform!\n");
   }
 
   return true;
@@ -761,6 +950,12 @@ Vehicle::initMFIO()
 bool
 Vehicle::initMOC()
 {
+  if(this->moc)
+  {
+    DDEBUG("vehicle->moc already initalized!");
+    return true;
+  }
+
   moc = new (std::nothrow) MobileCommunication(this);
   if (this->moc == 0)
   {
@@ -774,9 +969,17 @@ Vehicle::initMOC()
 bool
 Vehicle::initMissionManager()
 {
+  if(this->missionManager)
+  {
+    DDEBUG("vehicle->missionManager already initalized!");
+    return true;
+  }
+
   this->missionManager = new (std::nothrow) MissionManager(this);
   if (this->missionManager == 0)
+  {
     return false;
+  }
 
   return true;
 }
@@ -784,24 +987,38 @@ Vehicle::initMissionManager()
 bool
 Vehicle::initHardSync()
 {
-  if (isCmdSetSupported(OpenProtocol::CMDSet::hardwareSync))
+  if(this->hardSync)
+  {
+    DDEBUG("vehicle->hardSync already initalized!");
+    return true;
+  }
+
+  if (isCmdSetSupported(OpenProtocolCMD::CMDSet::hardwareSync))
   {
     hardSync = new (std::nothrow) HardwareSync(this);
     if (this->hardSync == 0)
     {
       return false;
     }
-
-    return true;
+  }
+  else
+  {
+    DSTATUS("Hardware Sync is not supported on this platform!\n");
   }
 
-  return false;
+  return true;
 }
 
 bool
 Vehicle::initVirtualRC()
 {
-  if (isCmdSetSupported(OpenProtocol::CMDSet::virtualRC))
+  if(this->virtualRC)
+  {
+    DDEBUG("vehicle->virtualRC already initalized!");
+    return true;
+  }
+
+  if (isCmdSetSupported(OpenProtocolCMD::CMDSet::virtualRC))
   {
     virtualRC = new (std::nothrow) VirtualRC(this);
     if (this->virtualRC == 0)
@@ -809,21 +1026,23 @@ Vehicle::initVirtualRC()
       DERROR("Error creating Virtual RC!");
       return false;
     }
-
-    return true;
+  }
+  else
+  {
+    DERROR("Virtual RC is not supported on this platform!\n");
   }
 
-  return false;
+  return true;
 }
 
 bool
 Vehicle::isCmdSetSupported(const uint8_t cmdSet)
 {
-  for (int i = 0; i < sizeof(cmd_setSupportMatrix); i++)
+  for (int i = 0; i < NUM_CMD_SET; i++)
   {
     if (cmd_setSupportMatrix[i].cmdSet == cmdSet)
     {
-      if (cmdSet == OpenProtocol::CMDSet::virtualRC &&
+      if (cmdSet == OpenProtocolCMD::CMDSet::virtualRC &&
           versionData.fwVersion != Version::M100_31)
       {
         return false;
@@ -831,9 +1050,19 @@ Vehicle::isCmdSetSupported(const uint8_t cmdSet)
       else if (versionData.fwVersion == Version::M100_31)
       {
         // CMDs not supported in Matrice 100
-        if (cmdSet == OpenProtocol::CMDSet::hardwareSync ||
-            cmdSet == OpenProtocol::CMDSet::mfio ||
-            cmdSet == OpenProtocol::CMDSet::subscribe)
+        if (cmdSet == OpenProtocolCMD::CMDSet::hardwareSync ||
+            cmdSet == OpenProtocolCMD::CMDSet::mfio ||
+            cmdSet == OpenProtocolCMD::CMDSet::subscribe)
+        {
+          return false;
+        }
+      }
+      else if (isLegacyM600())
+      {
+        // CMDs not supported in Matrice 600 old firmware
+        if (cmdSet == OpenProtocolCMD::CMDSet::hardwareSync ||
+            cmdSet == OpenProtocolCMD::CMDSet::mfio ||
+            cmdSet == OpenProtocolCMD::CMDSet::subscribe)
         {
           return false;
         }
@@ -844,55 +1073,101 @@ Vehicle::isCmdSetSupported(const uint8_t cmdSet)
 }
 
 void
-Vehicle::processReceivedData(RecvContainer receivedFrame)
+Vehicle::processReceivedData(RecvContainer* receivedFrame)
 {
-  receivedFrame.recvInfo.version = this->getFwVersion();
-  if (receivedFrame.dispatchInfo.isAck)
+  receivedFrame->recvInfo.version = this->getFwVersion();
+  if (receivedFrame->dispatchInfo.isAck)
   {
-    // TODO Fill up ACKErorCode Container
-    if (receivedFrame.dispatchInfo.isCallback)
+    // TODO Fill up ACKErrorCode Container
+    if (receivedFrame->dispatchInfo.isCallback)
     {
       this->nbVehicleCallBackHandler.callback =
         (VehicleCallBack) this
-          ->nbCallbackFunctions[receivedFrame.dispatchInfo.callbackID];
+          ->nbCallbackFunctions[receivedFrame->dispatchInfo.callbackID];
       this->nbVehicleCallBackHandler.userData =
-        this->nbUserData[receivedFrame.dispatchInfo.callbackID];
+        this->nbUserData[receivedFrame->dispatchInfo.callbackID];
 
-      if (threadSupported)
+      if (nbVehicleCallBackHandler.callback)
       {
-        this->nbCallbackRecvContainer[receivedFrame.dispatchInfo.callbackID] =
-            receivedFrame;
-        protocolLayer->getThreadHandle()->lockNonBlockCBAck();
-        this->circularBuffer->cbPush(
-          this->circularBuffer, this->nbVehicleCallBackHandler,
-          this->nbCallbackRecvContainer[receivedFrame.dispatchInfo.callbackID]);
-        protocolLayer->getThreadHandle()->freeNonBlockCBAck();
+        if (threadSupported)
+        {
+          this->nbCallbackRecvContainer[receivedFrame->dispatchInfo.callbackID] =
+            *receivedFrame;
+          protocolLayer->getThreadHandle()->lockNonBlockCBAck();
+          this->circularBuffer->cbPush(
+            this->circularBuffer, this->nbVehicleCallBackHandler,
+            this->nbCallbackRecvContainer[receivedFrame->dispatchInfo.callbackID]);
+          protocolLayer->getThreadHandle()->freeNonBlockCBAck();
+        }
+        else
+        {
+          this->nbVehicleCallBackHandler.callback(
+            this, *receivedFrame, this->nbVehicleCallBackHandler.userData);
+        }
       }
-      else
-			{
-        this->nbVehicleCallBackHandler.callback(
-          this,
-          receivedFrame,
-          this->nbVehicleCallBackHandler.userData);
-			}
     }
-
     else
     {
       DDEBUG("Dispatcher identified as blocking call\n");
       // TODO remove
-      this->lastReceivedFrame = receivedFrame;
+      this->lastReceivedFrame = *receivedFrame;
 
-      ACKHandler(static_cast<void*>(&receivedFrame));
+      ACKHandler(static_cast<void*>(receivedFrame));
       protocolLayer->getThreadHandle()->notify();
     }
   }
   else
   {
     DDEBUG("Dispatcher identified as push data\n");
-    PushDataHandler(static_cast<void*>(&receivedFrame));
+    PushDataHandler(static_cast<void*>(receivedFrame));
   }
 }
+
+#ifdef ADVANCED_SENSING
+void
+Vehicle::processAdvancedSensingImgs(RecvContainer* receivedFrame)
+{
+  if (receivedFrame->recvInfo.cmd_id == AdvancedSensingProtocol::PROCESS_IMG_CMD_ID)
+  {
+    if (this->advancedSensing->stereoHandler.callback)
+    {
+      this->advancedSensing->stereoHandler.callback(
+        this, *receivedFrame, this->advancedSensing->stereoHandler.userData);
+    }
+    else
+    {
+      this->advancedSensing->unsubscribeStereoImages();
+      if(!advSensingErrorPrintOnce){
+        DERROR("No callback registered for 240p stereo images.\n"
+                 "This usually happens when user subscribed to images and restart "
+                 "the program without unsubscribing them.\n"
+                 "Vehicle unsubscribed 240p stereo images automatically.\n");
+        advSensingErrorPrintOnce = true;
+      }
+    }
+  }
+  else if (receivedFrame->recvInfo.cmd_id ==
+           AdvancedSensingProtocol::PROCESS_VGA_CMD_ID)
+  {
+    if (this->advancedSensing->vgaHandler.callback)
+    {
+      this->advancedSensing->vgaHandler.callback(this, *receivedFrame,
+                                                 this->advancedSensing->vgaHandler.userData);
+    }
+    else
+    {
+      this->advancedSensing->unsubscribeVGAImages();
+      if(!advSensingErrorPrintOnce){
+        DERROR("No callback registered for VGA stereo images.\n"
+                 "This usually happens when user subscribed to images and restart "
+                 "the program without unsubscribing them.\n"
+                 "Vehicle unsubscribed VGA stereo images automatically.\n");
+        advSensingErrorPrintOnce = true;
+      }
+    }
+  }
+}
+#endif
 
 int
 Vehicle::callbackIdIndex()
@@ -913,6 +1188,12 @@ void
 Vehicle::activate(ActivateData* data, VehicleCallBack callback,
                   UserData userData)
 {
+  if(this->functionalSetUp() != 0)
+  {
+    DERROR("Unable to initialize some vehicle components!");
+    return;
+  }
+
   data->version        = this->versionData.fwVersion;
   accountData          = *data;
   accountData.reserved = 2;
@@ -932,18 +1213,26 @@ Vehicle::activate(ActivateData* data, VehicleCallBack callback,
   }
   else
   {
-    nbCallbackFunctions[cbIndex] = (void*)activateCallback;
+    nbCallbackFunctions[cbIndex] = (void*)activateCallbackv2; //zkrt_notice
     nbUserData[cbIndex]          = NULL;
   }
   protocolLayer->send(
-    2, 0, OpenProtocol::CMDSet::Activation::activate, (uint8_t*)&accountData,
+    2, 0, OpenProtocolCMD::CMDSet::Activation::activate, (uint8_t*)&accountData,
     sizeof(accountData) - sizeof(char*), 1000, 3, true, cbIndex);
 }
 
 ACK::ErrorCode
 Vehicle::activate(ActivateData* data, int timeout)
 {
-  ACK::ErrorCode* ack;
+  ACK::ErrorCode ack;
+
+  if(this->functionalSetUp() != 0)
+  {
+    DERROR("Unable to initialize some vehicle components!");
+    ack.data = OpenProtocolCMD::ErrorCode::CommonACK::NO_RESPONSE_ERROR;
+    return ack;
+  }
+
   data->version        = versionData.fwVersion;
   accountData          = *data;
   accountData.reserved = 2;
@@ -953,38 +1242,58 @@ Vehicle::activate(ActivateData* data, int timeout)
   DSTATUS("version 0x%X\n", versionData.fwVersion);
   DDEBUG("%.32s", accountData.iosID);
   //! Using function prototype II of send
-  protocolLayer->send(2, 0, OpenProtocol::CMDSet::Activation::activate,
+  protocolLayer->send(2, this->getEncryption(), OpenProtocolCMD::CMDSet::Activation::activate,
                       (uint8_t*)&accountData,
                       sizeof(accountData) - sizeof(char*), 1000, 3, false, 0);
 
-  ack = (ACK::ErrorCode*)waitForACK(OpenProtocol::CMDSet::Activation::activate,
-                                    timeout);
+  ack = *(ACK::ErrorCode*)waitForACK(
+    OpenProtocolCMD::CMDSet::Activation::activate, timeout);
 
-  if (ack->data == OpenProtocol::ErrorCode::ActivationACK::SUCCESS &&
+  if (ack.data == OpenProtocolCMD::ErrorCode::ActivationACK::SUCCESS &&
       accountData.encKey)
   {
     DSTATUS("Activation successful\n");
     protocolLayer->setKey(accountData.encKey);
+   
+    if(!this->gimbal)
+    {
+      initGimbal();
+    }
   }
   else
   {
     //! Let user know about other errors if any
-    ACK::getErrorCodeMessage(*ack, __func__);
+    ACK::getErrorCodeMessage(ack, __func__);
     DERROR("Failed to activate please retry SET 0x%X ID 0x%X code 0x%X\n",
-           ack->info.cmd_set, ack->info.cmd_id, ack->data);
+           ack.info.cmd_set, ack.info.cmd_id, ack.data);
+
+    if(ack.info.cmd_set == OpenProtocolCMD::CMDSet::activation
+       && ack.info.cmd_id == 1
+       && ack.data == ErrorCode::ActivationACK::NEW_DEVICE_ERROR )
+    {
+      DERROR("Solutions for NEW_DEVICE_ERROR:\n"
+               "\t* Double-check your app_id and app_key in UserConfig.txt. "
+               "Does it match with your DJI developer account?\n"
+               "\t* If this is a new device, please make sure your DJI Go App "
+               "is connected to internet to activate the new device for the first time.\n"
+               "\t* If this device is previously activated with another app_id and app_key, "
+               "you will need to re-activate it again (with internet through DJI GO App).\n"
+               "\t* A new device needs to be activated twice to fix the NEW_DEVICE_ERROR, "
+               "so please try it twice.\n");
+    }    
   }
 
-  return *ack;
+  return ack;
 }
 
 void
 Vehicle::getDroneVersion(VehicleCallBack callback, UserData userData)
 {
   versionData.version_ack =
-    OpenProtocol::ErrorCode::CommonACK::NO_RESPONSE_ERROR;
+    OpenProtocolCMD::ErrorCode::CommonACK::NO_RESPONSE_ERROR;
   versionData.version_crc     = 0x0;
   versionData.version_name[0] = 0;
-  versionData.fwVersion = 0;
+  versionData.fwVersion       = 0;
 
   uint32_t cmd_timeout = 100; // unit is ms
   uint32_t retry_time  = 3;
@@ -1002,7 +1311,7 @@ Vehicle::getDroneVersion(VehicleCallBack callback, UserData userData)
   }
 
   // When UserData is implemented, pass the Vehicle as userData.
-  protocolLayer->send(2, 0, OpenProtocol::CMDSet::Activation::getVersion,
+  protocolLayer->send(2, 0, OpenProtocolCMD::CMDSet::Activation::getVersion,
                       (uint8_t*)&cmd_data, 1, cmd_timeout, retry_time, true,
                       cbIndex);
 }
@@ -1011,7 +1320,7 @@ ACK::DroneVersion
 Vehicle::getDroneVersion(int timeout)
 {
   versionData.version_ack =
-    OpenProtocol::ErrorCode::CommonACK::NO_RESPONSE_ERROR;
+    OpenProtocolCMD::ErrorCode::CommonACK::NO_RESPONSE_ERROR;
   versionData.version_crc     = 0x0;
   versionData.version_name[0] = 0;
 
@@ -1019,20 +1328,28 @@ Vehicle::getDroneVersion(int timeout)
   uint32_t retry_time  = 3;
   uint8_t  cmd_data    = 0;
 
-  protocolLayer->send(2, 0, OpenProtocol::CMDSet::Activation::getVersion,
+  protocolLayer->send(2, 0, OpenProtocolCMD::CMDSet::Activation::getVersion,
                       (uint8_t*)&cmd_data, 1, cmd_timeout, retry_time, false,
                       0);
 
   // Wait for drone version data
-  uint8_t* rawACK =
-    (uint8_t*)waitForACK(OpenProtocol::CMDSet::Activation::getVersion, timeout);
+  uint8_t* rawACK = (uint8_t*)waitForACK(
+    OpenProtocolCMD::CMDSet::Activation::getVersion, timeout);
 
   // Parse received data
   if (!parseDroneVersionInfo(this->versionData, rawACK))
   {
-    DERROR("Drone version not obtained! Please do not proceed. \n"
-           "Check if your serial connection is okay, and if your activation "
-           "status is okay.\n");
+    DERROR("Drone version not obtained! Please do not proceed.\n"
+             "Possible reasons:\n"
+             "\tSerial port connection:\n"
+             "\t\t* SDK is not enabled, please check DJI Assistant2 -> SDK -> [v] Enable API Control.\n"
+             "\t\t* Baudrate is not correct, please double-check from DJI Assistant2 -> SDK -> baudrate.\n"
+             "\t\t* TX and RX pins are inverted.\n"
+             "\t\t* Serial port is occupied by another program.\n"
+             "\t\t* Permission required. Please do 'sudo usermod -a -G dialout $USER' "
+             "(you do not need to replace $USER with your username). Then logout and login again\n");
+
+    droneVersionACK.ack.data = this->versionData.version_ack;
     //! Set fwVersion to 0 so we can catch the error.
     this->versionData.fwVersion = 0;
   }
@@ -1040,6 +1357,14 @@ Vehicle::getDroneVersion(int timeout)
   {
     //! Construct final ACK to return to user
     droneVersionACK.ack.data         = this->versionData.version_ack;
+
+    // We can prompt for droneVersion without prior activation
+    if(ACK::getError(droneVersionACK.ack) &&
+       droneVersionACK.ack.data == OpenProtocolCMD::ErrorCode::CommonACK::NO_AUTHORIZATION_ERROR)
+    {
+      droneVersionACK.ack.data = ACK::SUCCESS;
+    }
+
     droneVersionACK.data.version_ack = this->versionData.version_ack;
     droneVersionACK.data.version_crc = this->versionData.version_crc;
     droneVersionACK.data.fwVersion   = this->versionData.fwVersion;
@@ -1051,11 +1376,11 @@ Vehicle::getDroneVersion(int timeout)
 
     strncpy(droneVersionACK.data.hwVersion, this->versionData.hwVersion,
             sizeof(this->versionData.hwVersion));
-    droneVersionACK.data.hwVersion[sizeof(this->versionData.hwVersion)] = '\0';
+    droneVersionACK.data.hwVersion[sizeof(this->versionData.hwVersion) - 1] = '\0';
 
     strncpy(droneVersionACK.data.hw_serial_num, this->versionData.hw_serial_num,
             sizeof(this->versionData.hw_serial_num));
-    droneVersionACK.data.hw_serial_num[sizeof(this->versionData.hwVersion)] =
+    droneVersionACK.data.hw_serial_num[sizeof(this->versionData.hw_serial_num) - 1] =
       '\0';
   }
   return droneVersionACK;
@@ -1072,41 +1397,42 @@ Vehicle::setAccountData(const ActivateData& value)
 {
   accountData = value;
 }
-//modify by yanly
-//void
-//Vehicle::activateCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
-//                          UserData userData)
-//{
 
-//  uint16_t ack_data;
-//  if (recvFrame.recvInfo.len - Protocol::PackageMin <= 2)
-//  {
-//    ack_data = recvFrame.recvData.ack;
+void
+Vehicle::activateCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
+                          UserData userData)
+{
 
-//    vehiclePtr->ackErrorCode.data = ack_data;
-//    vehiclePtr->ackErrorCode.info = recvFrame.recvInfo;
+  uint16_t ack_data;
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <= 2)
+  {
+    ack_data = recvFrame.recvData.ack;
 
-//    if (ACK::getError(vehiclePtr->ackErrorCode) &&
-//        ack_data == OpenProtocol::ErrorCode::ActivationACK::OSDK_VERSION_ERROR)
-//    {
-//      DERROR("SDK version did not match\n");
-//      vehiclePtr->getDroneVersion();
-//    }
+    vehiclePtr->ackErrorCode.data = ack_data;
+    vehiclePtr->ackErrorCode.info = recvFrame.recvInfo;
 
-//    //! Let user know about other errors if any
-//    ACK::getErrorCodeMessage(vehiclePtr->ackErrorCode, __func__);
-//  }
-//  else
-//  {
-//    DERROR("ACK is exception, sequence %d\n", recvFrame.recvInfo.seqNumber);
-//  }
+    if (ACK::getError(vehiclePtr->ackErrorCode) &&
+        ack_data ==
+          OpenProtocolCMD::ErrorCode::ActivationACK::OSDK_VERSION_ERROR)
+    {
+      DERROR("SDK version did not match\n");
+      vehiclePtr->getDroneVersion();
+    }
 
-//  if (ack_data == OpenProtocol::ErrorCode::ActivationACK::SUCCESS &&
-//      vehiclePtr->accountData.encKey)
-//  {
-//    vehiclePtr->protocolLayer->setKey(vehiclePtr->accountData.encKey);
-//  }
-//}
+    //! Let user know about other errors if any
+    ACK::getErrorCodeMessage(vehiclePtr->ackErrorCode, __func__);
+  }
+  else
+  {
+    DERROR("ACK is exception, sequence %d\n", recvFrame.recvInfo.seqNumber);
+  }
+
+  if (ack_data == OpenProtocolCMD::ErrorCode::ActivationACK::SUCCESS &&
+      vehiclePtr->accountData.encKey)
+  {
+    vehiclePtr->protocolLayer->setKey(vehiclePtr->accountData.encKey);
+  }
+}
 
 void
 Vehicle::getDroneVersionCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
@@ -1116,9 +1442,16 @@ Vehicle::getDroneVersionCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
   if (!parseDroneVersionInfo(vehiclePtr->versionData,
                              recvFrame.recvData.versionACK))
   {
-    DERROR("Drone version not obtained! Please do not proceed. \n"
-           "Check if your serial connection is okay, and if your activation "
-           "status is okay.\n");
+    DERROR("Drone version not obtained! Please do not proceed.\n"
+             "Possible reasons:\n"
+             "\tSerial port connection:\n"
+             "\t\t* SDK is not enabled, please check DJI Assistant2 -> SDK -> [v] Enable API Control.\n"
+             "\t\t* Baudrate is not correct, please double-check from DJI Assistant2 -> SDK -> baudrate.\n"
+             "\t\t* TX and RX pins are inverted.\n"
+             "\t\t* Serial port is occupied by another program.\n"
+             "\t\t* Permission required. Please do 'sudo usermod -a -G dialout $USER' "
+             "(you do not need to replace $USER with your username). Then logout and login again\n");
+
     //! Set fwVersion to 0 so we can catch the error.
     vehiclePtr->versionData.fwVersion = 0;
   }
@@ -1144,12 +1477,12 @@ Vehicle::controlAuthorityCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
                                   UserData userData)
 {
   ACK::ErrorCode ack;
-  ack.data = OpenProtocol::ErrorCode::CommonACK::NO_RESPONSE_ERROR;
+  ack.data = OpenProtocolCMD::ErrorCode::CommonACK::NO_RESPONSE_ERROR;
 
   uint8_t data    = 0x1;
   int     cbIndex = vehiclePtr->callbackIdIndex();
 
-  if (recvFrame.recvInfo.len - Protocol::PackageMin <= sizeof(uint16_t))
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <= sizeof(uint16_t))
   {
     ack.data = recvFrame.recvData.ack;
     ack.info = recvFrame.recvInfo;
@@ -1160,13 +1493,13 @@ Vehicle::controlAuthorityCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
     return;
   }
 
-  if (ack.data == OpenProtocol::ErrorCode::ControlACK::SetControl::
+  if (ack.data == OpenProtocolCMD::ErrorCode::ControlACK::SetControl::
                     OBTAIN_CONTROL_IN_PROGRESS)
   {
     ACK::getErrorCodeMessage(ack, __func__);
     vehiclePtr->obtainCtrlAuthority(controlAuthorityCallback);
   }
-  else if (ack.data == OpenProtocol::ErrorCode::ControlACK::SetControl::
+  else if (ack.data == OpenProtocolCMD::ErrorCode::ControlACK::SetControl::
                          RELEASE_CONTROL_IN_PROGRESS)
   {
     ACK::getErrorCodeMessage(ack, __func__);
@@ -1188,24 +1521,6 @@ Vehicle::setVersion(const Version::FirmWare& value)
 }
 
 void
-Vehicle::setStopCond(bool stopCond)
-{
-  protocolLayer->getThreadHandle()->lockStopCond();
-  this->stopCond = stopCond;
-  protocolLayer->getThreadHandle()->freeStopCond();
-}
-
-bool
-Vehicle::getStopCond()
-{
-  bool currentStopCondVal;
-  protocolLayer->getThreadHandle()->lockStopCond();
-  currentStopCondVal = stopCond;
-  protocolLayer->getThreadHandle()->freeStopCond();
-  return currentStopCondVal;
-}
-
-void
 Vehicle::ACKHandler(void* eventData)
 {
   if (!eventData)
@@ -1217,42 +1532,42 @@ Vehicle::ACKHandler(void* eventData)
   RecvContainer* ackData = (RecvContainer*)eventData;
   const uint8_t cmd[] = { ackData->recvInfo.cmd_set, ackData->recvInfo.cmd_id };
 
-  if (ackData->recvInfo.cmd_set == OpenProtocol::CMDSet::mission)
+  if (ackData->recvInfo.cmd_set == OpenProtocolCMD::CMDSet::mission)
   {
-    if (memcmp(cmd, OpenProtocol::CMDSet::Mission::waypointAddPoint,
+    if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::waypointAddPoint,
                sizeof(cmd)) == 0)
     {
       waypointAddPointACK.ack.info = ackData->recvInfo;
       waypointAddPointACK.ack.data = ackData->recvData.wpAddPointACK.ack;
       waypointAddPointACK.index    = ackData->recvData.wpAddPointACK.index;
     }
-    if (memcmp(cmd, OpenProtocol::CMDSet::Mission::waypointDownload,
+    else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::waypointDownload,
                sizeof(cmd)) == 0)
     {
       waypointInitACK.ack.info = ackData->recvInfo;
       waypointInitACK.ack.data = ackData->recvData.wpInitACK.ack;
       waypointInitACK.data     = ackData->recvData.wpInitACK.data;
     }
-    if (memcmp(cmd, OpenProtocol::CMDSet::Mission::waypointIndexDownload,
+    else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::waypointIndexDownload,
                sizeof(cmd)) == 0)
     {
       waypointIndexACK.ack.info = ackData->recvInfo;
       waypointIndexACK.ack.data = ackData->recvData.wpIndexACK.ack;
       waypointIndexACK.data     = ackData->recvData.wpIndexACK.data;
     }
-    else if (memcmp(cmd, OpenProtocol::CMDSet::Mission::hotpointStart,
+    else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::hotpointStart,
                     sizeof(cmd)) == 0)
     {
       hotpointStartACK.ack.info  = ackData->recvInfo;
       hotpointStartACK.ack.data  = ackData->recvData.hpStartACK.ack;
       hotpointStartACK.maxRadius = ackData->recvData.hpStartACK.maxRadius;
     }
-    else if (memcmp(cmd, OpenProtocol::CMDSet::Mission::hotpointDownload,
-		    sizeof(cmd)) == 0)
+    else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::hotpointDownload,
+                    sizeof(cmd)) == 0)
     {
-      hotpointReadACK.ack.info  = ackData->recvInfo;
-      hotpointReadACK.ack.data  = ackData->recvData.hpReadACK.ack;
-      hotpointReadACK.data = ackData->recvData.hpReadACK.data;
+      hotpointReadACK.ack.info = ackData->recvInfo;
+      hotpointReadACK.ack.data = ackData->recvData.hpReadACK.ack;
+      hotpointReadACK.data     = ackData->recvData.hpReadACK.data;
     }
     else
     {
@@ -1260,7 +1575,7 @@ Vehicle::ACKHandler(void* eventData)
       ackErrorCode.data = ackData->recvData.missionACK;
     }
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Activation::getVersion,
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Activation::getVersion,
                   sizeof(cmd)) == 0)
   {
     size_t arrLength = sizeof(ackData->recvData.versionACK);
@@ -1271,22 +1586,22 @@ Vehicle::ACKHandler(void* eventData)
     }
     droneVersionACK.ack.info = ackData->recvInfo;
   }
-  else if (ackData->recvInfo.cmd_set == OpenProtocol::CMDSet::subscribe)
+  else if (ackData->recvInfo.cmd_set == OpenProtocolCMD::CMDSet::subscribe)
   {
     ackErrorCode.info = ackData->recvInfo;
     ackErrorCode.data = ackData->recvData.subscribeACK;
   }
-  else if (ackData->recvInfo.cmd_set == OpenProtocol::CMDSet::control)
+  else if (ackData->recvInfo.cmd_set == OpenProtocolCMD::CMDSet::control)
   {
     ackErrorCode.info = ackData->recvInfo;
     ackErrorCode.data = ackData->recvData.commandACK;
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::MFIO::init, sizeof(cmd)) == 0)
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::MFIO::init, sizeof(cmd)) == 0)
   {
     ackErrorCode.info = ackData->recvInfo;
     ackErrorCode.data = ackData->recvData.mfioACK;
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::MFIO::get, sizeof(cmd)) == 0)
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::MFIO::get, sizeof(cmd)) == 0)
   {
     mfioGetACK.ack.info = ackData->recvInfo;
     mfioGetACK.ack.data = ackData->recvData.mfioGetACK.result;
@@ -1307,7 +1622,8 @@ Vehicle::PushDataHandler(void* eventData)
   const uint8_t cmd[] = { pushDataEntry->recvInfo.cmd_set,
                           pushDataEntry->recvInfo.cmd_id };
 
-  if (memcmp(cmd, OpenProtocol::CMDSet::Broadcast::broadcast, sizeof(cmd)) == 0)
+  if (memcmp(cmd, OpenProtocolCMD::CMDSet::Broadcast::broadcast, sizeof(cmd)) ==
+      0)
   {
     if (broadcast)
     {
@@ -1318,7 +1634,7 @@ Vehicle::PushDataHandler(void* eventData)
       }
     }
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Broadcast::subscribe,
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Broadcast::subscribe,
                   sizeof(cmd)) == 0)
   {
     if (subscribe)
@@ -1332,21 +1648,31 @@ Vehicle::PushDataHandler(void* eventData)
       }
     }
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Broadcast::fromMobile,
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Broadcast::fromMobile,
                   sizeof(cmd)) == 0)
   {
     if (moc)
     {
-      DDEBUG("Received data from mobile\n");
       if (moc->fromMSDKHandler.callback)
       {
-        moc->fromMSDKHandler.callback(this, *(pushDataEntry),
-                                      moc->fromMSDKHandler.userData);
+        if(threadSupported)
+        {
+          DDEBUG("Received data from mobile\n");
+          protocolLayer->getThreadHandle()->lockNonBlockCBAck();
+          this->circularBuffer->cbPush(
+              this->circularBuffer, moc->fromMSDKHandler,
+              *pushDataEntry);
+          protocolLayer->getThreadHandle()->freeNonBlockCBAck();
+        }
+        else
+        {
+          moc->fromMSDKHandler.callback(this, *(pushDataEntry),moc->fromMSDKHandler.userData);
+        }
       }
     }
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Broadcast::mission, sizeof(cmd)) ==
-           0)
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Broadcast::mission,
+                  sizeof(cmd)) == 0)
   {
     if (missionManager)
     {
@@ -1400,7 +1726,7 @@ Vehicle::PushDataHandler(void* eventData)
       }
     }
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Broadcast::waypoint,
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Broadcast::waypoint,
                   sizeof(cmd)) == 0)
   {
     if (missionManager->wpMission)
@@ -1425,7 +1751,7 @@ Vehicle::PushDataHandler(void* eventData)
 }
 
 void*
-Vehicle::waitForACK(const uint8_t (&cmd)[OpenProtocol::MAX_CMD_ARRAY_SIZE],
+Vehicle::waitForACK(const uint8_t (&cmd)[OpenProtocolCMD::MAX_CMD_ARRAY_SIZE],
                     int timeout)
 {
   void* pACK;
@@ -1433,37 +1759,37 @@ Vehicle::waitForACK(const uint8_t (&cmd)[OpenProtocol::MAX_CMD_ARRAY_SIZE],
   protocolLayer->getThreadHandle()->lockACK();
   protocolLayer->getThreadHandle()->wait(timeout);
 
-  if (memcmp(cmd, OpenProtocol::CMDSet::Mission::waypointAddPoint,
+  if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::waypointAddPoint,
              sizeof(cmd)) == 0)
   {
     pACK = static_cast<void*>(&this->waypointAddPointACK);
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Mission::waypointDownload,
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::waypointDownload,
                   sizeof(cmd)) == 0)
   {
     pACK = static_cast<void*>(&this->waypointInitACK);
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Mission::waypointIndexDownload,
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::waypointIndexDownload,
                   sizeof(cmd)) == 0)
   {
     pACK = static_cast<void*>(&this->waypointIndexACK);
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Mission::hotpointStart,
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::hotpointStart,
                   sizeof(cmd)) == 0)
   {
     pACK = static_cast<void*>(&this->hotpointStartACK);
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Mission::hotpointDownload,
-		  sizeof(cmd)) == 0)
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Mission::hotpointDownload,
+                  sizeof(cmd)) == 0)
   {
     pACK = static_cast<void*>(&this->hotpointReadACK);
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::Activation::getVersion,
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::Activation::getVersion,
                   sizeof(cmd)) == 0)
   {
     pACK = static_cast<void*>(&this->rawVersionACK);
   }
-  else if (memcmp(cmd, OpenProtocol::CMDSet::MFIO::get, sizeof(cmd)) == 0)
+  else if (memcmp(cmd, OpenProtocolCMD::CMDSet::MFIO::get, sizeof(cmd)) == 0)
   {
     pACK = static_cast<void*>(&this->mfioGetACK);
   }
@@ -1492,26 +1818,26 @@ Vehicle::obtainCtrlAuthority(VehicleCallBack callback, UserData userData)
     nbCallbackFunctions[cbIndex] = (void*)controlAuthorityCallback;
     nbUserData[cbIndex]          = NULL;
   }
-  protocolLayer->send(2, DJI::OSDK::encrypt,
-                      OpenProtocol::CMDSet::Control::setControl, &data, 1, 500,
-                      2, true, cbIndex);
+  protocolLayer->send(2, this->encrypt,
+                      OpenProtocolCMD::CMDSet::Control::setControl, &data, 1,
+                      500, 2, true, cbIndex);
 }
 
 ACK::ErrorCode
 Vehicle::obtainCtrlAuthority(int timeout)
 {
   ACK::ErrorCode ack;
-  uint8_t         data = 1;
+  uint8_t        data = 1;
 
-  protocolLayer->send(2, DJI::OSDK::encrypt,
-                      OpenProtocol::CMDSet::Control::setControl, &data, 1, 500,
-                      2, false, 0);
+  protocolLayer->send(2, this->encrypt,
+                      OpenProtocolCMD::CMDSet::Control::setControl, &data, 1,
+                      500, 2, false, 0);
 
-  ack = *(ACK::ErrorCode*)waitForACK(OpenProtocol::CMDSet::Control::setControl,
-                                    timeout);
+  ack = *(ACK::ErrorCode*)waitForACK(
+    OpenProtocolCMD::CMDSet::Control::setControl, timeout);
 
-  if (ack.data == OpenProtocol::ErrorCode::ControlACK::SetControl::
-                     OBTAIN_CONTROL_IN_PROGRESS)
+  if (ack.data == OpenProtocolCMD::ErrorCode::ControlACK::SetControl::
+  OBTAIN_CONTROL_IN_PROGRESS)
   {
     ack = this->obtainCtrlAuthority(timeout);
   }
@@ -1534,26 +1860,26 @@ Vehicle::releaseCtrlAuthority(VehicleCallBack callback, UserData userData)
     nbCallbackFunctions[cbIndex] = (void*)controlAuthorityCallback;  //add by yanly debug zkrt_notice
     nbUserData[cbIndex] = NULL;
   }
-  protocolLayer->send(2, DJI::OSDK::encrypt,
-                      OpenProtocol::CMDSet::Control::setControl, &data, 1, 500,
-                      2, true, cbIndex);
+  protocolLayer->send(2, this->encrypt,
+                      OpenProtocolCMD::CMDSet::Control::setControl, &data, 1,
+                      500, 2, true, cbIndex);
 }
 
 ACK::ErrorCode
 Vehicle::releaseCtrlAuthority(int timeout)
 {
   ACK::ErrorCode ack;
-  uint8_t         data = 0;
+  uint8_t        data = 0;
 
-  protocolLayer->send(2, DJI::OSDK::encrypt,
-                      OpenProtocol::CMDSet::Control::setControl, &data, 1, 500,
-                      2, false, 1);
+  protocolLayer->send(2, this->encrypt,
+                      OpenProtocolCMD::CMDSet::Control::setControl, &data, 1,
+                      500, 2, false, 1);
 
-  ack = *(ACK::ErrorCode*)waitForACK(OpenProtocol::CMDSet::Control::setControl,
-                                    timeout);
+  ack = *(ACK::ErrorCode*)waitForACK(
+    OpenProtocolCMD::CMDSet::Control::setControl, timeout);
 
-  if (ack.data == OpenProtocol::ErrorCode::ControlACK::SetControl::
-                     RELEASE_CONTROL_IN_PROGRESS)
+  if (ack.data == OpenProtocolCMD::ErrorCode::ControlACK::SetControl::
+                    RELEASE_CONTROL_IN_PROGRESS)
   {
     ack = this->releaseCtrlAuthority(timeout);
   }
@@ -1593,4 +1919,88 @@ char*
 Vehicle::getHwSerialNum() const
 {
   return (char*)versionData.hw_serial_num;
+}
+
+PlatformManager*
+Vehicle::getPlatformManager() const
+{
+  return this->platformManager;
+}
+
+Thread*
+Vehicle::getSerialReadThread() const
+{
+  return this->UARTSerialReadThread;
+}
+
+Thread*
+Vehicle::getCallbackThread() const
+{
+  return this->callbackThread;
+}
+
+Thread*
+Vehicle::getUSBReadThread() const
+{
+  return this->USBReadThread;
+}
+
+bool
+Vehicle::isUSBThreadReady()
+{
+  return this->USBThreadReady;
+}
+
+uint8_t*
+Vehicle::getRawVersionAck()
+{
+  return this->rawVersionACK;
+}
+
+void
+Vehicle::setEncryption(bool encryptSetting)
+{
+  this->encrypt = encryptSetting;
+}
+
+bool
+Vehicle::getEncryption()
+{
+  return this->encrypt;
+}
+
+bool
+Vehicle::isLegacyM600()
+{
+  //! Check for the special M600 backwards compatibility
+  if (versionData.fwVersion == Version::FW(3, 2, 15, 62))
+  {
+    if (strncmp(versionData.hwVersion, "PM820V3", 7) == 0)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  return false;
+}
+
+bool
+Vehicle::isM100()
+{
+  //! Check for the M100 backwards compatibility
+  if (versionData.fwVersion == Version::FW(3, 1, 10, 0))
+  {
+    if (strncmp(versionData.hwVersion, "M100", 4) == 0)
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+  return false;
 }

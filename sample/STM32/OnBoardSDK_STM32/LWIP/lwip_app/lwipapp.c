@@ -40,7 +40,7 @@ void lwip_prcs(void)
 		lwip_comm_init();
 		return;
 	}
-	//zkrt_todo: 网络事件业务处理
+	//zkrt__todo: 网络事件业务处理
 	if((lwipdev.netstatus == NET_INIT_OK)&&
 		(lwipdev.linkstatus == LINK_UP)&&
 		((lwipdev.dhcpstatus==2)||(lwipdev.dhcpstatus!=0xff)))

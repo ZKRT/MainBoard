@@ -4,7 +4,25 @@
  *
  *  @brief Implementation of GPS Waypoint Missions for DJI OSDK
  *
- *  @copyright 2016-17 DJI. All rights reserved.
+ *  @Copyright (c) 2016-2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -27,6 +45,10 @@ WaypointMission::WaypointMission(Vehicle* vehicle)
 
 WaypointMission::~WaypointMission()
 {
+  if (index)
+  {
+    delete[] (index);
+  }
 }
 
 void
@@ -49,8 +71,8 @@ WaypointMission::init(WayPointInitSettings* Info, VehicleCallBack callback,
     vehicle->nbUserData[cbIndex] = NULL;
   }
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointInit,
+  vehicle->protocolLayer->send(2, vehicle->getEncryption(),
+                               OpenProtocolCMD::CMDSet::Mission::waypointInit,
                                &info, sizeof(info), 500, 2, true, cbIndex);
 }
 
@@ -65,12 +87,12 @@ WaypointMission::init(WayPointInitSettings* Info, int timeout)
     setInfo(*Info);
   }
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointInit,
+  vehicle->protocolLayer->send(2, vehicle->getEncryption(),
+                               OpenProtocolCMD::CMDSet::Mission::waypointInit,
                                &info, sizeof(info), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::waypointInit, timeout));
+    OpenProtocolCMD::CMDSet::Mission::waypointInit, timeout));
 
   return ack;
 }
@@ -93,9 +115,9 @@ WaypointMission::start(VehicleCallBack callback, UserData userData)
     vehicle->nbUserData[cbIndex] = NULL;
   }
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointSetStart,
-                               &start, sizeof(start), 500, 2, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetStart, &start,
+    sizeof(start), 500, 2, true, cbIndex);
 }
 
 ACK::ErrorCode
@@ -104,12 +126,12 @@ WaypointMission::start(int timeout)
   ACK::ErrorCode ack;
   uint8_t        start = 0;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointSetStart,
-                               &start, sizeof(start), 500, 2, false, 2);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetStart, &start,
+    sizeof(start), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::waypointSetStart, timeout));
+    OpenProtocolCMD::CMDSet::Mission::waypointSetStart, timeout));
 
   return ack;
 }
@@ -132,9 +154,9 @@ WaypointMission::stop(VehicleCallBack callback, UserData userData)
     vehicle->nbUserData[cbIndex] = NULL;
   }
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointSetStart,
-                               &stop, sizeof(stop), 500, 2, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetStart, &stop,
+    sizeof(stop), 500, 2, true, cbIndex);
 }
 
 ACK::ErrorCode
@@ -143,12 +165,12 @@ WaypointMission::stop(int timeout)
   ACK::ErrorCode ack;
   uint8_t        stop = 1;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointSetStart,
-                               &stop, sizeof(stop), 500, 2, false, 2);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetStart, &stop,
+    sizeof(stop), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::waypointSetStart, timeout));
+    OpenProtocolCMD::CMDSet::Mission::waypointSetStart, timeout));
 
   return ack;
 }
@@ -171,9 +193,9 @@ WaypointMission::pause(VehicleCallBack callback, UserData userData)
     vehicle->nbUserData[cbIndex] = NULL;
   }
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointSetPause,
-                               &data, sizeof(data), 500, 2, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetPause, &data,
+    sizeof(data), 500, 2, true, cbIndex);
 }
 
 ACK::ErrorCode
@@ -182,12 +204,12 @@ WaypointMission::pause(int timeout)
   ACK::ErrorCode ack;
   uint8_t        data = 0;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointSetPause,
-                               &data, sizeof(data), 500, 2, false, 2);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetPause, &data,
+    sizeof(data), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::waypointSetPause, timeout));
+    OpenProtocolCMD::CMDSet::Mission::waypointSetPause, timeout));
 
   return ack;
 }
@@ -210,9 +232,9 @@ WaypointMission::resume(VehicleCallBack callback, UserData userData)
     vehicle->nbUserData[cbIndex] = NULL;
   }
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointSetPause,
-                               &data, sizeof(data), 500, 2, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetPause, &data,
+    sizeof(data), 500, 2, true, cbIndex);
 }
 
 ACK::ErrorCode
@@ -221,30 +243,35 @@ WaypointMission::resume(int timeout)
   ACK::ErrorCode ack;
   uint8_t        data = 1;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointSetPause,
-                               &data, sizeof(data), 500, 2, false, 2);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetPause, &data,
+    sizeof(data), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::waypointSetPause, timeout));
+    OpenProtocolCMD::CMDSet::Mission::waypointSetPause, timeout));
 
   return ack;
 }
 
-ACK::WayPointInit WaypointMission::getWaypointSettings(int timer)
+ACK::WayPointInit
+WaypointMission::getWaypointSettings(int timer)
 {
   ACK::WayPointInit ack;
-  uint8_t arbNumber = 0;
+  uint8_t           arbNumber = 0;
 
-  vehicle->protocolLayer->send(2, encrypt, OpenProtocol::CMDSet::Mission::waypointDownload, &arbNumber, sizeof(arbNumber), 1000, 4, 0, 0);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointDownload, &arbNumber,
+    sizeof(arbNumber), 1000, 4, 0, 0);
 
   ack = *((ACK::WayPointInit*)vehicle->waitForACK(
-      OpenProtocol::CMDSet::Mission::waypointDownload, timer));
+    OpenProtocolCMD::CMDSet::Mission::waypointDownload, timer));
 
   return ack;
 }
 
-void WaypointMission::getWaypointSettings(VehicleCallBack callback, UserData userData)
+void
+WaypointMission::getWaypointSettings(VehicleCallBack callback,
+                                     UserData        userData)
 {
   uint8_t arbNumber = 0;
 
@@ -256,24 +283,23 @@ void WaypointMission::getWaypointSettings(VehicleCallBack callback, UserData use
   }
   else
   {
-    vehicle->nbCallbackFunctions[cbIndex] =
-      (void*)getWaypointSettingsCallback;
-    vehicle->nbUserData[cbIndex] = NULL;
+    vehicle->nbCallbackFunctions[cbIndex] = (void*)getWaypointSettingsCallback;
+    vehicle->nbUserData[cbIndex]          = NULL;
   }
 
-  vehicle->protocolLayer->send(2, encrypt,
-    OpenProtocol::CMDSet::Mission::waypointDownload, &arbNumber, sizeof(arbNumber), 1000, 4,
-    true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointDownload, &arbNumber,
+    sizeof(arbNumber), 1000, 4, true, cbIndex);
 }
 
 void
 WaypointMission::getWaypointSettingsCallback(Vehicle*      vehicle,
-					     RecvContainer recvFrame,
-					     UserData      userData)
+                                             RecvContainer recvFrame,
+                                             UserData      userData)
 {
   ACK::WayPointInit wpInitInfo;
 
-  if (recvFrame.recvInfo.len - Protocol::PackageMin <=
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <=
       sizeof(ACK::WayPointInit))
   {
     wpInitInfo.data     = recvFrame.recvData.wpInitACK.data;
@@ -295,19 +321,24 @@ WaypointMission::getWaypointSettingsCallback(Vehicle*      vehicle,
           vehicle->missionManager->wpMission->info.indexNumber);
 }
 
-ACK::WayPointIndex WaypointMission::getIndex(uint8_t index, int timer)
+ACK::WayPointIndex
+WaypointMission::getIndex(uint8_t index, int timer)
 {
   ACK::WayPointIndex ack;
 
-  vehicle->protocolLayer->send(2, encrypt, OpenProtocol::CMDSet::Mission::waypointIndexDownload, &index, sizeof(index), 1000, 4, 0, 0);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointIndexDownload, &index,
+    sizeof(index), 1000, 4, 0, 0);
 
   ack = *((ACK::WayPointIndex*)vehicle->waitForACK(
-        OpenProtocol::CMDSet::Mission::waypointIndexDownload, timer));
+    OpenProtocolCMD::CMDSet::Mission::waypointIndexDownload, timer));
 
   return ack;
 }
 
-void WaypointMission::getIndex(uint8_t index, VehicleCallBack callback, UserData userData)
+void
+WaypointMission::getIndex(uint8_t index, VehicleCallBack callback,
+                          UserData userData)
 {
   int cbIndex = vehicle->callbackIdIndex();
   if (callback)
@@ -317,24 +348,22 @@ void WaypointMission::getIndex(uint8_t index, VehicleCallBack callback, UserData
   }
   else
   {
-    vehicle->nbCallbackFunctions[cbIndex] =
-      (void*)getIndexCallback;
-    vehicle->nbUserData[cbIndex] = NULL;
+    vehicle->nbCallbackFunctions[cbIndex] = (void*)getIndexCallback;
+    vehicle->nbUserData[cbIndex]          = NULL;
   }
 
-  vehicle->protocolLayer->send(2, encrypt,
-    OpenProtocol::CMDSet::Mission::waypointIndexDownload,
-    &index, sizeof(index), 1000, 4, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointIndexDownload, &index,
+    sizeof(index), 1000, 4, true, cbIndex);
 }
 
 void
-WaypointMission::getIndexCallback(Vehicle*      vehicle,
-                                  RecvContainer recvFrame,
-                                  UserData      userData)
+WaypointMission::getIndexCallback(Vehicle* vehicle, RecvContainer recvFrame,
+                                  UserData userData)
 {
   ACK::WayPointIndex wpIndexInfo;
 
-  if (recvFrame.recvInfo.len - Protocol::PackageMin <=
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <=
       sizeof(ACK::WayPointIndex))
   {
     wpIndexInfo.data     = recvFrame.recvData.wpIndexACK.data;
@@ -433,9 +462,11 @@ WaypointMission::uploadIndexData(WayPointSettings* data,
   else
     return false; //! @note range error
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointAddPoint,
-                               &send, sizeof(send), 1000, 4, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointAddPoint, &send,
+    sizeof(send), 1000, 4, true, cbIndex);
+
+  return true;
 }
 
 ACK::WayPointIndex
@@ -456,12 +487,12 @@ WaypointMission::uploadIndexData(WayPointSettings* data, int timeout)
     DERROR("Range error\n");
   }
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::waypointAddPoint,
-                               &wpData, sizeof(wpData), 1000, 4, false, 2);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointAddPoint, &wpData,
+    sizeof(wpData), 1000, 4, false, 2);
 
   ack = *((ACK::WayPointIndex*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::waypointAddPoint, timeout));
+    OpenProtocolCMD::CMDSet::Mission::waypointAddPoint, timeout));
 
   return ack;
 }
@@ -485,7 +516,7 @@ WaypointMission::readIdleVelocity(VehicleCallBack callback, UserData userData)
   }
 
   vehicle->protocolLayer->send(
-    2, encrypt, OpenProtocol::CMDSet::Mission::waypointGetVelocity, &zero,
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointGetVelocity, &zero,
     sizeof(zero), 500, 2, true, cbIndex);
 }
 
@@ -496,11 +527,11 @@ WaypointMission::readIdleVelocity(int timeout)
   uint8_t        zero = 0;
 
   vehicle->protocolLayer->send(
-    2, encrypt, OpenProtocol::CMDSet::Mission::waypointGetVelocity, &zero,
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointGetVelocity, &zero,
     sizeof(zero), 500, 2, false, 0);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::waypointGetVelocity, timeout));
+    OpenProtocolCMD::CMDSet::Mission::waypointGetVelocity, timeout));
 
   return ack;
 }
@@ -523,7 +554,7 @@ WaypointMission::updateIdleVelocity(float32_t       meterPreSecond,
   }
 
   vehicle->protocolLayer->send(
-    2, encrypt, OpenProtocol::CMDSet::Mission::waypointSetVelocity,
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetVelocity,
     &meterPreSecond, sizeof(meterPreSecond), 500, 2, true, cbIndex);
 }
 
@@ -533,11 +564,11 @@ WaypointMission::updateIdleVelocity(float32_t meterPreSecond, int timeout)
   ACK::WayPointVelocity ack;
 
   vehicle->protocolLayer->send(
-    2, encrypt, OpenProtocol::CMDSet::Mission::waypointSetVelocity,
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointSetVelocity,
     &meterPreSecond, sizeof(meterPreSecond), 500, 2, false, 0);
 
   ack = *((ACK::WayPointVelocity*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::waypointSetVelocity, timeout));
+    OpenProtocolCMD::CMDSet::Mission::waypointSetVelocity, timeout));
 
   return ack;
 }
@@ -548,7 +579,7 @@ WaypointMission::idleVelocityCallback(Vehicle* vehicle, RecvContainer recvFrame,
 {
   ACK::WayPointVelocityInternal wpIdleVelocityInfo;
 
-  if (recvFrame.recvInfo.len - Protocol::PackageMin <=
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <=
       sizeof(ACK::WayPointVelocityInternal))
   {
     wpIdleVelocityInfo = recvFrame.recvData.wpVelocityACK;
@@ -580,7 +611,7 @@ WaypointMission::uploadIndexDataCallback(Vehicle*      vehicle,
 {
   ACK::WayPointAddPointInternal wpDataInfo;
 
-  if (recvFrame.recvInfo.len - Protocol::PackageMin <=
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <=
       sizeof(ACK::WayPointAddPointInternal))
   {
     wpDataInfo = recvFrame.recvData.wpAddPointACK;
@@ -613,6 +644,7 @@ void
 WaypointMission::setWaypointCallback(VehicleCallBack callback,
                                      UserData        userData)
 {
+  vehicle->wayPointData = true;
   wayPointCallback.callback = callback;
   wayPointCallback.userData = userData;
 }

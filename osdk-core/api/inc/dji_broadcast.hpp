@@ -5,7 +5,25 @@
  *  @brief
  *  Broadcast Telemetry API for DJI onboardSDK library
  *
- *  @copyright 2016-17 DJI. All rights reserved.
+ *  @Copyright (c) 2016-2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -112,8 +130,13 @@ public:
 
   /*! Get quaternion data from local cache
    *  @note This getter function is only available with Broadcast, not with Subscribe telemetry
-   *
    *  @return Telemetry::Quaternion data structure with the newest value.
+   *  @details Data accuracy:
+   *  | Angle        | Unit | Accuracy   | Notes                                           |
+   *  |--------------|------|------------|-------------------------------------------------|
+   *  | pitch, roll  | deg  | <1         | in non-ahrs mode                                |
+   *  | yaw          | deg  | <3         | for well-calibrated compass with fine alignment |
+   *  | yaw with rtk | deg  | around 1.2 | in RTK heading fixed mode with 1 meter baseline |
    */
   Telemetry::Quaternion    getQuaternion()         ;
 
@@ -127,7 +150,13 @@ public:
 
   /*! Get velocity from local cache
    *  @note This getter function is only available with Broadcast, not with Subscribe telemetry
-   *  @details The velocity may be in body or ground frame
+   *  @details Data accuracy:
+   * | Axis     | Unit | Accuracy                                                                                    |
+   * |----------|------|---------------------------------------------------------------------------------------------|
+   * | vgx, vgy | m/s  | Around 5cm/s for GNSS navigation. Around 3cm/s with VO at 1 meter height                    |
+   * | vgz      | m/s  | 10cm/s only with barometer in steady air. 3cm/s with VO at 1 meter height with 8cm baseline |
+   *
+   *  The velocity may be in body or ground frame
    *           based on settings on DJI Assistant 2's SDK page.
    *  @return Telemetry::Vector3f data structure with the newest value.
    */
@@ -150,7 +179,15 @@ public:
 
   /*! Get Globalc Position (LLA and metadata) from local cache
    *  @note This getter function is only available with Broadcast, not with Subscribe telemetry
-   *  @details The returned Lat/Lon values are in rad.
+   *  @details Data accuracy:
+   *  | Axis | Unit | Position Sensor | Accuracy                                         |
+   *  |------|------|-----------------|--------------------------------------------------|
+   *  | x, y | m    | GPS             | <3m with open sky without multipath              |
+   *  | z    | m    | GPS             | <5m with open sky without multipath              |
+   *  | x, y | m    | RTK             | around 2cm with fine alignment and fix condition |
+   *  | z    | m    | RTK             | around 3cm with fine alignment and fix condition |
+   *
+   *  The returned Lat/Lon values are in rad.
    *  @return Telemetry::GlobalPosition data structure with the newest value.
    */
   Telemetry::GlobalPosition    getGlobalPosition()     ;
@@ -175,6 +212,28 @@ public:
    *  @details This feature provides detailed RTK info. Available on A3/M600.
    *           You need to enable it separately on DJI Assistant 2's SDK page.
    *  @return Telemetry::RTK data structure with the newest value.
+   *
+   *
+   *  @note RTK Position Info and Yaw Info State is shown in the table below
+   *
+   *  | State | Meaning          | Description                                            |
+   *  |-------|------------------|--------------------------------------------------------|
+   *  | 0     | NONE             | No solution                                            |
+   *  | 1     | FIXEDPOS         | Position has been fixed by the FIX POSITION command    |
+   *  | 2     | FIXEDHEIGHT      | Position has been fixed by the FIX HEIGHT/AUTO command |
+   *  | 8     | DOPPLER_VELOCITY | Velocity computed using instantaneous Doppler          |
+   *  | 16    | Single           | Single point position                                  |
+   *  | 17    | PSRDIFF          | Pseudorange differential solution                      |
+   *  | 18    | WAAS             | Solution calculated using corrections from an SBAS     |
+   *  | 19    | PROPAGATED       | Propagated by a Kalman filter without new observations |
+   *  | 20    | OMNISTAR         | OmniSTAR VBS position (L1 sub-metre)                   |
+   *  | 32    | L1_FLOAT         | Floating L1 ambiguity solution                         |
+   *  | 33    | IONOFREE_FLOAT   | Floating ionospheric-free ambiguity solution           |
+   *  | 34    | NARROW_FLOAT     | Floating narrow-lane ambiguity solution                |
+   *  | 48    | L1_INT           | Integer L1 ambiguity solution                          |
+   *  | 49    | WIDE_INT         | Integer wide-lane ambiguity solution                   |
+   *  | 50    | NARROW_INT       | Integer narrow-lane ambiguity solution                 |
+   *
    */
   Telemetry::RTK     getRTKInfo()            ;
 
@@ -194,6 +253,7 @@ public:
 
   /*! Get Gimbal data from local cache
    *  @note This getter function is only available with Broadcast, not with Subscribe telemetry
+   *  @details Data Accuracy: 0.1 deg in all axes
    *
    *  @return Telemetry::Gimbal data structure with the newest value.
    */
@@ -317,21 +377,26 @@ private:
 
 private:
   /*!
-   * @brief Extract broadcast data for A3/N3
-   * @param recvFrame: the raw data payload
+   * @brief Extract broadcast data for A3/N3/M600
+   * @param recvFrame: pointer to the raw data payload
    */
   void unpackData(RecvContainer* recvFrame);
 
   /*!
    * @brief Extract broadcast data for M100
-   * @param recvFrame: the raw data payload
+   * @param recvFrame: pointer to the raw data payload
    */
   void unpackM100Data(RecvContainer* pRecvFrame);
+
+  /*!
+   * @brief Extract broadcast data for M600 FW 3.2.41.5
+   * @param recvFrame: pointer to the raw data payload
+   */
+  void unpackOldM600Data(RecvContainer* recvFrame);
 
   inline void unpackOne(FLAG flag, void* data, uint8_t*& buf, size_t size);
 
 public:
-
   void setBroadcastLength(uint16_t length);
   uint16_t getBroadcastLength();
 
@@ -355,13 +420,14 @@ private:
   Telemetry::Battery             battery     ;
   Telemetry::SDKInfo             info        ;
   /*
-   * @note Broadcast data for Matrice 100 that is fundamentally
-   * different from the A3/N3
+   * @note Broadcast data for Matrice 100/600 older firmware that is fundamentally
+   * different from the A3/N3/M600 newer firmware
    */
-  Telemetry::M100TimeStamp	    m100TimeStamp;
-  Telemetry::M100Velocity       m100Velocity;
-  Telemetry::M100Status         m100FlightStatus;
-  Telemetry::M100Battery        m100Battery;
+  Telemetry::LegacyTimeStamp	    legacyTimeStamp;
+  Telemetry::LegacyVelocity       legacyVelocity;
+  Telemetry::LegacyStatus         legacyStatus;
+  Telemetry::LegacyBattery        legacyBattery;
+  Telemetry::LegacyGPSInfo        legacyGPSInfo;
   // clang-format on
 private:
   Vehicle* vehicle;

@@ -7,9 +7,27 @@
  * deprecated.
  *  See dji_topics.hpp for updated definitions.
  *
- *  @copyright
- *  Copyright 2016-17 DJI. All rights reserved.
- * */
+ *  @Copyright (c) 2016-2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 
 #ifndef DJI_TYPE
 #define DJI_TYPE
@@ -68,9 +86,6 @@ extern char buffer[];
 
 /******************Protocol Related Definitions***************************/
 
-//! @todo move to class Vehicle as a configuration
-const uint8_t encrypt = 0;
-
 const size_t SESSION_TABLE_NUM = 32;
 const size_t CALLBACK_LIST_NUM = 10;
 
@@ -80,8 +95,14 @@ const size_t CALLBACK_LIST_NUM = 10;
 const size_t MAX_INCOMING_DATA_SIZE = 300;
 const size_t MAX_ACK_SIZE           = 107;
 
+/**
+ * @note some constants for stereo camera
+ */
+static const uint8_t CAMERA_PAIR_NUM = 5;
+static const uint8_t IMAGE_TYPE_NUM  = 10;
+
 //! The Header struct is meant to handle the open protocol header.
-typedef struct Header
+typedef struct OpenHeader
 {
   uint32_t sof : 8;
   uint32_t length : 10;
@@ -94,7 +115,7 @@ typedef struct Header
   uint32_t reserved1 : 24;
   uint32_t sequenceNumber : 16;
   uint32_t crc : 16;
-} Header;
+} OpenHeader;
 
 typedef struct Command
 {
@@ -143,18 +164,6 @@ typedef struct ACKSession
   uint32_t res : 25;
   MMU_Tab* mmu;
 } ACKSession;
-
-/*! @brief Dispatch info
- *  @details This struct has booleans that get populated in the protocol layer
- *           and help the dispatcher in the Vehicle layer decide what to do
- *           with the received packet.
- */
-typedef struct DispatchInfo
-{
-  bool    isAck;
-  bool    isCallback;
-  uint8_t callbackID;
-} DispatchInfo;
 
 /*!
  * @brief Virtual RC Settings (supported only on Matrice 100)

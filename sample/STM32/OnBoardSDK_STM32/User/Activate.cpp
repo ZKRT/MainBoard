@@ -27,17 +27,15 @@ userActivate()
   user_act_data.encKey = key_buf;
 
 //  v->activate(&user_act_data);
-  v->activate (&user_act_data); //add by yanly
-
+  v->activate (&user_act_data); 
 }
 
 void
-Vehicle::activateCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
+Vehicle::activateCallbackv2(Vehicle* vehiclePtr, RecvContainer recvFrame,
                           UserData userData)
 {
-
   uint16_t ack_data;
-  if (recvFrame.recvInfo.len - Protocol::PackageMin <= 2)
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <= 2)
   {
     ack_data = recvFrame.recvData.ack;
 
@@ -45,7 +43,8 @@ Vehicle::activateCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
     vehiclePtr->ackErrorCode.info = recvFrame.recvInfo;
 
     if (ACK::getError(vehiclePtr->ackErrorCode) &&
-        ack_data == OpenProtocol::ErrorCode::ActivationACK::OSDK_VERSION_ERROR)
+        ack_data ==
+          OpenProtocolCMD::ErrorCode::ActivationACK::OSDK_VERSION_ERROR)
     {
       DERROR("SDK version did not match\n");
       vehiclePtr->getDroneVersion();
@@ -59,11 +58,10 @@ Vehicle::activateCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
     DERROR("ACK is exception, sequence %d\n", recvFrame.recvInfo.seqNumber);
   }
 
-  if (ack_data == OpenProtocol::ErrorCode::ActivationACK::SUCCESS &&
+  if (ack_data == OpenProtocolCMD::ErrorCode::ActivationACK::SUCCESS &&
       vehiclePtr->accountData.encKey)
   {
     vehiclePtr->protocolLayer->setKey(vehiclePtr->accountData.encKey);
-		djisdk_state.run_status = avtivated_ok_djirs; //add by yanly
+	djisdk_state.run_status = avtivated_ok_djirs; //add by yanly
   }
 }
-

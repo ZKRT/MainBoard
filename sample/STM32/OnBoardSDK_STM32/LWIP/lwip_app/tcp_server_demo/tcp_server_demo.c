@@ -131,7 +131,7 @@ void tcp_server_prcs(void)
 			sys_led_timeout = RUN_LED_NETINIT_TIMEOUT;
 			sys_led_flag = sys_led_timeout;
 #endif	
-		//zkrt_todo: error handle
+		//zkrt__todo: error handle
 			break;
 		default:break;
 	}
@@ -276,7 +276,7 @@ err_t tcp_server_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err
 	if(p==NULL) //从客户端接收到空数据
 	{
 		es->server_state = ES_TCPSERVER_CLOSING;//需要关闭TCP 连接了
-		//zkrt_todo: 这里需要调用函数tcp_server_connection_close(tpcb, NULL)将当前pcb关闭？待测
+		//zkrt__todo: 这里需要调用函数tcp_server_connection_close(tpcb, NULL)将当前pcb关闭？待测
 		es->send_p = p;		
 		ret_err = ERR_OK;
 	}
@@ -350,7 +350,7 @@ err_t tcp_server_poll(void *arg, struct tcp_pcb *tpcb)
 		{
 			es->send_p=pbuf_alloc(PBUF_TRANSPORT,strlen((char*)tcp_server_sendbuf),PBUF_POOL);//申请内存
 			pbuf_take(es->send_p,(char*)tcp_server_sendbuf,strlen((char*)tcp_server_sendbuf));
-			tcp_server_senddata(tpcb,es); 		//轮询的时候发送要发送的数据 //zkrt_todo: 发送成功才改变标记
+			tcp_server_senddata(tpcb,es); 		//轮询的时候发送要发送的数据 //zkrt__todo: 发送成功才改变标记
 			tcp_server_flag&=~(1<<7);  			//清除数据发送标志位
 			if(es->send_p!=NULL)
 				pbuf_free(es->send_p); 	//释放内存	

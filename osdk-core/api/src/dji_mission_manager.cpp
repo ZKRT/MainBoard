@@ -6,9 +6,28 @@
  *  Mission Manager API for DJI OSDK library
  *  @details This is a high-level abstraction for handling/chaining missions
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @Copyright (c) 2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
+
 #include "dji_mission_manager.hpp"
 
 using namespace DJI;
@@ -51,7 +70,8 @@ MissionManager::init(DJI_MISSION_TYPE type, int timeout, UserData missionData)
     DERROR("Cannot recognize the mission type provided\n");
     // @todo return a false ack
     ACK::ErrorCode ack;
-    ack.data = false;
+    ack.info.cmd_set = OpenProtocolCMD::CMDSet::mission;
+    ack.data = ErrorCode::MissionACK::Common::INVALID_COMMAND;
     return ack;
   }
 }
@@ -116,7 +136,8 @@ MissionManager::initHotptMission(int timeout, UserData hotptData)
 
   // @todo this initData() does not return ack
   ACK::ErrorCode ack;
-  ack.data = ACK::SUCCESS;
+  ack.info.cmd_set = OpenProtocolCMD::CMDSet::mission;
+  ack.data = ErrorCode::MissionACK::Common::SUCCESS;
 
   return ack;
 }
@@ -136,7 +157,8 @@ MissionManager::missionCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
   char           func[50];
   ACK::ErrorCode ack;
 
-  if (recvFrame.recvInfo.len - Protocol::PackageMin <= sizeof(ACK::ErrorCode))
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <=
+      sizeof(ACK::ErrorCode))
   {
     ack.info = recvFrame.recvInfo;
     ack.data = recvFrame.recvData.missionACK;

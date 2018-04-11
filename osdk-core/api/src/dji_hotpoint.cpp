@@ -4,7 +4,25 @@
  *
  *  @brief Implementation of HotPoint (Point of Interest) Missions for DJI OSDK
  *
- *  @copyright 2016-17 DJI. All rights reserved.
+ *  @Copyright (c) 2016-2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -67,7 +85,7 @@ HotpointMission::start(VehicleCallBack callback, UserData userData)
     vehicle->nbUserData[cbIndex] = NULL;
   }
   vehicle->protocolLayer->send(
-    2, encrypt, OpenProtocol::CMDSet::Mission::hotpointStart, &hotPointData,
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointStart, &hotPointData,
     sizeof(hotPointData), 500, 2, true, cbIndex);
 }
 
@@ -77,11 +95,11 @@ HotpointMission::start(int timeout)
   ACK::ErrorCode ack;
 
   vehicle->protocolLayer->send(
-    2, encrypt, OpenProtocol::CMDSet::Mission::hotpointStart, &hotPointData,
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointStart, &hotPointData,
     sizeof(hotPointData), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::hotpointStart, timeout));
+    OpenProtocolCMD::CMDSet::Mission::hotpointStart, timeout));
 
   return ack;
 }
@@ -102,8 +120,8 @@ HotpointMission::stop(VehicleCallBack callback, UserData userData)
       (void*)&MissionManager::missionCallback;
     vehicle->nbUserData[cbIndex] = NULL;
   }
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointStop,
+  vehicle->protocolLayer->send(2, vehicle->getEncryption(),
+                               OpenProtocolCMD::CMDSet::Mission::hotpointStop,
                                &zero, sizeof(zero), 500, 2, true, cbIndex);
 }
 
@@ -113,12 +131,12 @@ HotpointMission::stop(int timeout)
   ACK::ErrorCode ack;
   uint8_t        zero = 0;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointStop,
+  vehicle->protocolLayer->send(2, vehicle->getEncryption(),
+                               OpenProtocolCMD::CMDSet::Mission::hotpointStop,
                                &zero, sizeof(zero), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::hotpointStop, timeout));
+    OpenProtocolCMD::CMDSet::Mission::hotpointStop, timeout));
 
   return ack;
 }
@@ -139,9 +157,9 @@ HotpointMission::pause(VehicleCallBack callback, UserData userData)
       (void*)&MissionManager::missionCallback;
     vehicle->nbUserData[cbIndex] = NULL;
   }
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointSetPause,
-                               &data, sizeof(data), 500, 2, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointSetPause, &data,
+    sizeof(data), 500, 2, true, cbIndex);
 }
 
 ACK::ErrorCode
@@ -150,12 +168,12 @@ HotpointMission::pause(int timeout)
   ACK::ErrorCode ack;
   uint8_t        data = 0;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointSetPause,
-                               &data, sizeof(data), 500, 2, false, 2);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointSetPause, &data,
+    sizeof(data), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::hotpointSetPause, timeout));
+    OpenProtocolCMD::CMDSet::Mission::hotpointSetPause, timeout));
 
   return ack;
 }
@@ -176,9 +194,9 @@ HotpointMission::resume(VehicleCallBack callback, UserData userData)
       (void*)&MissionManager::missionCallback;
     vehicle->nbUserData[cbIndex] = NULL;
   }
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointSetPause,
-                               &data, sizeof(data), 500, 2, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointSetPause, &data,
+    sizeof(data), 500, 2, true, cbIndex);
 }
 
 ACK::ErrorCode
@@ -187,12 +205,12 @@ HotpointMission::resume(int timeout)
   ACK::ErrorCode ack;
   uint8_t        data = 1;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointSetPause,
-                               &data, sizeof(data), 500, 2, false, 2);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointSetPause, &data,
+    sizeof(data), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::hotpointSetPause, timeout));
+    OpenProtocolCMD::CMDSet::Mission::hotpointSetPause, timeout));
 
   return ack;
 }
@@ -215,9 +233,9 @@ HotpointMission::updateYawRate(HotpointMission::YawRate& Data,
       (void*)&MissionManager::missionCallback;
     vehicle->nbUserData[cbIndex] = NULL;
   }
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointYawRate,
-                               &Data, sizeof(Data), 500, 2, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointYawRate, &Data,
+    sizeof(Data), 500, 2, true, cbIndex);
 }
 
 ACK::ErrorCode
@@ -227,12 +245,12 @@ HotpointMission::updateYawRate(HotpointMission::YawRate& Data, int timeout)
   hotPointData.yawRate   = Data.yawRate;
   hotPointData.clockwise = Data.clockwise ? 1 : 0;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointYawRate,
-                               &Data, sizeof(Data), 500, 2, false, 2);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointYawRate, &Data,
+    sizeof(Data), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::hotpointYawRate, timeout));
+    OpenProtocolCMD::CMDSet::Mission::hotpointYawRate, timeout));
 
   return ack;
 }
@@ -263,8 +281,8 @@ HotpointMission::updateRadius(float32_t meter, VehicleCallBack callback,
       (void*)&MissionManager::missionCallback;
     vehicle->nbUserData[cbIndex] = NULL;
   }
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointRadius,
+  vehicle->protocolLayer->send(2, vehicle->getEncryption(),
+                               OpenProtocolCMD::CMDSet::Mission::hotpointRadius,
                                &meter, sizeof(meter), 500, 2, true, cbIndex);
 }
 
@@ -273,12 +291,12 @@ HotpointMission::updateRadius(float32_t meter, int timeout)
 {
   ACK::ErrorCode ack;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointRadius,
+  vehicle->protocolLayer->send(2, vehicle->getEncryption(),
+                               OpenProtocolCMD::CMDSet::Mission::hotpointRadius,
                                &meter, sizeof(meter), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::hotpointRadius, timeout));
+    OpenProtocolCMD::CMDSet::Mission::hotpointRadius, timeout));
 
   return ack;
 }
@@ -299,8 +317,8 @@ HotpointMission::resetYaw(VehicleCallBack callback, UserData userData)
       (void*)&MissionManager::missionCallback;
     vehicle->nbUserData[cbIndex] = NULL;
   }
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointSetYaw,
+  vehicle->protocolLayer->send(2, vehicle->getEncryption(),
+                               OpenProtocolCMD::CMDSet::Mission::hotpointSetYaw,
                                &zero, sizeof(zero), 500, 2, true, cbIndex);
 }
 
@@ -310,18 +328,19 @@ HotpointMission::resetYaw(int timeout)
   ACK::ErrorCode ack;
   uint8_t        zero = 0;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointSetYaw,
+  vehicle->protocolLayer->send(2, vehicle->getEncryption(),
+                               OpenProtocolCMD::CMDSet::Mission::hotpointSetYaw,
                                &zero, sizeof(zero), 500, 2, false, 2);
 
   ack = *((ACK::ErrorCode*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::hotpointSetYaw, timeout));
+    OpenProtocolCMD::CMDSet::Mission::hotpointSetYaw, timeout));
 
   return ack;
 }
 
 void
-HotpointMission::getHotpointSettings(VehicleCallBack callback, UserData userData)
+HotpointMission::getHotpointSettings(VehicleCallBack callback,
+                                     UserData        userData)
 {
   uint8_t zero    = 0;
   int     cbIndex = vehicle->callbackIdIndex();
@@ -332,22 +351,23 @@ HotpointMission::getHotpointSettings(VehicleCallBack callback, UserData userData
   }
   else
   {
-    vehicle->nbCallbackFunctions[cbIndex] =
-      (void*)&getHotpointSettingsCallback;
-    vehicle->nbUserData[cbIndex] = NULL;
+    vehicle->nbCallbackFunctions[cbIndex] = (void*)&getHotpointSettingsCallback;
+    vehicle->nbUserData[cbIndex]          = NULL;
   }
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointDownload,
-                               &zero, sizeof(zero), 500, 2, true, cbIndex);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointDownload, &zero,
+    sizeof(zero), 500, 2, true, cbIndex);
 }
 
-void HotpointMission::getHotpointSettingsCallback(Vehicle* vehiclePtr, RecvContainer recvFrame,
-			                          UserData userData)
+void
+HotpointMission::getHotpointSettingsCallback(Vehicle*      vehiclePtr,
+                                             RecvContainer recvFrame,
+                                             UserData      userData)
 {
   HotpointMission*          hp = (HotpointMission*)userData;
   ACK::HotPointReadInternal hpReadInfo;
 
-  if (recvFrame.recvInfo.len - Protocol::PackageMin <=
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <=
       sizeof(ACK::HotPointReadInternal))
   {
     hpReadInfo = recvFrame.recvData.hpReadACK;
@@ -374,14 +394,14 @@ ACK::HotPointRead
 HotpointMission::getHotpointSettings(int timeout)
 {
   ACK::HotPointRead ack;
-  uint8_t        zero = 0;
+  uint8_t           zero = 0;
 
-  vehicle->protocolLayer->send(2, encrypt,
-                               OpenProtocol::CMDSet::Mission::hotpointDownload,
-                               &zero, sizeof(zero), 500, 2, false, 2);
+  vehicle->protocolLayer->send(
+    2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::hotpointDownload, &zero,
+    sizeof(zero), 500, 2, false, 2);
 
   ack = *((ACK::HotPointRead*)vehicle->waitForACK(
-    OpenProtocol::CMDSet::Mission::hotpointDownload, timeout));
+    OpenProtocolCMD::CMDSet::Mission::hotpointDownload, timeout));
 
   return ack;
 }
@@ -392,7 +412,7 @@ HotpointMission::startCallback(RecvContainer recvFrame, UserData userData)
   HotpointMission*           hp = (HotpointMission*)userData;
   ACK::HotPointStartInternal hpStartInfo;
 
-  if (recvFrame.recvInfo.len - Protocol::PackageMin <=
+  if (recvFrame.recvInfo.len - OpenProtocol::PackageMin <=
       sizeof(ACK::HotPointStartInternal))
   {
     hpStartInfo = recvFrame.recvData.hpStartACK;
@@ -410,6 +430,7 @@ void
 HotpointMission::setHotpointCallback(VehicleCallBack callback,
                                      UserData        userData)
 {
+  vehicle->hotPointData = true;
   hotPointCallback.callback = callback;
   hotPointCallback.userData = userData;
 }

@@ -4,7 +4,25 @@
  *
  *  @brief Gimbal API for OSDK library
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @Copyright (c) 2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -78,7 +96,14 @@ public:
     int16_t roll; /*!< Roll in rate, unit 0.1 deg/s, input range[-1800,1800] */
     int16_t
             pitch; /*!< Pitch in rate, unit 0.1 deg/s, input range[-1800,1800] */
-    uint8_t reserved; /*!< @note always 0x80 */
+    uint8_t reserved0                 : 1;
+    uint8_t reserved1                 : 1;
+    uint8_t extend_control_range      : 1; /*!< 1 -> true, 0 -> false */
+    uint8_t disable_fov_zoom          : 1; /*!< 1 -> true, 0 -> false */
+    uint8_t ignore_aircraft_motion    : 1; /*!< 1 -> true, 0 -> false */
+    uint8_t yaw_return_neutral        : 1; /*!< 1 -> true, 0 -> false */
+    uint8_t ignore_user_stick         : 1; /*!< 1 -> true, 0 -> false */
+    uint8_t gimbal_control_authority  : 1; /*!< 1 -> obtain, 0 -> release */
   } SpeedData;        // pack(1)
 #pragma pack()
 public:

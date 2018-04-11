@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    hwTestHandle.h 
+  * @file    hwTestHandle.h
   * @author  ZKRT
   * @version V0.0.1
   * @date    23-December-2016
@@ -13,7 +13,7 @@
   *
   ******************************************************************************
   */
-  
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __HWTESTHANDLE_H
 #define __HWTESTHANDLE_H
@@ -24,19 +24,19 @@
 
 /* Exported types ------------------------------------------------------------*/
 
-/** @defgroup 
+/** @defgroup
   * @{
-  */ 
+  */
 
-	
+
 /**
   * @}
-  */ 
+  */
 /* Exported constants --------------------------------------------------------*/
 
 /** @defgroup hardware test protocol constants
   * @{
-  */ 
+  */
 //start code
 #define STARTCODE_HWT                    0xEBEBEB
 //end code
@@ -45,7 +45,7 @@
 #define LED_CMDN_HWT                     0x01
 #define UART_CMDN_HWT                    0x02
 #define CAN_CMDN_HWT                     0x03
-#define PWM_CMDN_HWT                     0x04							
+#define PWM_CMDN_HWT                     0x04
 #define AD_CMDN_HWT                      0x05
 #define DS18B20_CMDN_HWT                 0x06
 #define IIC_CMDN_HWT                     0x07
@@ -55,7 +55,7 @@
 #define EXTERNAL_CMDN_HWT                0x0b
 #define MAX_CMDN_HWT                     EXTERNAL_CMDN_HWT
 //cmd type
-#define SET_CMDT_HWT                     0x01							 
+#define SET_CMDT_HWT                     0x01
 #define RESPOND_CMDT_HWT                 0x02
 //test result
 #define RESULT_OK_HWT                    0x55
@@ -67,7 +67,7 @@
 #define MAINBOARD_NAME                   "Controller"  //the name length must < 16 bytes
 /**
   * @}
-  */ 
+  */
 
 
 /* Exported functions ------------------------------------------------------- */
@@ -79,7 +79,7 @@ u8 hwtest_data_handle(u8 *buf, u16 buflen, u8 *resbuf, u16 *resbuflen);
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}

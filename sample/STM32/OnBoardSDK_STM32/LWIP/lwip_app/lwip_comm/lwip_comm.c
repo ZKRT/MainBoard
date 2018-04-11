@@ -121,7 +121,7 @@ u8 lwip_comm_init(void)
 	if(LAN8720_Init())
 	{
 		lwipdev.netstatus = NET_INIT_FAILED;
-		return 2;			//初始化LAN8720失败  //zkrt_todo: 测一下失败继续，等插上网线能不能继续工作。
+		return 2;			//初始化LAN8720失败  //zkrt__todo: 测一下失败继续，等插上网线能不能继续工作。
 	}
 	lwip_init();						//初始化LWIP内核
 	lwip_comm_default_ip_set(&lwipdev);	//设置默认IP等信息
@@ -204,7 +204,7 @@ void lwip_periodic_handle()
 //				sys_led_flag = sys_led_timeout;
 				_RUN_LED = 1;
 #endif				
-				//zkrt_todo: 网线从link up变成link down，是否要将网络状态等信息重置
+				//zkrt__todo: 网线从link up变成link down，是否要将网络状态等信息重置
 			}
 		}
 	}	
@@ -262,7 +262,7 @@ void lwip_periodic_handle()
 ////				sys_led_flag = sys_led_timeout;
 //				_RUN_LED = 1;
 //#endif				
-//				//zkrt_todo: 网线从link up变成link down，是否要将网络状态等信息重置
+//				//zkrt__todo: 网线从link up变成link down，是否要将网络状态等信息重置
 //			}
 //		}
 //	}	

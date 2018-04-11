@@ -6,7 +6,25 @@
  *  @brief ACK error API getError and getErrorCodeMessage
  *  to decode received ACK(s).
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @Copyright (c) 2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -58,7 +76,7 @@ public:
     uint8_t          ack;
     HotPointSettings data;
 
-    //TODO fix/remove once verified with FC team
+    // TODO fix/remove once verified with FC team
     uint8_t extraByte;
   } HotPointReadInternal; // pack(1)
 
@@ -70,7 +88,7 @@ public:
 
   typedef struct WayPointIndexInternal
   {
-    uint8_t ack;
+    uint8_t          ack;
     WayPointSettings data;
   } WayPointIndexInternal; // pack(1)
 
@@ -133,7 +151,7 @@ public:
     ErrorCode        ack;
     HotPointSettings data;
 
-    //TODO fix/remove once verified with FC team
+    // TODO fix/remove once verified with FC team
     uint8_t extraByte;
   } HotPointRead; // pack(1)
 
@@ -143,7 +161,7 @@ public:
    */
   typedef struct WayPointIndex
   {
-    ErrorCode ack;
+    ErrorCode        ack;
     WayPointSettings data;
   } WayPointIndex; // pack(1)
 
@@ -188,16 +206,78 @@ public:
 
   /*!
    * @brief This struct captures PushData while ground-station is enabled on
-   * Assistant's SDK Page
+   * Assistant's SDK Page, CMD: 0x02, 0x04
    */
   typedef struct WayPointReachedData
   {
     uint8_t incident_type;  /*! see WayPointIncidentType */
     uint8_t waypoint_index; /*! the index of current waypt mission */
-    uint8_t current_status; /*! 4 - pre-action, 6 - post-action */
+    uint8_t current_status; /*! 4: pre-action, 6: post-action */
     uint8_t reserved_1;
     uint8_t reserved_2;
   } WayPointReachedData; // pack(1)
+
+  /*!
+   * @brief This struct captures PushData while ground-station is enabled on
+   * Assistant's SDK Page, CMD: 0x02, 0x03
+   */
+  typedef struct WayPointStatusPushData{
+    uint8_t mission_type;      /*! see WayPointPushDataIncidentType */
+    uint8_t waypoint_index;    /*! the index of current waypt mission */
+    uint8_t current_status;    /*! 0: pre-mission, 1: in-action, 5: first waypt , 6: reached */
+    uint8_t error_notification;
+    uint16_t reserved_1;
+  } WayPointStatusPushData;
+  /*!
+   * @brief This constant variable defines number of pixels for QVGA images
+   */
+  static const int IMG_240P_SIZE = 240 * 320;
+  typedef uint8_t  Image[IMG_240P_SIZE];
+  /*!
+   * @brief sub-struct for stereo image with raw data and camera name
+   */
+  typedef struct ImageMeta
+  {
+    Image image;
+    char  name[12];
+  } ImageMeta; // pack(1)
+  /*!
+   * @brief This struct captures PushData when subscribe to QVGA images
+   */
+  typedef struct StereoImgData
+  {
+    uint32_t frame_index;
+    uint32_t time_stamp;
+    uint8_t  num_imgs;
+    /*
+     * There could be 50 different kinds of images coming from the drone,
+     * 5 camera pairs and 10 images types.
+     * Here we use an uint64_t to describe which image is coming
+     * from the USB line, each bit represents if there's data or not
+     * Please use AdvancedSensing::ReceivedImgDesc to match them
+     * For M210, we support up to 4 images at the same time
+     */
+    uint64_t img_desc;
+    // @note for M210, at most 4 imgs come at the same time.
+    ImageMeta img_vec[4];
+  } StereoImgData; // pack(1)
+  /*!
+   * @brief This constant variable defines number of pixels for VGA images
+   */
+  static const int IMG_VGA_SIZE = 640 * 480;
+  typedef uint8_t  VGAImage[IMG_VGA_SIZE];
+  /*!
+   * @brief This struct captures PushData when subscribe to VGA images
+   */
+  typedef struct StereoVGAImgData
+  {
+    uint32_t frame_index;
+    uint32_t time_stamp;
+    uint8_t  num_imgs;
+    uint8_t  direction;
+    // @note VGA imgs always come in pair
+    VGAImage img_vec[2];
+  } StereoVGAImgData; // pack(1)
 
   typedef union TypeUnion {
     uint8_t  raw_ack_array[MAX_INCOMING_DATA_SIZE];
@@ -223,6 +303,13 @@ public:
      * Push Data in ground-station mode
      */
     WayPointReachedData wayPointReachedData;
+    WayPointStatusPushData wayPointStatusPushData;
+
+    /*
+     * Push Data from AdvancedSensing protocol
+     */
+    StereoImgData           *stereoImgData;
+    StereoVGAImgData        *stereoVGAImgData;
 
   } TypeUnion; // pack(1)
 
@@ -293,7 +380,7 @@ private:
   static const std::map<const uint32_t, const char*> createMFIOErrorCodeMap();
   static const std::map<const uint32_t, const char*> createSetArmErrorCodeMap();
   static const std::map<const uint32_t, const char*>
-  createM100TaskErrorCodeMap();
+  createLegacyTaskErrorCodeMap();
 }; // class ACK
 
 } // namespace OSDK

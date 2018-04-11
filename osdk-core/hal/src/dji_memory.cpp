@@ -5,7 +5,25 @@
  *  @brief
  *  Implement memory management for OSDK library
  *
- *  @copyright 2016-17 DJI. All right reserved.
+ *  @Copyright (c) 2016-2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  *
  *  @attention
@@ -47,9 +65,13 @@ void
 MMU::freeMemory(MMU_Tab* mmu_tab)
 {
   if (mmu_tab == (MMU_Tab*)0)
+  {
     return;
+  }
   if (mmu_tab->tabIndex == 0 || mmu_tab->tabIndex == (MMU_TABLE_NUM - 1))
+  {
     return;
+  }
   mmu_tab->usageFlag = 0;
 }
 
@@ -68,37 +90,46 @@ MMU::allocMemory(uint16_t size)
   uint32_t record_temp32 = 0;
   uint8_t  magic_flag    = 0;
 
-  if (size > PRO_PURE_DATA_MAX_SIZE || size > MEMORY_SIZE)  //size check 
-    return (MMU_Tab*)0;
+  if (size > PRO_PURE_DATA_MAX_SIZE || size > MEMORY_SIZE)
+  {
+    return (MMU_Tab *) 0;
+  }
 
-  for (i = 0; i < MMU_TABLE_NUM; i++)  //memory table是否有空闲的检查
+  for (i = 0; i < MMU_TABLE_NUM; i++)
+  {
     if (memoryTable[i].usageFlag == 1)
     {
       mem_used += memoryTable[i].memSize;
       mmu_tab_used_index[mmu_tab_used_num++] = memoryTable[i].tabIndex;
     }
+  }
 
-  if (MEMORY_SIZE < (mem_used + size)) //memory是否能有剩余支持size分配
-    return (MMU_Tab*)0;
+  if (MEMORY_SIZE < (mem_used + size))
+  {
+    return (MMU_Tab *) 0;
+  }
 
-  if (mem_used == 0)  //第一次申请这段内存，特殊处理
+  if (mem_used == 0)
   {
     memoryTable[1].pmem      = memoryTable[0].pmem;
     memoryTable[1].memSize   = size;
     memoryTable[1].usageFlag = 1;
     return &memoryTable[1];
   }
-//这段代码重排mmu table的index顺序
-  for (i = 0; i < (mmu_tab_used_num - 1); i++)                  //冒泡排序类似
+
+  for (i = 0; i < (mmu_tab_used_num - 1); i++)
+  {
     for (j = 0; j < (mmu_tab_used_num - i - 1); j++)
-      if (memoryTable[mmu_tab_used_index[j]].pmem >             //memory地址一般是顺序递增的，这里对比地址大小，来将地址大的mmu的index放后面
+    {
+      if (memoryTable[mmu_tab_used_index[j]].pmem >
           memoryTable[mmu_tab_used_index[j + 1]].pmem)
       {
-        mmu_tab_used_index[j + 1] ^= mmu_tab_used_index[j];   //这段代码执行交换值
+        mmu_tab_used_index[j + 1] ^= mmu_tab_used_index[j];
         mmu_tab_used_index[j] ^= mmu_tab_used_index[j + 1];
         mmu_tab_used_index[j + 1] ^= mmu_tab_used_index[j];
       }
-
+    }
+  }
   for (i = 0; i < (mmu_tab_used_num - 1); i++)
   {
     temp32 = static_cast<uint32_t>(memoryTable[mmu_tab_used_index[i + 1]].pmem -

@@ -5,9 +5,27 @@
  *  @brief
  *  Flight control STM32 example.
  *
- *  Copyright 2016 DJI. All right reserved.
+ *  @Copyright (c) 2016-2017 DJI
  *
- * */
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 
 #include "FlightControlSample.h"
 
@@ -522,6 +540,8 @@ moveByPositionOffset(float xOffsetDesired, float yOffsetDesired,
             return false;
     }*/
 
+    startGlobalPositionBroadcast(v);
+
     // Wait for data to come in
     delay_nms(8000);
   }
@@ -538,7 +558,7 @@ moveByPositionOffset(float xOffsetDesired, float yOffsetDesired,
   // Convert position offset from first position to local coordinates
   Telemetry::Vector3f localOffset;
 
-  if (v->getFwVersion() != Version::M100_31)
+  if (v->getFwVersion() != Version::M100_31 && !v->isLegacyM600())
   {
     currentSubscriptionGPS =
       v->subscribe->getValue<Telemetry::TOPIC_GPS_FUSED>();
@@ -546,6 +566,9 @@ moveByPositionOffset(float xOffsetDesired, float yOffsetDesired,
     localOffsetFromGpsOffset(v, localOffset,
                              static_cast<void*>(&currentSubscriptionGPS),
                              static_cast<void*>(&originSubscriptionGPS));
+
+    // Get the broadcast GP since we need the height for zCmd
+    currentBroadcastGP = v->broadcast->getGlobalPosition();
   }
   else
   {
@@ -623,11 +646,11 @@ moveByPositionOffset(float xOffsetDesired, float yOffsetDesired,
 
   if (v->getFwVersion() != Version::M100_31)
   {
-    zCmd = currentSubscriptionGPS.altitude + zOffsetDesired;
+    zCmd = currentBroadcastGP.height + zOffsetDesired; //Since subscription cannot give us a relative height, use broadcast.
   }
   else
   {
-    zCmd = currentBroadcastGP.altitude + zOffsetDesired;
+    zCmd = currentBroadcastGP.height + zOffsetDesired;
   }
 
   //! Main closed-loop receding setpoint position control
@@ -639,7 +662,7 @@ moveByPositionOffset(float xOffsetDesired, float yOffsetDesired,
     elapsedTimeInMs += cycleTimeInMs;
 
     //! Get current position in required coordinates and units
-    if (v->getFwVersion() != Version::M100_31)
+    if (v->getFwVersion() != Version::M100_31 && !v->isLegacyM600())
     {
       subscriptionQ = v->subscribe->getValue<Telemetry::TOPIC_QUATERNION>();
       yawInRad      = toEulerAngle((static_cast<void*>(&subscriptionQ))).z;
@@ -648,6 +671,9 @@ moveByPositionOffset(float xOffsetDesired, float yOffsetDesired,
       localOffsetFromGpsOffset(v, localOffset,
                                static_cast<void*>(&currentSubscriptionGPS),
                                static_cast<void*>(&originSubscriptionGPS));
+
+      // Get the broadcast GP since we need the height for zCmd
+      currentBroadcastGP = v->broadcast->getGlobalPosition();
     }
     else
     {
@@ -803,6 +829,44 @@ toEulerAngle(void* quaternionData)
 
   return ans;
 }
+void startGlobalPositionBroadcast(Vehicle* vehicle)
+{
+  uint8_t freq[16];
+
+  /* Channels definition for A3/N3/M600
+   * 0 - Timestamp
+   * 1 - Attitude Quaternions
+   * 2 - Acceleration
+   * 3 - Velocity (Ground Frame)
+   * 4 - Angular Velocity (Body Frame)
+   * 5 - Position
+   * 6 - GPS Detailed Information
+   * 7 - RTK Detailed Information
+   * 8 - Magnetometer
+   * 9 - RC Channels Data
+   * 10 - Gimbal Data
+   * 11 - Flight Status
+   * 12 - Battery Level
+   * 13 - Control Information
+   */
+  freq[0]  = DataBroadcast::FREQ_HOLD;
+  freq[1]  = DataBroadcast::FREQ_HOLD;
+  freq[2]  = DataBroadcast::FREQ_HOLD;
+  freq[3]  = DataBroadcast::FREQ_HOLD;
+  freq[4]  = DataBroadcast::FREQ_HOLD;
+  freq[5]  = DataBroadcast::FREQ_50HZ; // This is the only one we want to change
+  freq[6]  = DataBroadcast::FREQ_HOLD;
+  freq[7]  = DataBroadcast::FREQ_HOLD;
+  freq[8]  = DataBroadcast::FREQ_HOLD;
+  freq[9]  = DataBroadcast::FREQ_HOLD;
+  freq[10] = DataBroadcast::FREQ_HOLD;
+  freq[11] = DataBroadcast::FREQ_HOLD;
+  freq[12] = DataBroadcast::FREQ_HOLD;
+  freq[13] = DataBroadcast::FREQ_HOLD;
+
+  vehicle->broadcast->setBroadcastFreq(freq);
+}
+
 int moveByVel(int vel)
 {
   int timeoutInMilSec              = 10000;

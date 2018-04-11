@@ -660,7 +660,7 @@ unsigned char obstacle_ctrl_check_by_rc_and_distance_V3(float *flight_ch, int16_
 	else
 	{
 		safe_vel = (float)(OBSTACLE_SAFEH_VEL*(distance-OBSTACLE_SAFE_DISTANCE))/(OBSTACLE_ENABLED_DISTANCE-OBSTACLE_SAFE_DISTANCE);
-		if(fabs(RCData_ch) <=5000)
+		if(fabs((double)RCData_ch) <=5000)
 		{
 			rcdata_vel = (float)(RCData_ch*RC_H_VEL_IN5000CH)/5000;
 		}

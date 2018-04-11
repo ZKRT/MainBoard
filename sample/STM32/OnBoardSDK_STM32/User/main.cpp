@@ -18,8 +18,8 @@
 #include "stm32f4xx.h"
 #include "main.h"
 #ifdef __cplusplus
-extern "C"
-{
+//extern "C"
+//{
 #include "stm32f4xx_adc.h"
 #include "sys.h"
 #include "adc.h"
@@ -54,7 +54,7 @@ extern "C"
 #include "dev_handle.h"
 #include "appgas.h"
 #include "pelcod.h"
-}
+//}
 #endif //__cplusplus
 
 /*-----------------------NEW DJI_LIB VARIABLE-----------------------------*/

@@ -4,7 +4,25 @@
  *
  *  @brief All DJI OSDK OpenProtocol ACK Error Codes
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @Copyright (c) 2016-2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -176,15 +194,15 @@ const uint16_t DJI::OSDK::ErrorCode::ControlACK::Task::GIMBAL_MOUNTED  = 0x0012;
 const uint16_t DJI::OSDK::ErrorCode::ControlACK::Task::BAD_SENSOR      = 0x0013;
 const uint16_t DJI::OSDK::ErrorCode::ControlACK::Task::ALREADY_PACKED  = 0x0014;
 const uint16_t DJI::OSDK::ErrorCode::ControlACK::Task::NO_PACKED       = 0x0015;
-const uint16_t DJI::OSDK::ErrorCode::ControlACK::M100Task::SUCCESS  = 0x0002;
-const uint16_t DJI::OSDK::ErrorCode::ControlACK::M100Task::FAIL     = 0x0001;
+const uint16_t DJI::OSDK::ErrorCode::ControlACK::LegacyTask::SUCCESS  = 0x0002;
+const uint16_t DJI::OSDK::ErrorCode::ControlACK::LegacyTask::FAIL     = 0x0001;
 const uint16_t DJI::OSDK::ErrorCode::ControlACK::Task::PACKED_MODE_NOT_SUPPORTED = 0x0016;
 const uint16_t DJI::OSDK::ErrorCode::ControlACK::SetArm::AIRCRAFT_IN_AIR_ERROR       = 0x0003;
 const uint16_t DJI::OSDK::ErrorCode::ControlACK::SetArm::ALREADY_ARMED_ERROR 	     = 0x0002;
 const uint16_t DJI::OSDK::ErrorCode::ControlACK::SetArm::OBTAIN_CONTROL_NEEDED_ERROR = 0x0001;
 const uint16_t DJI::OSDK::ErrorCode::ControlACK::SetArm::SUCCESS 		     = 0x0000;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::SUCCESS                = 0x00;
-const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::ILLEGAL_INPUT          = 0x01;
+const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::ILLEGAL_DATA_LENGTH    = 0x01;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::VERSION_DOES_NOT_MATCH = 0x02;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::PACKAGE_OUT_OF_RANGE   = 0x03;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::PACKAGE_ALREADY_EXISTS = 0x04;
@@ -194,15 +212,15 @@ const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::PACKAGE_TOO_LARGE      = 0x07;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::PIPELINE_OVERFLOW      = 0x08;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::INTERNAL_ERROR_0X09    = 0x09;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::PACKAGE_EMPTY          = 0x20;
-const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::INPUT_SEGMENTATION_FAULT = 0x21;
+const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::INCORRECT_NUM_OF_TOPICS = 0x21;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::ILLEGAL_UID          = 0x22;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::PERMISSION_DENY      = 0x23;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::MULTIPLE_SUBSCRIBE   = 0x24;
-const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::SOUCE_DEVICE_OFFLINE = 0x25;
+const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::SOURCE_DEVICE_OFFLINE = 0x25;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::PAUSED               = 0x48;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::RESUMED              = 0x49;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::INTERNAL_ERROR_0X4A  = 0x4A;
-const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::INTERNAL_ERROR_0X50  = 0x50;
+const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::FAILED_AUTHENTICATION  = 0x50;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::VERSION_VERSION_TOO_FAR = 0x51;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::VERSION_UNKNOWN_ERROR = 0x59;
 const uint8_t DJI::OSDK::ErrorCode::SubscribeACK::INTERNAL_ERROR_0XFF   = 0xFF;

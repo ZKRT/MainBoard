@@ -51,7 +51,9 @@ void hwtmr0_init(void)
   }
 }
 
-
+#ifdef __cplusplus  //zkrt_test
+extern "C" {
+#endif //__cplusplus
 //void hwtmr0_irqHandler()
 void TIM8_BRK_TIM12_IRQHandler()
 {  
@@ -92,6 +94,9 @@ void TIM8_BRK_TIM12_IRQHandler()
 		TIM_ClearITPendingBit(FTTC_TIM_NUM, TIM_IT_Update);
 	}	
 }
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 
 static void TimerInit_1st(void)
 {

@@ -5,7 +5,25 @@
  *  @brief
  *  Telemetry Subscription API for DJI OSDK library
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @Copyright (c) 2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -77,12 +95,10 @@ DataSubscription::DataSubscription(Vehicle* vehiclePtr)
 
   subscriptionDataDecodeHandler.callback = decodeCallback;
   subscriptionDataDecodeHandler.userData = this;
-  // protocol->setSubscribeCallback(decodeCallback, this);
 }
 
 DataSubscription::~DataSubscription()
 {
-  // protocol->setSubscribeCallback(NULL, NULL);
   subscriptionDataDecodeHandler.callback = 0;
   subscriptionDataDecodeHandler.userData = 0;
 }
@@ -105,7 +121,7 @@ DataSubscription::decodeCallback(Vehicle*      vehiclePtr,
 {
   DataSubscription* subscriptionHandle = (DataSubscription*)subPtr;
 
-  // uint8_t pkgID = *(((uint8_t *)header) + sizeof(Header) + 2);
+  // uint8_t pkgID = *(((uint8_t *)header) + sizeof(OpenHeader) + 2);
   uint8_t pkgID = rcvContainer.recvData.subscribeACK;
 
   if (pkgID >= MAX_NUMBER_OF_PACKAGE)
@@ -141,7 +157,7 @@ DataSubscription::initPackageFromTopicList(int packageID, int numberOfTopics,
 {
   if (package[packageID].isOccupied())
   {
-    DERROR("package [%d] is being occupied.", packageID);
+    DERROR("package [%d] is being occupied.\n", packageID);
     return false;
   }
 
@@ -158,17 +174,17 @@ DataSubscription::registerUserPackageUnpackCallback(
                                            userData);
 }
 
-bool
-DataSubscription::pausePackage(int packageID)
-{
-  return true;
-}
-
-bool
-DataSubscription::resumePackage(int packageID)
-{
-  return true;
-}
+//bool
+//DataSubscription::pausePackage(int packageID)
+//{
+//  return true;
+//}
+//
+//bool
+//DataSubscription::resumePackage(int packageID)
+//{
+//  return true;
+//}
 
 void
 DataSubscription::verify()
@@ -179,8 +195,8 @@ DataSubscription::verify()
   vehicle->nbCallbackFunctions[cbIndex] = (void*)verifyCallback;
   vehicle->nbUserData[cbIndex]          = NULL;
 
-  protocol->send(2, DJI::OSDK::encrypt,
-                 OpenProtocol::CMDSet::Subscribe::versionMatch, &data,
+  protocol->send(2, vehicle->getEncryption(),
+                 OpenProtocolCMD::CMDSet::Subscribe::versionMatch, &data,
                  sizeof(data), 500, 2, true, cbIndex);
 }
 
@@ -192,9 +208,12 @@ DataSubscription::verifyCallback(Vehicle*      vehiclePtr,
   ackErrorCode.info = rcvContainer.recvInfo;
   ackErrorCode.data = rcvContainer.recvData.subscribeACK;
 
-  DSTATUS("Verify result: %d.", ackErrorCode.data);
-
-  if (ACK::getError(ackErrorCode))
+  if (!ACK::getError(ackErrorCode))
+  {
+    DSTATUS("Verify subscription successful.");
+//    subscribPtr->verifySuccessful = true;
+  }
+  else
   {
     ACK::getErrorCodeMessage(ackErrorCode, __func__);
   }
@@ -206,12 +225,22 @@ DataSubscription::verify(int timeout)
   ACK::ErrorCode ack;
   uint32_t       data = DBVersion;
 
-  protocol->send(2, DJI::OSDK::encrypt,
-                 OpenProtocol::CMDSet::Subscribe::versionMatch, &data,
+  protocol->send(2, vehicle->getEncryption(),
+                 OpenProtocolCMD::CMDSet::Subscribe::versionMatch, &data,
                  sizeof(data), 500, 2, NULL, 0);
 
   ack = *((ACK::ErrorCode*)getVehicle()->waitForACK(
-    OpenProtocol::CMDSet::Subscribe::versionMatch, timeout));
+    OpenProtocolCMD::CMDSet::Subscribe::versionMatch, timeout));
+
+  if (!ACK::getError(ack))
+  {
+    DSTATUS("Verify subscription successful.");
+//    verifySuccessful = true;
+  }
+  else
+  {
+    ACK::getErrorCodeMessage(ack, __func__);
+  }
   return ack;
 }
 
@@ -242,8 +271,8 @@ DataSubscription::startPackage(int packageID)
     (void*)DataSubscription::addPackageCallback;
   vehicle->nbUserData[cbIndex] = &package[packageID];
 
-  protocol->send(2, DJI::OSDK::encrypt,
-                 OpenProtocol::CMDSet::Subscribe::addPackage, buffer,
+  protocol->send(2, vehicle->getEncryption(),
+                 OpenProtocolCMD::CMDSet::Subscribe::addPackage, buffer,
                  bufferLength, 500, 1, true, cbIndex);
 }
 
@@ -290,12 +319,12 @@ DataSubscription::startPackage(int packageID, int timeout)
            "removePackage first.",
            packageID);
 
-    ack.info.cmd_set = OpenProtocol::CMDSet::subscribe;
+    ack.info.cmd_set = OpenProtocolCMD::CMDSet::subscribe;
 
     // @TODO: the SUBSCRIBER_MULTIPLE_SUBSCRIBE is not returned from FC, we may
     // need to distinguish between "short circuit return" from "round trip
     // return"
-    ack.data = OpenProtocol::ErrorCode::SubscribeACK::MULTIPLE_SUBSCRIBE;
+    ack.data = OpenProtocolCMD::ErrorCode::SubscribeACK::MULTIPLE_SUBSCRIBE;
     return ack;
   }
 
@@ -304,16 +333,16 @@ DataSubscription::startPackage(int packageID, int timeout)
   int bufferLength = package[packageID].serializePackageInfo(buffer);
   package[packageID].allocateDataBuffer();
 
-  protocol->send(2, DJI::OSDK::encrypt,
-                 OpenProtocol::CMDSet::Subscribe::addPackage, buffer,
+  protocol->send(2, vehicle->getEncryption(),
+                 OpenProtocolCMD::CMDSet::Subscribe::addPackage, buffer,
                  bufferLength, 500, 1, NULL, 0);
 
   ack = *((ACK::ErrorCode*)getVehicle()->waitForACK(
-    OpenProtocol::CMDSet::Subscribe::addPackage, timeout));
+    OpenProtocolCMD::CMDSet::Subscribe::addPackage, timeout));
 
   DSTATUS("Start package %d result: %d.",
           package[packageID].getInfo().packageID, ack.data);
-  DSTATUS("Package %d info: freq=%d, nTopics=%d.",
+  DSTATUS("Package %d info: freq=%d, nTopics=%d.\n",
           package[packageID].getInfo().packageID,
           package[packageID].getInfo().freq,
           package[packageID].getInfo().numberOfTopics);
@@ -326,7 +355,6 @@ DataSubscription::startPackage(int packageID, int timeout)
   {
     // TODO Remove. User should do it on the application side
     ACK::getErrorCodeMessage(ack, __func__);
-    // todo: More clean-up?
   }
 
   return ack;
@@ -337,7 +365,7 @@ void
 DataSubscription::extractOnePackage(RecvContainer*       pRcvContainer,
                                     SubscriptionPackage* pkg)
 {
-  //  uint8_t *data = ((uint8_t *)header) + sizeof(Header) + 2;
+  //  uint8_t *data = ((uint8_t *)header) + sizeof(OpenHeader) + 2;
   //  DDEBUG(
   //          "%d unpacking %d %d 0x%x 0x%x.", pkg->getBufferSize(),
   //          header->length - CoreAPI::PackageMin - 3, *((uint8_t *)data + 1),
@@ -361,7 +389,13 @@ DataSubscription::extractOnePackage(RecvContainer*       pRcvContainer,
   }
   else
   {
-    DERROR("Package does not have a valid DataBuffer");
+    // This happens when the FC is not power-cycled
+    if(!(pkg->hasLeftOverData()))
+    {
+      pkg->setLeftOverDataFlag(true);
+      DDEBUG("Detected telemetry data in package %d before subscribing to it.",pkg->getInfo().packageID);
+      DDEBUG("This was due to unclean quit of the program without restarting the drone.\n");
+    }
   }
   protocol->getThreadHandle()->freeMSG();
 }
@@ -376,8 +410,8 @@ DataSubscription::removePackage(int packageID)
     (void*)DataSubscription::removePackageCallback;
   vehicle->nbUserData[cbIndex] = &package[packageID];
 
-  protocol->send(2, DJI::OSDK::encrypt,
-                 OpenProtocol::CMDSet::Subscribe::removePackage, &data,
+  protocol->send(2, vehicle->getEncryption(),
+                 OpenProtocolCMD::CMDSet::Subscribe::removePackage, &data,
                  sizeof(data), 500, 1, true, cbIndex);
 }
 
@@ -398,6 +432,10 @@ DataSubscription::removePackageCallback(Vehicle*      vehiclePtr,
   {
     DSTATUS("Remove package %d successful.", packageID);
     packageHandle->packageRemoveSuccessHandler();
+    if(packageHandle->hasLeftOverData())
+    {
+      packageHandle->setLeftOverDataFlag(false);
+    }
   }
   else
   {
@@ -411,17 +449,115 @@ DataSubscription::removePackage(int packageID, int timeout)
   ACK::ErrorCode ack;
   uint8_t        data = packageID;
 
-  protocol->send(2, DJI::OSDK::encrypt,
-                 OpenProtocol::CMDSet::Subscribe::removePackage, &data,
+  protocol->send(2, vehicle->getEncryption(),
+                 OpenProtocolCMD::CMDSet::Subscribe::removePackage, &data,
                  sizeof(data), 500, 1, NULL, 0);
 
   ack = *((ACK::ErrorCode*)getVehicle()->waitForACK(
-    OpenProtocol::CMDSet::Subscribe::removePackage, timeout));
+    OpenProtocolCMD::CMDSet::Subscribe::removePackage, timeout));
 
   if (!ACK::getError(ack))
   {
     DSTATUS("Remove package %d successful.", packageID);
     package[packageID].packageRemoveSuccessHandler();
+    if(package[packageID].hasLeftOverData())
+    {
+      package[packageID].setLeftOverDataFlag(false);
+    }
+  }
+  else
+  {
+    ACK::getErrorCodeMessage(ack, __func__);
+  }
+
+  return ack;
+}
+
+void DataSubscription::removeLeftOverPackages()
+{
+  ACK::ErrorCode ack;
+  for(int retry = 0; retry <=3; retry++)
+  {
+    for(int packageID = 0; packageID < MAX_NUMBER_OF_PACKAGE; packageID++)
+    {
+      if(package[packageID].hasLeftOverData())
+      {
+        if(retry == 3)
+        {
+          DERROR("Package %d was not properly removed due to unclean quit. Please power cycle the drone...", packageID);
+        }
+        ack = removePackage(packageID, 1);
+        if(!ACK::getError(ack))
+        {
+          DERROR("failed to remove package %d", packageID);
+        }
+      }
+    }
+  }
+}
+
+void DataSubscription::removeAllExistingPackages()
+{
+  ACK::ErrorCode ack;
+  for(int packageID=0; packageID<MAX_NUMBER_OF_PACKAGE; packageID++)
+  {
+    if(package[packageID].hasLeftOverData() || package[packageID].isOccupied())
+    {
+      ack = removePackage(packageID, 1);
+      if(!ACK::getError(ack))
+      {
+        DERROR("failed to remove package %d", packageID);
+      }
+    }
+  }
+}
+
+void DataSubscription::reset()
+{
+  uint8_t data = 0;
+  int cbIndex = vehicle->callbackIdIndex();
+  vehicle->nbCallbackFunctions[cbIndex] =
+          (void*)DataSubscription::resetCallback;
+  vehicle->nbUserData[cbIndex] = NULL;
+
+  protocol->send(2, vehicle->getEncryption(),
+                 OpenProtocolCMD::CMDSet::Subscribe::reset, &data,
+                 sizeof(data), 500, 1, true, cbIndex);
+}
+
+void
+DataSubscription::resetCallback(Vehicle*      vehiclePtr,
+                                RecvContainer rcvContainer,
+                                UserData      pkgHandle)
+{
+  ACK::ErrorCode ackErrorCode;
+  ackErrorCode.info = rcvContainer.recvInfo;
+  ackErrorCode.data = rcvContainer.recvData.subscribeACK;
+
+  if (!ACK::getError(ackErrorCode))
+  {
+    DSTATUS("Reset Subscription Successful.");
+  }
+  else
+  {
+    ACK::getErrorCodeMessage(ackErrorCode, __func__);
+  }
+}
+ACK::ErrorCode
+DataSubscription::reset(int timeout)
+{
+  uint8_t data = 0;
+  protocol->send(2, vehicle->getEncryption(),
+                 OpenProtocolCMD::CMDSet::Subscribe::reset, &data,
+                 sizeof(data), 500, 1, NULL, 0);
+  ACK::ErrorCode ack;
+
+  ack = *((ACK::ErrorCode*)getVehicle()->waitForACK(
+          OpenProtocolCMD::CMDSet::Subscribe::reset, timeout));
+
+  if (!ACK::getError(ack))
+  {
+    DSTATUS("Reset Subscription Successful.\n");
   }
   else
   {
@@ -434,6 +570,7 @@ DataSubscription::removePackage(int packageID, int timeout)
 //////////////////////
 SubscriptionPackage::SubscriptionPackage()
   : occupied(false)
+  , leftOverDataFlag(false)
   , incomingDataBuffer(NULL)
   , packageDataSize(0)
 {
@@ -468,6 +605,18 @@ void
 SubscriptionPackage::setOccupied(bool status)
 {
   occupied = status;
+}
+
+bool
+SubscriptionPackage::hasLeftOverData()
+{
+  return leftOverDataFlag;
+}
+
+void
+SubscriptionPackage::setLeftOverDataFlag(bool flag)
+{
+  leftOverDataFlag = flag;
 }
 
 /*
@@ -525,7 +674,7 @@ SubscriptionPackage::allocateDataBuffer()
 {
   if (incomingDataBuffer)
   {
-    delete incomingDataBuffer;
+    delete[] incomingDataBuffer;
     incomingDataBuffer = NULL;
   }
 
@@ -554,7 +703,7 @@ SubscriptionPackage::clearDataBuffer()
 {
   if (incomingDataBuffer)
   {
-    delete incomingDataBuffer;
+    delete[] incomingDataBuffer;
     incomingDataBuffer = NULL;
   }
 }
@@ -656,3 +805,34 @@ SubscriptionPackage::packageRemoveSuccessHandler()
 
   setOccupied(false);
 }
+
+// Detailed doxygen comments begin below
+
+/*! @var DJI::OSDK::Telemetry::TopicName DJI::OSDK::Telemetry::TOPIC_QUATERNION
+ * | Angle        | Unit | Accuracy   | Notes                                           |
+   |--------------|------|------------|-------------------------------------------------|
+   | pitch, roll  | deg  | <1         | in non-ahrs mode                                |
+   | yaw          | deg  | <3         | in well-calibrated compass with fine aligned    |
+   | yaw with rtk | deg  | around 1.2 | in RTK heading fixed mode with 1 meter baseline |
+*/
+
+/*! @var DJI::OSDK::Telemetry::TOPIC_VELOCITY
+ * | Axis     | Unit | Accuracy                                                                                    |
+   |----------|------|---------------------------------------------------------------------------------------------|
+   | vgx, vgy | m/s  | Around 5cm/s for GNSS navigation. Around 3cm/s with VO at 1 meter height                    |
+   | vgz      | m/s  | 10cm/s only with barometer in steady air. 3cm/s with VO at 1 meter height with 8cm baseline |
+ */
+
+/*! @var DJI::OSDK::Telemetry::TOPIC_GPS_FUSED
+ *   | Axis | Unit | Position Sensor | Accuracy                                         |
+     |------|------|-----------------|--------------------------------------------------|
+     | x, y | m    | GPS             | <3m with open sky without multipath              |
+     | z    | m    | GPS             | <5m with open sky without multipath              |
+     | x, y | m    | RTK             | around 2cm with fine alignment and fix condition |
+     | z    | m    | RTK             | around 3cm with fine alignment and fix condition |
+ *
+ */
+
+/*! @var DJI::OSDK::Telemetry::TOPIC_GIMBAL_ANGLES
+ *  Data Accuracy: 0.1 deg in all axes
+ */

@@ -5,7 +5,26 @@
  *  @brief
  *  Mission related data struct for DJI OSDK library
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @Copyright (c) 2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
  */
 
 #ifndef ONBOARDSDK_DJI_MISSION_TYPE_H
@@ -126,14 +145,27 @@ typedef struct WayPointSettings
 } WayPointSettings;              // pack(1)
 
 /**
- * @brief WayPoint Push Data Incident Type enumerator
+ * @brief WayPoint Reached Data Incident Type enumerator
  */
 //! @note can be separated by the first bytes of data
-typedef enum WayPointIncidentType {
+typedef enum WayPointIncidentType
+{
   NAVI_UPLOAD_FINISH,
   NAVI_MISSION_FINISH,
   NAVI_MISSION_WP_REACH_POINT
 } WayPointIncidentType;
+
+/**
+ * @brief WayPoint Push Data Incident Type enumerator
+ */
+typedef enum WayPointPushDataIncidentType
+{
+  NAVI_MODE_ATTI,
+  NAVI_MISSION_WAYPOINT,
+  NAVI_MISSION_HOTPOINT,
+  NAVI_MISSION_FOLLOWME,
+  NAVI_MISSION_IOC,
+} WayPointPushDataIncidentType;
 
 /**
  * @brief Waypoint Mission Finish Event Push Data

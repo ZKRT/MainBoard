@@ -5,7 +5,25 @@
  *  @brief
  *  Telemetry Subscription API for DJI OSDK library
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @Copyright (c) 2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -75,8 +93,10 @@ public:
                              UserData        userData);
 
   bool isOccupied();
-
   void setOccupied(bool status);
+
+  bool hasLeftOverData();
+  void setLeftOverDataFlag(bool flag);
 
   // Accessors to private variables:
   PackageInfo            getInfo();
@@ -103,6 +123,7 @@ public:
 
 private: // Private variables
   bool        occupied;
+  bool        leftOverDataFlag;
   PackageInfo info;
 
   // We have only 30 topics and 5 packages.
@@ -156,7 +177,7 @@ public: // public methods
    * @param packageID: The ID of package it'll generate
    * @param numberOfTopics:
    * @param topicList: List of Topic Names to subscribe in the package
-   * @param sendTimeStamp
+   * @param sendTimeStamp: Note that timestamp is the time of package transmission, not data acquisition from sensor.
    * @param freq
    * @return
    */
@@ -190,8 +211,44 @@ public: // public methods
    */
   ACK::ErrorCode startPackage(int packageID, int timeout); // blocking call
 
+  /*!
+   * @brief Non-blocking call for start package
+   * @param packageID
+   * @return
+   */
   void removePackage(int packageID);
+
+  /*!
+   * @brief Non-blocking call for start package
+   * @param packageID
+   * @param timeout
+   * @return
+   */
   ACK::ErrorCode removePackage(int packageID, int timeout); // blocking call
+
+  /*!
+   * @brief Remove leftover incoming telemetry data due to unclean quit
+   * @return
+   */
+  void removeLeftOverPackages();
+
+  /*!
+   * @brief Remove all occupied packages
+   * @return
+   */
+  void removeAllExistingPackages();
+
+  /*!
+   * @brief Non-blocking call for resetting all packages.
+   * @return
+   */
+  void reset();
+
+  /*!
+   * @brief Blocking call for resetting all packages.
+   * @param timeout
+   */
+  ACK::ErrorCode reset(int timeout);
 
   /*!
    * @brief Register a callback function after package[packageID] is received
@@ -203,8 +260,8 @@ public: // public methods
     UserData userData = NULL);
 
   // Not implemented yet
-  bool pausePackage(int packageID);
-  bool resumePackage(int packageID);
+  // bool pausePackage(int packageID);
+  // bool resumePackage(int packageID);
   // bool changePackageFrequency(int packageID, uint16_t newFreq);
 
   /*!
@@ -224,6 +281,10 @@ public: // public methods
   static void removePackageCallback(Vehicle*      vehiclePtr,
                                     RecvContainer rcvContainer,
                                     UserData      pkgHandle);
+
+  static void resetCallback(Vehicle*      vehiclePtr,
+                            RecvContainer rcvContainer,
+                            UserData      pkgHandle);
 
   /*!
    * @brief This callback function is called by recvReqData, case
@@ -265,7 +326,7 @@ public: // public variables
 
 private: // private variables
   Vehicle*            vehicle;
-  Protocol*           protocol;
+  OpenProtocol*       protocol;
   SubscriptionPackage package[MAX_NUMBER_OF_PACKAGE];
 
 private: // private methods

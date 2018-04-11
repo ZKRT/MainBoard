@@ -33,7 +33,7 @@
 
 #define  PRODUCT_NAME													"MainBoard"
 #define  PRODUCT_ID	                          "10000000"
-#define  PRODUCT_VERSION                      "V05-00"
+#define  PRODUCT_VERSION                      "V06-00"  //zkrt_todo
 /* Exported functions ------------------------------------------------------- */
 
 #endif /* __VERSIONZKRT_H */

@@ -72,7 +72,7 @@ void tcp_client_prcs(void)
 			tcp_client_init(); 
 			break;
 		case ES_TCPCLIENT_INIT:
-			//zkrt_todo: 10s后未连接上，尝试重连
+			//zkrt__todo: 10s后未连接上，尝试重连
 			if(lwip_localtime - tcp_client_init_timeout > 10000)
 			{
 				tcp_client_init_timeout = lwip_localtime;
@@ -94,7 +94,7 @@ void tcp_client_prcs(void)
 		case ES_TCPCLIENT_CLOSING:
 			printf("tcp client closing\n");
 		 tcpc_s.connect_state = ES_TCPCLIENT_INIT;
-		//zkrt_todo: error handle
+		//zkrt__todo: error handle
 			break;
 		default:break;
 	}	
@@ -332,7 +332,7 @@ err_t tcp_client_recv(void *arg,struct tcp_pcb *tpcb,struct pbuf *p,err_t err)
 	}
 	else  //接收到数据但是连接已经关闭,
 	{
-		//zkrt_todo: 需要做异常处理
+		//zkrt__todo: 需要做异常处理
 		printf("the tcp user connect state has closed but receives the data\n");
 		tcp_recved(tpcb,p->tot_len);//用于获取接收数据,通知LWIP可以获取更多数据
 		pbuf_free(p); //释放内存
@@ -343,7 +343,7 @@ err_t tcp_client_recv(void *arg,struct tcp_pcb *tpcb,struct pbuf *p,err_t err)
 //lwIP tcp_err函数的回调函数
 void tcp_client_error(void *arg,err_t err)
 {  
-	//zkrt_todo
+	//zkrt__todo
 	printf("tcp_client_error err num: %d\n", err);
 	//这里我们不做任何处理
 } 
@@ -470,7 +470,7 @@ void tcp_client_connection_close(struct tcp_pcb *tpcb, struct tcp_client_struct 
 	tcp_recv(tpcb,NULL);
 	tcp_sent(tpcb,NULL);
 	tcp_err(tpcb,NULL);
-	tcp_poll(tpcb,NULL,0);  //zkrt_todo: poll回调暂时没用
+	tcp_poll(tpcb,NULL,0);  //zkrt__todo: poll回调暂时没用
 	tcpc_s.connect_state = ES_TCPCLIENT_INIT;
 	tcpc_s.pcb = NULL;
 }

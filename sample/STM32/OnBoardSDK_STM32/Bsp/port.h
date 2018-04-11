@@ -9,8 +9,8 @@
 /*
 
 File Name:    port.h
-Author:       
-Date:         
+Author:
+Date:
 Purpose:      general include file and support marco
 
 */
@@ -51,104 +51,104 @@ typedef u4_t            specialRegister_t;
 
 typedef struct
 {
-    u1_t b0:1;                       
-    u1_t b1:1;                       
-    u1_t b2:1;                         
-    u1_t b3:1;                       
-    u1_t b4:1;                       
-    u1_t b5:1;                       
-    u1_t b6:1;                       
-    u1_t b7:1;                       
-}struct_ByteBit8;
+    u1_t b0:1;
+    u1_t b1:1;
+    u1_t b2:1;
+    u1_t b3:1;
+    u1_t b4:1;
+    u1_t b5:1;
+    u1_t b6:1;
+    u1_t b7:1;
+} struct_ByteBit8;
 
 typedef struct
 {
-    u2_t b0 :1;                      
-    u2_t b1 :1;                      
-    u2_t b2 :1;                        
-    u2_t b3 :1;                      
-    u2_t b4 :1;                      
-    u2_t b5 :1;                      
-    u2_t b6 :1;                      
-    u2_t b7 :1;                      
-    u2_t b8 :1;                      
-    u2_t b9 :1;                      
-    u2_t b10:1;                         
-    u2_t b11:1;                      
-    u2_t b12:1;                      
-    u2_t b13:1;                      
-    u2_t b14:1;                      
-    u2_t b15:1;                      
-}struct_WordBit16;
+    u2_t b0 :1;
+    u2_t b1 :1;
+    u2_t b2 :1;
+    u2_t b3 :1;
+    u2_t b4 :1;
+    u2_t b5 :1;
+    u2_t b6 :1;
+    u2_t b7 :1;
+    u2_t b8 :1;
+    u2_t b9 :1;
+    u2_t b10:1;
+    u2_t b11:1;
+    u2_t b12:1;
+    u2_t b13:1;
+    u2_t b14:1;
+    u2_t b15:1;
+} struct_WordBit16;
 
 typedef struct
 {
     u1_t l:4;                          //0
     u1_t h:4;                          //1
-}struct_halfbytex2;
+} struct_halfbytex2;
 
-typedef union 
+typedef union
 {
     u1_t 								int8u;
-		struct_ByteBit8			ByteBit8 ;
+    struct_ByteBit8			ByteBit8 ;
     struct_halfbytex2 	halfbytex2;
-}union_byte;
+} union_byte;
 
 typedef struct
 {
     u1_t hl:4;                          //0
     u1_t hh:4;                          //1
-    
-    u1_t ll:4;                          //0
-    u1_t lh:4;                          //1    
-}struct_halfbytex4;
 
-typedef union 
+    u1_t ll:4;                          //0
+    u1_t lh:4;                          //1
+} struct_halfbytex4;
+
+typedef union
 {
     u2_t int16u;
-    u1_t int8u[2]; 
-		struct 
+    u1_t int8u[2];
+    struct
     {
-      u1_t Hbyte;
-      u1_t Lbyte;                            //INT_16.h 是int_16的高字节
+        u1_t Hbyte;
+        u1_t Lbyte;                            //INT_16.h 是int_16的高字节
     } U_2byte;                        //int8[0]是高字节
-		struct_WordBit16		WordBit16	;
+    struct_WordBit16		WordBit16	;
     struct_halfbytex4 	halfbytex4;
-}union_word;  
+} union_word;
 
 typedef struct
 {
-    u1_t h1l:4;                          //1    
+    u1_t h1l:4;                          //1
     u1_t h1h:4;                          //0
-    
+
     u1_t h0l:4;                          //1
     u1_t h0h:4;                          //0
-    
+
     u1_t l0l:4;                          //1
     u1_t l0h:4;                          //0
-    
+
     u1_t l1l:4;                          //1
     u1_t l1h:4;                          //0
-}struct_halfbytex8;
+} struct_halfbytex8;
 
-typedef union 
+typedef union
 {
-//    Int32s int32s;    
-    u4_t int32u;    
+//    Int32s int32s;
+    u4_t int32u;
 //    FlPo32 flot32;
 //    Int08s int8s[4];
     u1_t int8uArry[4];                        //int8[0]是最高字节
 //    STRUCTINT16X2 INT16X2;
 //    STRUCTINT8X4 INT8X4;
 //    STRUCTBIT4X8 structbit4x8;
-		struct_halfbytex8  halfbytex8	;
-}union_doubleword;
+    struct_halfbytex8  halfbytex8	;
+} union_doubleword;
 
 typedef enum
 {
-	FALSE = 0,
-	TRUE  = 1
-}bool_t; 
+    FALSE = 0,
+    TRUE  = 1
+} bool_t;
 
 //#define  ENABLE     true
 //#define  DISABLE    !(true)
@@ -157,17 +157,17 @@ typedef enum
 #define  CLEAR      !(SET)
 
 #define  BITSET     true
-#define  BITCLEAR   !(BITSET) 
+#define  BITCLEAR   !(BITSET)
 
 //#define false 			FALSE
 //#define true        TRUE
 #define equal			  0				/* for strcmp() and memcmp() */
 
 #ifndef NULL
-  #define NULL 			0
+#define NULL 			0
 #else
-  #undef NULL
-  #define NULL 			0
+#undef NULL
+#define NULL 			0
 #endif
 
 #define U1_MIN_VALUE 	0x00
@@ -300,7 +300,7 @@ typedef enum
     {                             \
      var = var + addend;          \
     }
-    
+
 /*
   Decrement a variable but wrap around before it gets to max.
 */
@@ -313,7 +313,7 @@ typedef enum
     {                       \
       var--;                \
     }
-    
+
 #define modSub(var,subend,max)      \
     if( var < subend)               \
     {                               \
@@ -322,28 +322,28 @@ typedef enum
     else                            \
     {                               \
       var = var - subend;           \
-    }    
-    
+    }
+
 
 #define limitInc(var, max)  \
     if(var < max)           \
     {                       \
       var++;                \
-    }               
-    
+    }
+
 #define limitDec(var, mix)  \
     if(var > mix)           \
     {                       \
       var--;                \
-    } 
-    
+    }
+
 #define modIncInBound(var, min, max) \
 		var++;              \
     if( var >= max)     \
     {                   \
       var = min;        \
-    }    
-       
+    }
+
 /*
   Rotate an 8 or 16 bit variable left (<<) or right (>>).
   Make sure that p is an lvalue (preferably a simple variable).
@@ -416,8 +416,8 @@ typedef enum
       val >>= 1;		        \
     }
 
-//#define _nop_() __asm__ __volatile__ ("nop"::) 
-#define _nop_() asm("nop") 
+//#define _nop_() __asm__ __volatile__ ("nop"::)
+#define _nop_() asm("nop")
 //宏定义方法：
 #define __NOP1__ asm("nop");
 #define __NOP2__ __NOP1__ __NOP1__
@@ -437,10 +437,10 @@ typedef enum
     if ((a)&(0x10))    {__NOP16__}                    \
     if ((a)&(0x20))    {__NOP32__}                    \
     if ((a)&(0x40))    {__NOP64__}                    \
-    if ((a)&(0x80))    {__NOP128__}      
- 
+    if ((a)&(0x80))    {__NOP128__}
+
 #define 	TIMEOUT             0x0
 #define 	CONTINUE            0xFF
-    
+
 #endif
 

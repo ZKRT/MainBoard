@@ -38,7 +38,9 @@ void hwtmr2_init(void)
   _fTask = NULL;
   _sysTimerCnt10ms = 0;
 }
-
+#ifdef __cplusplus  //zkrt_test
+extern "C" {
+#endif //__cplusplus
 //void hwtmr2_irqHandler(void)
 void TIM8_TRG_COM_TIM14_IRQHandler()  
 {  
@@ -55,6 +57,9 @@ void TIM8_TRG_COM_TIM14_IRQHandler()
 		TIM_ClearITPendingBit(QTTC_TIM_NUM, TIM_IT_Update);
 	}	
 }
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 
 bool_t b_hwtmr2_setting( vfp_t quick, vfp_t fast)
 {

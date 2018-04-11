@@ -120,8 +120,11 @@ uint8_t CAN1_Mode_Init(uint8_t mode)
 	CAN_ITConfig(CAN1,CAN_IT_FMP0,ENABLE);//FIFO0消息挂号中断允许    
 	
 	return 0;
-}   
+} 
 
+#ifdef __cplusplus  //zkrt_test
+extern "C" {
+#endif //__cplusplus
 void CAN1_RX0_IRQHandler(void)
 {
 	uint8_t i;
@@ -149,7 +152,9 @@ void CAN1_RX0_IRQHandler(void)
 	_CAN_RX_LED = 0;
 	can_rx_flag = TimingDelay;				
 }
-
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 
 uint8_t CAN1_rx_check(uint8_t can1_rx_type)
 {
@@ -288,7 +293,9 @@ uint8_t CAN2_Mode_Init(uint8_t mode)
 	
 	return 0;
 }   
-
+#ifdef __cplusplus  //zkrt_test
+extern "C" {
+#endif //__cplusplus
 void CAN2_RX0_IRQHandler(void)
 {
 	uint8_t i;
@@ -314,7 +321,9 @@ void CAN2_RX0_IRQHandler(void)
 //	_CAN2_RX_LED = 0;
 //	can2_rx_flag = TimingDelay;				
 }
-
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 
 uint8_t CAN2_rx_check(uint8_t can2_rx_type)
 {

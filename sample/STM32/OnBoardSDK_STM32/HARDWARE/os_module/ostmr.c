@@ -362,7 +362,9 @@ ostmrID_t t_ostmr_insertTask(vfp_t taskHandler, ostmr_t value, ostmrMode_t mode)
         __ptimer->timertask    = taskHandler; 
         *__ptaskCnt = *__ptaskCnt +1;       
         hwtmr0_enable();
-        return (__ptimer->id);
+		__tmpTmrID.number = __ptimer->id.number;
+		__tmpTmrID.speed = __ptimer->id.speed;  
+        return (__tmpTmrID);
       }
       else
       {

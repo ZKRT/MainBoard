@@ -19,9 +19,9 @@
 #include "main.h"
 #include "djiCtrl.h"
 #include "QtoAngle.h"
-#ifdef __cplusplus
-extern "C"
-{
+//#ifdef __cplusplus
+//extern "C"
+//{
 #include "sys.h"
 #include "ostmr.h"
 #include "undercarriageCtrl.h"
@@ -29,8 +29,8 @@ extern "C"
 #include "mobileDataHandle.h"
 #include "obstacleAvoid.h"
 #include "led.h"
-}
-#endif
+//}
+//#endif
 #include <math.h>
 
 extern Vehicle  vehicle;
@@ -40,7 +40,8 @@ extern Control::CtrlData flightData_zkrtctrl;
 using namespace DJI::OSDK;
 using namespace DJI::OSDK::Telemetry;
 
-extern "C" void sendToMobile(uint8_t *data, uint8_t len);
+//extern "C" void sendToMobile(uint8_t *data, uint8_t len);
+extern void sendToMobile(uint8_t *data, uint8_t len);
 
 /* Private define ------------------------------------------------------------*/
 /* Private typedef -----------------------------------------------------------*/
@@ -97,8 +98,9 @@ int dji_init(void)
 	delay_nms(500);
 
 	// Check if the firmware version is compatible with this OSDK version
-	if (v->getFwVersion() < extendedVersionBase &&
-	v->getFwVersion() != Version::M100_31)
+  if (v->getFwVersion() > 0 &&
+			v->getFwVersion() < extendedVersionBase &&
+	  v->getFwVersion() != Version::M100_31)
 	{
 		ZKRT_LOG(LOG_ERROR, "version unmath, Upgrade firmware using Assistant software!\n");
 		__set_FAULTMASK(1);

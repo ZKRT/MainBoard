@@ -4,7 +4,25 @@
  *
  *  @brief Enumeration of all telemetry data types, structures and maps.
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @Copyright (c) 2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -225,8 +243,8 @@ typedef struct GlobalPosition
 {
   float64_t latitude;  /*!< unit: rad */
   float64_t longitude; /*!< unit: rad */
-  float32_t altitude;  /*!< WGS 84 reference ellipsoid */
-  float32_t height;    /*!< relative height to the ground */
+  float32_t altitude;  /*!< Measured by barometer: WGS 84 reference ellipsoid */
+  float32_t height;    /*!< Ultrasonic height in meters */
   uint8_t   health;    /*!< scale from 0 - 5 signifying gps signal strength <br>
                         * greater than 3 for strong signal */
 } GlobalPosition;      // pack(1)
@@ -257,22 +275,24 @@ typedef struct RelativePosition
   float32_t back;            /*!< distance from obstacle (cm) */
   float32_t left;            /*!< distance from obstacle (cm) */
   float32_t up;              /*!< distance from obstacle (cm) */
-  uint8_t   downHealth : 1;  /*!< 0 - not working, 1 - working */
-  uint8_t   frontHealth : 1; /*!< 0 - not working, 1 - working */
-  uint8_t   rightHealth : 1; /*!< 0 - not working, 1 - working */
-  uint8_t   backHealth : 1;  /*!< 0 - not working, 1 - working */
-  uint8_t   leftHealth : 1;  /*!< 0 - not working, 1 - working */
-  uint8_t   upHealth : 1;    /*!< 0 - not working, 1 - working */
-  uint8_t   reserved : 2;
+  uint8_t   downHealth : 1;  /*!< Down sensor flag: 0 - not working, 1 - working */
+  uint8_t   frontHealth : 1; /*!< Front sensor flag: 0 - not working, 1 - working */
+  uint8_t   rightHealth : 1; /*!< Right sensor flag: 0 - not working, 1 - working */
+  uint8_t   backHealth : 1;  /*!< Back sensor flag: 0 - not working, 1 - working */
+  uint8_t   leftHealth : 1;  /*!< Left sensor flag: 0 - not working, 1 - working */
+  uint8_t   upHealth : 1;    /*!< Up sensor health flag: 0 - not working, 1 - working */
+  uint8_t   reserved : 2;    /*!< Reserved sensor health flag*/
 } RelativePosition; // pack(1)
 
 /*!
- * @brief sub struct for GPSInfo
+ * @brief Timestamp for GPS and RTK
+ *
+ * @note: Data and time are GMT+8
  */
 typedef struct PositionTimeStamp
 {
-  uint32_t date;     /*!< yyyy-mm-dd */
-  uint32_t time;     /*!< hh-mm-ss */
+  uint32_t date;     /*!< yyyymmdd E.g.20150205 means February 5th,2015 (GMT+8)*/
+  uint32_t time;     /*!< hhmmss E.g. 90209 means 09:02:09 (GMT+8)*/
 } PositionTimeStamp; // pack(1)
 
 /*!
@@ -336,7 +356,9 @@ typedef struct PositionFrame
  */
 typedef struct RTK
 {
+  /*! Timestamp and GPS coordinates */
   PositionFrame pos;
+  /*! NED velocity measured by RTK */
   Vector3f      velocityNED;
   /*! the azimuth measured by RTK */
   int16_t yaw;
@@ -383,8 +405,10 @@ typedef struct RC
   int16_t pitch;    /*!< [-10000,10000] */
   int16_t yaw;      /*!< [-10000,10000] */
   int16_t throttle; /*!< [-10000,10000] */
-  int16_t mode;     /*!< P: -8000, A: 0, F: 8000 */
-  int16_t gear;     /*!< Up: -10000, Down: -4545 */
+  int16_t mode;     /*!< [-10000,10000] */
+                    /*!< M100 [P: -8000, A: 0, F: 8000] */
+  int16_t gear;     /*!< [-10000,10000] */
+                    /*!< M100 [Up: -10000, Down: -4545] */
 } RC;               // pack(1)
 
 /*!
@@ -392,7 +416,7 @@ typedef struct RC
  */
 typedef struct GimbalStatus
 {
-  uint32_t mountStatus : 1;            /*!< 1 - gimbal mounted, 0 - gimbal not mounted*/
+  uint32_t mountStatus : 1; /*!< 1 - gimbal mounted, 0 - gimbal not mounted*/
   uint32_t isBusy : 1;
   uint32_t pitchLimited : 1;           /*!< 1 - axis reached limit, 0 - no */
   uint32_t rollLimited : 1;            /*!< 1 - axis reached limit, 0 - no */
@@ -402,13 +426,13 @@ typedef struct GimbalStatus
   uint32_t installedDirection : 1;     /*!< 1 - reversed for OSMO, 0 - normal */
   uint32_t disabled_mvo : 1;
   uint32_t gear_show_unable : 1;
-  uint32_t gyroFalut : 1;      /*!< 1 - at fault, 0 - normal */
-  uint32_t escPitchFault : 1;  /*!< 1 - at fault, 0 - normal */
-  uint32_t escRollFault : 1;   /*!< 1 - at fault, 0 - normal */
-  uint32_t escYawFault : 1;    /*!< 1 - at fault, 0 - normal */
-  uint32_t droneDataFault : 1; /*!< 1 - at fault, 0 - normal */
-  uint32_t initUnfinished : 1; /*!< 1 - complete, 0 - not complete */
-  uint32_t FWUpdating : 1;     /*!< 1 - updating, 0 - not updating */
+  uint32_t gyroFalut : 1;       /*!< 1 - fault, 0 - normal */
+  uint32_t escPitchStatus : 1;  /*!< 1 - Pitch data is normal, 0 - fault */
+  uint32_t escRollStatus : 1;   /*!< 1 - Roll data is normal, 0 - fault */
+  uint32_t escYawStatus : 1;    /*!< 1 - Yaw data is normal , 0 - fault */
+  uint32_t droneDataRecv : 1;   /*!< 1 - normal , 0 - at fault */
+  uint32_t initUnfinished : 1;  /*!< 1 - init complete, 0 - not complete */
+  uint32_t FWUpdating : 1;      /*!< 1 - updating, 0 - not updating */
   uint32_t reserved2 : 15;
 } GimbalStatus; // pack(1)
 
@@ -432,9 +456,9 @@ typedef struct Gimbal
  */
 typedef struct Status
 {
-  uint8_t flight; /*!<  enum STATUS */
+  uint8_t flight; /*!<  See FlightStatus/M100FlightStatus in dji_status.hpp */
   uint8_t mode;   /*!<  enum MODE */
-  uint8_t gear;   /*!<  enum LANDING_GEAR */
+  uint8_t gear;   /*!<  See LandingGearMode in dji_status.hpp */
   uint8_t error;  /*!<  enum DJI_ERROR_CODE */
 } Status;         // pack(1)
 
@@ -455,7 +479,7 @@ typedef struct Battery
  */
 typedef struct SDKInfo
 {
-  uint8_t controlMode;      /*!< enum CTRL_MODE */
+  uint8_t controlMode;      /*!< See CtlrMode in dji_status.hpp*/
   uint8_t deviceStatus : 3; /*!< 0->rc  1->app  2->serial*/
   uint8_t flightStatus : 1; /*!< 1->opensd  0->close */
   uint8_t vrcStatus : 1;
@@ -498,21 +522,23 @@ typedef struct HardSyncData
 } HardSyncData;     // pack(1)
 
 /*!
- * @brief Matrice 100 Timestamp data, available in Broadcast telemetry (only for M100)
+ * @brief Matrice 100 Timestamp data, available in Broadcast telemetry (only for
+ * M100)
  */
-typedef struct M100TimeStamp
+typedef struct LegacyTimeStamp
 {
   uint32_t time;
   uint32_t nanoTime;
   uint8_t  syncFlag;
-} M100TimeStamp; // pack(1)
+} LegacyTimeStamp; // pack(1)
 
 /*!
- * @brief Matrice 100 Velocity struct, returned in Broadcast telemetry (only for M100)
+ * @brief Matrice 100 Velocity struct, returned in Broadcast telemetry (only for
+ * M100)
  * @note The velocity may be in body or ground frame
  * based on settings in DJI Assistant 2's SDK page.
  */
-typedef struct M100Velocity
+typedef struct LegacyVelocity
 {
   float32_t x;
   float32_t y;
@@ -523,18 +549,33 @@ typedef struct M100Velocity
   uint8_t health : 1;
   uint8_t sensorID : 4;
   uint8_t reserve : 3;
-} M100Velocity; // pack(1)
+} LegacyVelocity; // pack(1)
 
-typedef uint16_t EnableFlag;  // pack(1)
+typedef uint16_t EnableFlag; // pack(1)
 
 /*!
- * @brief Return type for flight status data broadcast (only for M100). Returns VehicleStatus::M100FlightStatus.
+ * @brief Return type for flight status data broadcast (only for M100). Returns
+ * VehicleStatus::M100FlightStatus.
  */
-typedef uint8_t  M100Status;  // pack(1)
+typedef uint8_t  LegacyStatus;  // pack(1)
 /*!
  * @brief Return type for battery data broadcast (only for M100). Returns percentage.
  */
-typedef uint8_t  M100Battery; // pack(1)
+typedef uint8_t  LegacyBattery; // pack(1)
+
+/*!
+ * @brief struct for GPSInfo of data broadcast
+ *
+ * @note only work outside of simulation
+ */
+typedef struct LegacyGPSInfo
+{
+  PositionTimeStamp time;
+  int32_t           longitude;   /*!< 1/1.0e7deg */
+  int32_t           latitude;    /*!< 1/1.0e7deg */
+  int32_t           HFSL;        /*!< height above mean sea level (mm) */
+  Vector3f          velocityNED; /*!< cm/s */
+} LegacyGPSInfo; // pack(1)
 
 #pragma pack()
 

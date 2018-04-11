@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    hw_config.h 
+  * @file    hw_config.h
   * @author  ZKRT
   * @version V0.0.1
   * @date    13-December-2016
@@ -12,10 +12,10 @@
   *
   ******************************************************************************
   */
-  
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __HW_CONFIG_H
-#define __HW_CONFIG_H 
+#define __HW_CONFIG_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
@@ -24,14 +24,14 @@
 
 /** @defgroup hardware open or close control
   * @{
-  */              
-//#define _TEMPTURE_IO_           
-//#define _TEMPTURE_ADC_	                
-//#define _TEMPTURE_NONE    
+  */
+//#define _TEMPTURE_IO_
+//#define _TEMPTURE_ADC_
+//#define _TEMPTURE_NONE
 //#define USE_UART1_DMA
-#define USE_CAN2_FUN                  
-#define USE_LED_FUN			
-#define USE_IIC_FUN  
+#define USE_CAN2_FUN
+#define USE_LED_FUN
+#define USE_IIC_FUN
 #define USE_DJI_FUN
 #define USE_OBSTACLE_AVOID_FUN
 //#define USE_UNDERCARRIAGE_FUN         //暂时屏蔽，新硬件版本4.0控制脚有改动，待做
@@ -46,11 +46,11 @@
 //#define HWTEST_FUN
 
 //unit test debug
-//#define CanSend2SubModule_TEST  
+//#define CanSend2SubModule_TEST
 
 /**
   * @}
-  */ 
+  */
 
 /* Exported types ------------------------------------------------------------*/
 
@@ -58,19 +58,19 @@
 
 /** @defgroup clock label
   * @{
-  */ 
+  */
 #define SYSTEM_CLK                168
 #define APB1_CLK                  42
 #define APB2_CLK                  84
 #define APB1_TIMER_CLK	          84
-#define APB2_TIMER_CLK            168	
+#define APB2_TIMER_CLK            168
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup fast timer task config
   * @{
-  */ 
+  */
 #define	FTTC_RCC_CLK                                            RCC_APB1Periph_TIM12
 #define	FTTC_TIM_NUM                                            TIM12
 #define FTTC_TIMER_CLK                                          APB1_TIMER_CLK
@@ -79,11 +79,11 @@
 #define	NVIC_TIMER_SubPriority_1ST                              1
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup quick fast timer config
   * @{
-  */ 
+  */
 #define	QTTC_RCC_CLK                                            RCC_APB1Periph_TIM14
 #define	QTTC_TIM_NUM                                            TIM14
 #define QTTC_TIMER_CLK                                          APB1_TIMER_CLK
@@ -92,11 +92,11 @@
 #define	NVIC_TIMER_SubPriority_2ND                              2
 /**
   * @}
-  */ 
-	
+  */
+
 /** @defgroup lwip timer config
   * @{
-  */ 
+  */
 #define	RCC_TIMER_LWIP                                          RCC_APB1Periph_TIM2
 #define	TIMER_CHANNEL_LWIP                                      TIM2
 #define	TIMER_IRQ_CHANNEL_LWIP                                  TIM2_IRQn
@@ -104,10 +104,10 @@
 #define	NVIC_TIMER_SubPriority_LWIP                             2
 /**
   * @}
-  */ 
+  */
 /** @defgroup pwm timer config
   * @{
-  */ 
+  */
 #define	TIMER_CHANNEL_PWM                                       TIM10
 #define	TIMER_CHANNEL_PWM1                                      TIM13
 #define	TIMER_CHANNEL_PWM2                                      TIM5
@@ -116,11 +116,11 @@
 
 /**
   * @}
-  */ 
+  */
 
 /** @defgroup nvic priority config
   * @{
-  */ 
+  */
 //network nvic
 #define NVIC_PPRIORITY_NETWORK											0
 #define NVIC_SUBPRIORITY_NETWORK                                        0
@@ -133,29 +133,29 @@
 //dji usart nvic
 #define NVIC_PPRIORITY_DJIUSART											1
 #define NVIC_SUBPRIORITY_DJIUSART	                                    1
-//uart2 nvic 
+//uart2 nvic
 #define NVIC_PPRIORITY_U2                        1
 #define NVIC_SUBPRIORITY_U2                      2
-//uart3 nvic 
+//uart3 nvic
 #define NVIC_PPRIORITY_U3                        1
 #define NVIC_SUBPRIORITY_U3                      3
-//uart4 nvic 
+//uart4 nvic
 #define NVIC_PPRIORITY_U4                        1
 #define NVIC_SUBPRIORITY_U4                      4
-//uart6 nvic 
+//uart6 nvic
 #define NVIC_PPRIORITY_U6                        1
 #define NVIC_SUBPRIORITY_U6                      5
 /**
   * @}
-  */ 
-	
-	
-/** @defgroup pin define 
+  */
+
+
+/** @defgroup pin define
   * @{
-  */ 
+  */
 /**
   * @}
-  */ 
+  */
 
 
 /* Exported functions ------------------------------------------------------- */
@@ -163,11 +163,11 @@
 #endif /* __HW_CONFIG_H */
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}
   */
-	
+
 /************************ (C) COPYRIGHT ZKRT *****END OF FILE****/
 

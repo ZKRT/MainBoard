@@ -4,7 +4,25 @@
  *
  *  @brief Implementation of GPS Waypoint Missions for DJI OSDK
  *
- *  @copyright 2016-17 DJI. All rights reserved.
+ *  @Copyright (c) 2016-2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -222,17 +240,19 @@ public:
    *  @param recvFrame the data comes with the callback function
    *  @param userData a void ptr that user can manipulate inside the callback
    */
-  static void getWaypointSettingsCallback(Vehicle* vehicle, RecvContainer recvFrame,
-                                   UserData userData);
+  static void getWaypointSettingsCallback(Vehicle*      vehicle,
+                                          RecvContainer recvFrame,
+                                          UserData      userData);
   /*! @brief
    *
-   *  A callback function for getting waypoint information for a specified index (non-blocking call)
+   *  A callback function for getting waypoint information for a specified index
+   * (non-blocking call)
    *
    *  @param recvFrame the data comes with the callback function
    *  @param userData a void ptr that user can manipulate inside the callback
    */
   static void getIndexCallback(Vehicle* vehicle, RecvContainer recvFrame,
-				   UserData userData);
+                               UserData userData);
   /*! @brief
    *
    *  A callback function for uploading waypt index non-blocking calls

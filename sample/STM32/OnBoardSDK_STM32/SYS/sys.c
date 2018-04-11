@@ -117,13 +117,17 @@ void delay_ms(uint16_t nms)								//最多传入65535ms
 	start_num = TimingDelay;								
 	while ((start_num - TimingDelay) < nms);
 }
-
+#ifdef __cplusplus  //zkrt_test
+extern "C" {
+#endif //__cplusplus
 //计数器向下计数，每次定时器计数为0的时候，会触发一次中断函数需要1ms时间
 void SysTick_Handler(void)
 {
 	TimingDelay--;
 }
-
+#ifdef __cplusplus
+}
+#endif //__cplusplus
 /************************中断配置函数*****************/
 NVIC_InitTypeDef NVIC_InitStructure;
 

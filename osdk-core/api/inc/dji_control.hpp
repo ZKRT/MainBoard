@@ -5,7 +5,25 @@
  *  @brief
  *  Control API for DJI OSDK library
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @Copyright (c) 2016-2017 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  *
  */
 
@@ -40,12 +58,12 @@ public:
     /*
      * @note Matrice 100 flight commands
      */
-    typedef struct M100CMD
+    typedef struct LegacyCMD
     {
       const static int goHome  = 1;
       const static int takeOff = 4;
       const static int landing = 6;
-    } M100CMD;
+    } LegacyCMD;
 
     /*
      * @note OSDK release 3.3
@@ -101,7 +119,7 @@ public:
    *  @note
    *        - Only when the GPS signal is good (health_flag >=3)，horizontal
    * position control (HORIZONTAL_POSITION) related control modes can be used.
-   *        - Only when GPS signal is good (health_flag >=3)，or when Guidance
+   *        - Only when GPS signal is good (health_flag >=3)，or when AdvancedSensing
    * system is working properly with Autopilot，
    *          horizontal velocity control（HORIZONTAL_VELOCITY）related control
    * modes can be used.
@@ -238,11 +256,11 @@ public:
   } AdvancedCtrlData; // pack(1)
 
   // CMD data supported in Matrice 100
-  typedef struct M100CMDData
+  typedef struct LegacyCMDData
   {
     uint8_t sequence;
     uint8_t cmd;
-  } M100CMDData; // pack (1)
+  } LegacyCMDData; // pack (1)
 #pragma pack()
 
   /*! @note
@@ -439,7 +457,7 @@ private:
   /*
    * Task CMD data to send to the flight controller (supported in Matrice 100)
    */
-  M100CMDData m100CMDData;
+  LegacyCMDData legacyCMDData;
 }; // class Control
 
 } // OSDK

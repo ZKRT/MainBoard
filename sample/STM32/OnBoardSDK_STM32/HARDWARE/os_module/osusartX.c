@@ -435,7 +435,9 @@ void _USARTX_IRQHandler(USART_TypeDef* COM)
 //	_u1com1_state = UART_CHANNEL_BUSY;
 //  _u1com1_state_tmrcnt = UART_CHANNEL_BUSY_TIMEROUT;
 }
-
+#ifdef __cplusplus  //zkrt_test
+extern "C" {
+#endif //__cplusplus
 /**
   * @brief  This function handles USARTy global interrupt request.
   * @param  None
@@ -445,6 +447,13 @@ void USART2_IRQHandler(void) //zkrt_notice: 根据芯片自定义
 {
 	_USARTX_IRQHandler(USART2);
 }
+#ifdef __cplusplus
+}
+#endif //__cplusplus
+
+#ifdef __cplusplus  //zkrt_test
+extern "C" {
+#endif //__cplusplus
 /**
   * @brief  This function handles USARTy global interrupt request.
   * @param  None
@@ -454,6 +463,13 @@ void USART3_IRQHandler(void) //zkrt_notice: 根据芯片自定义
 {
 	_USARTX_IRQHandler(USART3);
 }
+#ifdef __cplusplus
+}
+#endif //__cplusplus
+
+#ifdef __cplusplus  //zkrt_test
+extern "C" {
+#endif //__cplusplus
 /**
   * @brief  This function handles USARTy global interrupt request.
   * @param  None
@@ -463,6 +479,13 @@ void UART4_IRQHandler(void) //zkrt_notice: 根据芯片自定义
 {
 	_USARTX_IRQHandler(UART4);
 }
+#ifdef __cplusplus
+}
+#endif //__cplusplus
+
+#ifdef __cplusplus  //zkrt_test
+extern "C" {
+#endif //__cplusplus
 /**
   * @brief  This function handles USARTy global interrupt request.
   * @param  None
@@ -472,3 +495,6 @@ void USART6_IRQHandler(void) //zkrt_notice: 根据芯片自定义
 {
 	_USARTX_IRQHandler(USART6);
 }
+#ifdef __cplusplus
+}
+#endif //__cplusplus
