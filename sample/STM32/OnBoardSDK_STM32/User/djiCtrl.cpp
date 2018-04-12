@@ -97,6 +97,15 @@ int dji_init(void)
 	v->functionalSetUp();
 	delay_nms(500);
 
+	if(v->getFwVersion() == 0)
+	{
+		ZKRT_LOG(LOG_ERROR, "version unmath, Upgrade firmware using Assistant software!\n");
+		__set_FAULTMASK(1);
+		NVIC_SystemReset();
+		delete (v);
+		return -1;		
+	}
+		
 	// Check if the firmware version is compatible with this OSDK version
   if (v->getFwVersion() > 0 &&
 			v->getFwVersion() < extendedVersionBase &&
