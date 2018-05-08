@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    heartBeatHandle.c 
+  * @file    heartBeatHandle.c
   * @author  ZKRT
   * @version V1.0.0
   * @date    25-March-2017
@@ -17,7 +17,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "heartBeatHandle.h"
 #include "ostmr.h"
-#include "osqtmr.h"	
+#include "osqtmr.h"
 #include "obstacleAvoid.h"
 #include "undercarriageCtrl.h"
 #include "dev_handle.h"
@@ -34,17 +34,17 @@ static u8 zkrt_heartbeat_timer_pack(u8* data, u8* datalen);
 
 /* Private variables ---------------------------------------------------------*/
 
-timer_upload_st hb_timer={0};    //心跳包定时结构体
+timer_upload_st hb_timer = {0};  //心跳包定时结构体
 //zd_heartv2_st zkrt_heartv2 = {0};   //定时发送心跳包v2的数据体缓存
 //zd_heartv1_st zkrt_heartv1 = {0};   //定时发送心跳包v1的数据体缓存
 zd_heartv3_3_st zkrt_heartbeat;
-zkrt_packet_t _zkrt_packet_hb;   //发送到DJI透传数据的心跳包缓存  
+zkrt_packet_t _zkrt_packet_hb;   //发送到DJI透传数据的心跳包缓存
 u8 timer_up_seq = 0;             //上传数据包序列
 /* Private functions ---------------------------------------------------------*/
 
 
 /**
-*   @brief  heartbeat_parm_init 
+*   @brief  heartbeat_parm_init
   * @parm   none
   * @retval none
   */
@@ -55,7 +55,7 @@ void heartbeat_parm_init(void)
 //	if(undercarriage_data.run_state ==uped_udcaie_rs)
 //		zkrt_heartv2.uce_state = 1;
 //	zkrt_heartv2.uce_autoenabled = undercarriage_data.uce_autoenabled;
-////	zkrt_heartv2.uce_angle = undercarriage_data.uce_angle;	
+////	zkrt_heartv2.uce_angle = undercarriage_data.uce_angle;
 ////	zkrt_heartv2.uce_autodown_ae = undercarriage_data.uce_autodown_ae;
 ////	zkrt_heartv2.uce_autoup_ae = undercarriage_data.uce_autoup_ae;
 //	//gas data
@@ -72,15 +72,15 @@ void heartbeat_parm_init(void)
 
 	//heartbeat data
 	zkrt_init_packet(&_zkrt_packet_hb);
-  _zkrt_packet_hb.cmd = UAV_TO_APP;
-  _zkrt_packet_hb.command= DEFAULT_NUM;
-  _zkrt_packet_hb.UAVID[0] = DEFAULT_NUM;                 
-  _zkrt_packet_hb.UAVID[1] = DEFAULT_NUM;
-  _zkrt_packet_hb.UAVID[2] = DEFAULT_NUM;
-  _zkrt_packet_hb.UAVID[3] = DEVICE_TYPE_HEART;
-  _zkrt_packet_hb.UAVID[4] = DEFAULT_NUM;
-  _zkrt_packet_hb.UAVID[5] = DEFAULT_NUM;	
-	
+	_zkrt_packet_hb.cmd = UAV_TO_APP;
+	_zkrt_packet_hb.command = DEFAULT_NUM;
+	_zkrt_packet_hb.UAVID[0] = DEFAULT_NUM;
+	_zkrt_packet_hb.UAVID[1] = DEFAULT_NUM;
+	_zkrt_packet_hb.UAVID[2] = DEFAULT_NUM;
+	_zkrt_packet_hb.UAVID[3] = DEVICE_TYPE_HEART;
+	_zkrt_packet_hb.UAVID[4] = DEFAULT_NUM;
+	_zkrt_packet_hb.UAVID[5] = DEFAULT_NUM;
+
 	t_systmr_insertQuickTask(hb_tmr_task, 1, OSTMR_PERIODIC);
 }
 
@@ -91,14 +91,14 @@ void heartbeat_parm_init(void)
   */
 u8 zkrt_heartbeat_pack(u8* data, u8* datalen)
 {
-	u8 send_flag =0;
-	
+	u8 send_flag = 0;
+
 //	//定时做心跳包V2包组包，心跳包V1包沿用旧代码，在其它地方有处理
 //	hbv2_pack();
-	
+
 	//定时组包
 	send_flag = zkrt_heartbeat_timer_pack(data, datalen);
-	
+
 	return send_flag;
 }
 /**
@@ -110,47 +110,47 @@ static u8 zkrt_heartbeat_timer_pack(u8* data, u8* datalen)
 {
 	u8 sendflag = 0;
 	/*需要定时上传的数据：hbv1, hbv2*/
-	if(hb_timer.timer_msg_upflag)
+	if (hb_timer.timer_msg_upflag)
 	{
 		sendflag = 1;
 		hb_timer.timer_msg_upflag = 0;
-		
-		switch(timer_up_seq)
+
+		switch (timer_up_seq)
 		{
-			case Hbv1_Seq:
-				timer_up_seq = Hbv1_Seq;
-			  hb_timer.timer_msg_timecnt = TIMER_MSG_TIMEOUT;
-			  _zkrt_packet_hb.UAVID[3] = DEVICE_TYPE_HEART;						//设备类型
-			  //pack devself inio
-			    //zkrt_heartbeat.dev.dev_online_s  --not need pack, have updated at run time
-			    //zkrt_heartbeat.dev.feedback_s  --not need pack, have updated at run time
-		    //pack temperture
-			  zkrt_heartbeat.temper.t_value = zkrt_devinfo.temperature1;
-			  zkrt_heartbeat.temper.t_high = zkrt_devinfo.temperature_high;
-			  zkrt_heartbeat.temper.t_low = zkrt_devinfo.temperature_low;
-			  zkrt_heartbeat.temper.t_status = zkrt_devinfo.status_t1;
-			  //pack obstacle
-			  memcpy(zkrt_heartbeat.obstacle.ob_distse_v, GuidanceObstacleData.g_distance_value, sizeof(GuidanceObstacleData.g_distance_value));
-			  zkrt_heartbeat.obstacle.avoid_ob_enabled = GuidanceObstacleData.ob_enabled;
-			  zkrt_heartbeat.obstacle.avoid_ob_velocity = GuidanceObstacleData.ob_velocity;
-			  zkrt_heartbeat.obstacle.avoid_ob_distse = GuidanceObstacleData.ob_distance;
-			  //pack gas --not need pack, have updataed in appgas.c handle function
-			
-			  memcpy((void *)(_zkrt_packet_hb.data), (void *)&zkrt_heartbeat, sizeof(zkrt_heartbeat));
-			  _zkrt_packet_hb.length = sizeof(zkrt_heartbeat);
-			  break;
+		case Hbv1_Seq:
+			timer_up_seq = Hbv1_Seq;
+			hb_timer.timer_msg_timecnt = TIMER_MSG_TIMEOUT;
+			_zkrt_packet_hb.UAVID[3] = DEVICE_TYPE_HEART;						//设备类型
+			//pack devself inio
+			//zkrt_heartbeat.dev.dev_online_s  --not need pack, have updated at run time
+			//zkrt_heartbeat.dev.feedback_s  --not need pack, have updated at run time
+			//pack temperture
+			zkrt_heartbeat.temper.t_value = zkrt_devinfo.temperature1;
+			zkrt_heartbeat.temper.t_high = zkrt_devinfo.temperature_high;
+			zkrt_heartbeat.temper.t_low = zkrt_devinfo.temperature_low;
+			zkrt_heartbeat.temper.t_status = zkrt_devinfo.status_t1;
+			//pack obstacle
+			memcpy(zkrt_heartbeat.obstacle.ob_distse_v, GuidanceObstacleData.g_distance_value, sizeof(GuidanceObstacleData.g_distance_value));
+			zkrt_heartbeat.obstacle.avoid_ob_enabled = GuidanceObstacleData.ob_enabled;
+			zkrt_heartbeat.obstacle.avoid_ob_velocity = GuidanceObstacleData.ob_velocity;
+			zkrt_heartbeat.obstacle.avoid_ob_distse = GuidanceObstacleData.ob_distance;
+			//pack gas --not need pack, have updataed in appgas.c handle function
+
+			memcpy((void *)(_zkrt_packet_hb.data), (void *)&zkrt_heartbeat, sizeof(zkrt_heartbeat));
+			_zkrt_packet_hb.length = sizeof(zkrt_heartbeat);
+			break;
 //			case Hbv2_Seq:
 //				timer_up_seq = Hbv1_Seq;
 //			  hb_timer.timer_msg_timecnt = TIMER_MSG_TIMEOUT;
-//			  //pack	
+//			  //pack
 //			  _zkrt_packet_hb.UAVID[3] = DEVICE_TYPE_HEARTV2;						//设备类型
 //			  memcpy((void *)(_zkrt_packet_hb.data), (void *)(&zkrt_heartv2), sizeof(zd_heartv2_st));
 //			  _zkrt_packet_hb.length = sizeof(zd_heartv2_st);
 //			  break;
-			default:
-				timer_up_seq = Hbv1_Seq;
-			  hb_timer.timer_msg_timecnt = TIMER_MSG_TIMEOUT;
-				break;
+		default:
+			timer_up_seq = Hbv1_Seq;
+			hb_timer.timer_msg_timecnt = TIMER_MSG_TIMEOUT;
+			break;
 		}
 		*datalen = zkrt_final_encode(data, &_zkrt_packet_hb);
 	}
@@ -164,7 +164,7 @@ static u8 zkrt_heartbeat_timer_pack(u8* data, u8* datalen)
 //	{
 //		sendflag = 1;
 //		hb_timer.timer_msg_upflag = 0;
-//		
+//
 //		switch(timer_up_seq)
 //		{
 //			case Hbv1_Seq:
@@ -185,7 +185,7 @@ static u8 zkrt_heartbeat_timer_pack(u8* data, u8* datalen)
 //			case Hbv2_Seq:
 //				timer_up_seq = Hbv1_Seq;
 //			  hb_timer.timer_msg_timecnt = TIMER_MSG_TIMEOUT;
-//			  //pack	
+//			  //pack
 //			  _zkrt_packet_hb.UAVID[3] = DEVICE_TYPE_HEARTV2;						//设备类型
 //			  memcpy((void *)(_zkrt_packet_hb.data), (void *)(&zkrt_heartv2), sizeof(zd_heartv2_st));
 //			  _zkrt_packet_hb.length = sizeof(zd_heartv2_st);
@@ -214,9 +214,9 @@ static void hbv2_pack(void)
 //		if(undercarriage_data.run_state ==downed_udcaie_rs)
 //		  zkrt_heartv2.uce_state = 0;
 //		if(undercarriage_data.run_state ==uped_udcaie_rs)
-//		  zkrt_heartv2.uce_state = 1;		
+//		  zkrt_heartv2.uce_state = 1;
 ////		zkrt_heartv2.uce_angle = undercarriage_data.uce_angle;  //协议已改，不用该属性
-//		
+//
 //		//clear timer flag
 //		hb_timer.timer_hbv2_packflag = 0;
 //		hb_timer.timer_hbv2_packcnt = TIMER_HBV2PACK_TIMEOUT;
@@ -235,20 +235,20 @@ static void hb_tmr_task(void)
 //		if(!hb_timer.timer_hbv2_packcnt)
 //		{
 //			hb_timer.timer_hbv2_packflag =1;
-//		}	
+//		}
 //	}
-	if(hb_timer.timer_msg_timecnt>0)
+	if (hb_timer.timer_msg_timecnt > 0)
 	{
 		hb_timer.timer_msg_timecnt--;
-		if(!hb_timer.timer_msg_timecnt)
+		if (!hb_timer.timer_msg_timecnt)
 		{
-			hb_timer.timer_msg_upflag =1;
-		}	
-	}	
+			hb_timer.timer_msg_upflag = 1;
+		}
+	}
 }
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}

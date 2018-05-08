@@ -5,7 +5,7 @@
   * @version V1.0
   * @date    9-May-2017
   * @brief
-	*					 + (1) init
+    *                    + (1) init
   ******************************************************************************
   * @attention
   *
@@ -20,8 +20,20 @@
 /* Includes ------------------------------------------------------------------*/
 #include "zkrt.h"
 /* Exported macro ------------------------------------------------------------*/
-/* Exported constants --------------------------------------------------------*/
 
+//version and model string //zkrt_notice
+#define DEV_MODEL_MB              "OMU"
+#define DEV_HW_MB                 "000400"
+#define DEV_SW_MB                 "000601"
+
+#define DEV_MODEL_BSA             "M-GDBSA"
+//hw and sw is same as mb
+
+//check msg type
+#define IS_LOCALMSG(TYPE)         (((TYPE) == DEVICE_TYPE_TEMPERATURE)    || \
+                                  ((TYPE) == DEVICE_TYPE_MAINBOARD))
+
+/* Exported constants --------------------------------------------------------*/
 //////////////////////////////////////////////////////special define
 //gas
 #define MAX_CHANNEL_GAS              8
@@ -32,9 +44,9 @@
 //type num enum
 typedef enum
 {
-    TN_None =0,
+    TN_None = 0,
     TN_HEARTBEAT,
-    TN_GetDevInfo,
+    TN_GETDEVINFO,
     TN_MAX
 } TypeNumEnum;
 
@@ -66,24 +78,24 @@ typedef enum
 //device online status value bit
 typedef struct
 {
-    u8 temperuture :1;
-    u8 obstacle :1;
-    u8 control :1;
-    u8 siglecamera :1;
-    u8 gas :1;
-    u8 throwd :1;
-    u8 reserved1 :1;
-    u8 reserved2 :1;
-    u8 irradiate :1;
-    u8 megaphone :1;
-    u8 battery :1;
-    u8 threemodelling :1;
-    u8 multicamera :1;
-    u8 reserved3 :3;
-    u8 reserved4 :8;
+    u8 temperuture : 1;
+    u8 obstacle : 1;
+    u8 control : 1;
+    u8 siglecamera : 1;
+    u8 gas : 1;
+    u8 throwd : 1;
+    u8 reserved1 : 1;
+    u8 reserved2 : 1;
+    u8 irradiate : 1;
+    u8 megaphone : 1;
+    u8 battery : 1;
+    u8 threemodelling : 1;
+    u8 multicamera : 1;
+    u8 reserved3 : 3;
+    u8 reserved4 : 8;
 } dos_valuebit;
 //device online status union
-typedef	union
+typedef union
 {
     u8 value[3];
     dos_valuebit valuebit;
@@ -92,18 +104,18 @@ typedef	union
 //feedback value bit
 typedef struct
 {
-    u8 throw1_s :1;
-    u8 throw2_s :1;
-    u8 throw3_s :1;
-    u8 irradiate_s :1;
-    u8 megaphone_s:1;
-    u8 threemodeling_photo_s:1;
-    u8 reserved1 :2;
-    u8 reserved2 :8;
-    u8 reserved3 :8;
+    u8 throw1_s : 1;
+    u8 throw2_s : 1;
+    u8 throw3_s : 1;
+    u8 irradiate_s : 1;
+    u8 megaphone_s: 1;
+    u8 threemodeling_photo_s: 1;
+    u8 reserved1 : 2;
+    u8 reserved2 : 8;
+    u8 reserved3 : 8;
 } feedback_valuebit;
 //feedback union
-typedef	union
+typedef union
 {
     u8 value[3];
     feedback_valuebit valuebit;
@@ -133,7 +145,7 @@ typedef struct
 ////heartbeat2
 typedef struct
 {
-    u16 ob_distse_v[5];	    //’œ∞≠ŒÔæ‡¿Î
+    u16 ob_distse_v[5];     //’œ∞≠ŒÔæ‡¿Î
     u8 avoid_ob_enabled;    //±‹’œ πƒ‹
     u16 avoid_ob_distse;    //±‹’œ…˙–ßæ‡¿Î
     u16 avoid_ob_velocity;  //±‹’œÀŸ∂»
@@ -166,7 +178,7 @@ typedef struct
 //the obstacle avoidance relevant of heartbeat protocol in version3.3
 typedef struct
 {
-    u16 ob_distse_v[5];	    //’œ∞≠ŒÔæ‡¿Î
+    u16 ob_distse_v[5];     //’œ∞≠ŒÔæ‡¿Î
     u8 avoid_ob_enabled;    //±‹’œ πƒ‹
     u16 avoid_ob_distse;    //±‹’œ…˙–ßæ‡¿Î
     u16 avoid_ob_velocity;  //±‹’œÀŸ∂»
@@ -198,7 +210,7 @@ typedef struct
 typedef struct
 {
     u8 ctrl_num;
-    u8 ctrl_data[ZK_DATA_MAX_LEN-1];
+    u8 ctrl_data[ZK_DATA_MAX_LEN - 1];
 } comnor_mainboard_plst;
 //ostabcle control
 typedef struct
@@ -212,7 +224,7 @@ typedef struct
 typedef struct
 {
     u8 enable;
-    short autodown_angle;	 //value/10, example: when autodown_angle = 101, the actul value is 10.1 degree
+    short autodown_angle;    //value/10, example: when autodown_angle = 101, the actul value is 10.1 degree
     short autoup_angle; //value/10, example: when autoup_angle = 101, the actul value is 10.1 degree
     u8 adjust_action;
     u8 control;
@@ -224,18 +236,18 @@ typedef struct
 typedef struct
 {
     u8 type_num;
-    u8 type_data[ZK_DATA_MAX_LEN-1];
+    u8 type_data[ZK_DATA_MAX_LEN - 1];
 } common_data_plst;
 //heartbeat data
 typedef struct
 {
     u32 hb_flag;
-    u8 hb_data[ZK_DATA_MAX_LEN-THHB_FIXED_LEN];
+    u8 hb_data[ZK_DATA_MAX_LEN - THHB_FIXED_LEN];
 } common_hbd_plst;
 //throw heartbeat
 typedef struct
 {
-//	hb_header_ccplst hbh;
+//  hb_header_ccplst hbh;
     u8 v1;
     u8 v2;
     u8 v3;
@@ -243,7 +255,7 @@ typedef struct
 //irradiate heartbeat
 typedef struct
 {
-//	hb_header_ccplst hbh;
+//  hb_header_ccplst hbh;
     u8 value;
 } irradiate_hbccplst;
 //3Dmodeling heartbeat
@@ -251,7 +263,7 @@ typedef irradiate_hbccplst threemodel_hbccplst;
 //gas heartbeat
 typedef struct
 {
-//	hb_header_ccplst hbh;
+//  hb_header_ccplst hbh;
     u8 num;
     u8 status;
     u8 gas1;
@@ -271,8 +283,15 @@ typedef struct
     u8 gas8;
     u16 gas8v;
 } gas_hbccplst;
-
 typedef hb_gas_st gas_v3_3_hbccplst;
+//dev info data
+typedef struct
+{
+	u8 status;
+	u8 model[10];
+	u8 hw_version[6];
+	u8 sw_version[6];
+}common_get_devinfo_plst;
 ///////////////////////////////app to subdev zkrt data struct
 ////command=specify command
 //respond flag
@@ -283,8 +302,8 @@ typedef hb_gas_st gas_v3_3_hbccplst;
 //type num enum
 typedef enum
 {
-    NONE_GASCN =0,
-    GETCHNUM_GASCN =1,
+    NONE_GASCN = 0,
+    GETCHNUM_GASCN = 1,
     GETCHINFO_GASCN,
     MAX_GASCN
 } gas_ctrlnume;
@@ -299,13 +318,13 @@ typedef enum
 typedef struct
 {
     u8 control_num;
-    u8 other_data[ZK_DATA_MAX_LEN-1];
+    u8 other_data[ZK_DATA_MAX_LEN - 1];
 } send_comspec_plst;
 typedef struct
 {
     u8 control_num;
     u8 status;
-    u8 other_data[ZK_DATA_MAX_LEN-2];
+    u8 other_data[ZK_DATA_MAX_LEN - 2];
 } respond_comspec_plst;
 //////send and respond sub
 ////device type=gas type

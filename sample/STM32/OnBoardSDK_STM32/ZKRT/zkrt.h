@@ -9,7 +9,7 @@
 //start code
 #define _START_CODE                 0XEB
 //version
-#define _VERSION                    0X01
+#define _VERSION                    0x01   
 //end code
 #define _END_CODE                   0XBE
 
@@ -33,7 +33,7 @@
 //seq 序列号，自增
 //APPID, 保留，值0
 //#define _LENGTH     0X1E
-//#define _TOTAL_LEN  0X32   
+//#define _TOTAL_LEN  0X32
 
 //UAVID，设备类型定义，用于UAVID[3]
 #define DEVICE_TYPE_UDP             0X00
@@ -83,7 +83,7 @@
 //data index
 #define ZK_DINDEX_DEVTYPE           3
 
-//编号定义，用于UAVID[2：1]和UAVID[5：4]  
+//编号定义，用于UAVID[2：1]和UAVID[5：4]
 #define DEFAULT_NUM 0X00
 #define SECOND_NUM  0X01
 
@@ -96,24 +96,24 @@
 
 //packet max num
 #pragma pack(push, 1)
-typedef struct 
-{
-	uint8_t start_code; 		      
-	uint8_t ver;		   						 
-	uint8_t session_ack;	          
-	uint8_t padding_enc;            
-	uint8_t cmd;             		  
-	uint8_t length;    //length -- [data length]       		
-	uint8_t seq;               		
-	uint8_t APPID[3];      			   
-	uint8_t UAVID[6];        			
-	uint8_t command;
-}zkrtpacket_header;
 typedef struct
 {
-	uint16_t crc;      //[Start Code~Data[n]]        		
-	uint8_t end_code; 
-}zkrtpacket_tailer;
+	uint8_t start_code;
+	uint8_t ver;
+	uint8_t session_ack;
+	uint8_t padding_enc;
+	uint8_t cmd;
+	uint8_t length;    //length -- [data length]
+	uint8_t seq;
+	uint8_t APPID[3];
+	uint8_t UAVID[6];
+	uint8_t command;
+} zkrtpacket_header;
+typedef struct
+{
+	uint16_t crc;      //[Start Code~Data[n]]
+	uint8_t end_code;
+} zkrtpacket_tailer;
 typedef struct _zkrt_packet_t
 {
 	uint8_t start_code; 		        //字节0，帧起始码，0XEB
@@ -129,7 +129,7 @@ typedef struct _zkrt_packet_t
 	uint8_t data[ZK_DATA_MAX_LEN];  //字节
 	uint16_t crc;              			//字节17+len，CRC校验码
 	uint8_t end_code;          			//字节19+len，帧结束
-}zkrt_packet_t;
+} zkrt_packet_t;
 
 #pragma pack(pop)
 
@@ -140,9 +140,9 @@ typedef struct
 	u8 curser_state;  //handle index state
 	u8 app_index;
 	u8 uav_index;
-	u8 dat_index;	
-	zkrt_packet_t packet;  //receive packet 
-}recv_zkrt_packet_handlest;
+	u8 dat_index;
+	zkrt_packet_t packet;  //receive packet
+} recv_zkrt_packet_handlest;
 
 void crc_accumulate(uint8_t data, uint16_t *crcAccum);
 void crc_accumulate_buffer(uint16_t *crcAccum, const char *pBuffer, uint16_t length);

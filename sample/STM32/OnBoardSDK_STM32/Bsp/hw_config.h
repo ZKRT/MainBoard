@@ -44,6 +44,7 @@
 //#define USE_LWIP_FUN
 //#define USE_PELCOD_FUN
 //#define HWTEST_FUN
+//#define CPLUSPLUS_HANDLE_ZK           //不同电脑编译不通过时尝试切换
 
 //unit test debug
 //#define CanSend2SubModule_TEST

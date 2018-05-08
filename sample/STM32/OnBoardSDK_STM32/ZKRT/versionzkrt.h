@@ -19,7 +19,7 @@
 #define __VERSIONZKRT_H
 
 /* Includes ------------------------------------------------------------------*/
-
+#include "appprotocol.h"
 /* Exported macro ------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
 /** @defgroup something
@@ -31,9 +31,10 @@
   */ 
 /* Exported constants --------------------------------------------------------*/
 
-#define  PRODUCT_NAME													"MainBoard"
-#define  PRODUCT_ID	                          "10000000"
-#define  PRODUCT_VERSION                      "V06-00"  //zkrt_todo
+#define  PRODUCT_NAME						  "MainBoard"
+#define  PRODUCT_ID	                          DEV_MODEL_MB
+#define  PRODUCT_VERSION                      DEV_SW_MB
+#define  PRODUCT_HWVERSION                    DEV_HW_MB
 /* Exported functions ------------------------------------------------------- */
 
 #endif /* __VERSIONZKRT_H */

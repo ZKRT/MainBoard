@@ -103,7 +103,7 @@
 #define LOG_NOTICE_IDATA  //重要提示，在产品代码考虑打印的log数据		
 //#define LOG_NOTICE_DATA   //普通提示	 //zkrt_need_mask
 #define LOG_ERROR_DATA
-//#define LOG_DEBUG_DATA //zkrt_need_mask //zkrt_debug
+#define LOG_DEBUG_DATA //zkrt_need_mask //zkrt_debug
 //#define LOG_WARNING_DATA //zkrt_need_mask	
 #ifdef LOG_DEBUG_DATA
 #define LOG_DEBUG "DEBUG"

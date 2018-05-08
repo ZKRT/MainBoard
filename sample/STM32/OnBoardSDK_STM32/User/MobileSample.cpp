@@ -59,19 +59,21 @@ parseFromMobileCallback_v2(DJI::OSDK::Vehicle*      vehicle,
 		msgData->datalen_recvapp = datalen;
 	}
 }
-
-//extern "C" void sendToMobile(uint8_t *data, uint8_t len)
-//{
-//  v->moc->sendDataToMSDK(data, len);
-//	_FLIGHT_UART_TX_LED = 0;
-//  usart1_tx_flag = TimingDelay;
-//}
+#ifdef CPLUSPLUS_HANDLE_ZK
+extern "C" void sendToMobile(uint8_t *data, uint8_t len)
+{
+  v->moc->sendDataToMSDK(data, len);
+	_FLIGHT_UART_TX_LED = 0;
+  usart1_tx_flag = TimingDelay;
+}
+#else
 void sendToMobile(uint8_t *data, uint8_t len)
 {
   v->moc->sendDataToMSDK(data, len);
 	_FLIGHT_UART_TX_LED = 0;
   usart1_tx_flag = TimingDelay;
 }
+#endif
 ////////////////////////////////////////////////////////////////////////////////////
 void
 parseFromMobileCallback(DJI::OSDK::Vehicle*      vehicle,

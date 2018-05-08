@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "sys.h"
+#include "zkrt.h"
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported types ------------------------------------------------------------*/
@@ -40,6 +41,10 @@ typedef void (*MB_SELF_MSG_FUN)(u8*);
 /* Exported functions ------------------------------------------------------- */
 
 extern const MB_SELF_MSG_FUN mb_self_handle_fun[MAX_MBDH_NUM];
+
+u8 common_data_handle(const zkrt_packet_t *spacket, zkrt_packet_t *respond_packet);
+//u8 normal_data_handle(const zkrt_packet_t *spacket, zkrt_packet_t *respond_packet);
+//u8 special_data_handle(const zkrt_packet_t *spacket, zkrt_packet_t *respond_packet);
 
 #endif /* __PROTOCOLZKRTHANDLE_H */
 

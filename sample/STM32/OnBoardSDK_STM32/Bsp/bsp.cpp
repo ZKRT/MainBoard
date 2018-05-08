@@ -8,13 +8,15 @@
  *  Copyright 2016 DJI. All right reserved.
  *
  * */
-#include "stm32f4xx.h"
+#include "hw_config.h"
 #include "bsp.h"
 #include "main.h"
 #include "BspUsart.h"
-//#ifdef __cplusplus
-//extern "C"
-//{
+
+#ifdef CPLUSPLUS_HANDLE_ZK
+extern "C" {
+#endif
+
 #include "sys.h"
 #include "adc.h"
 #include "usart.h"
@@ -36,8 +38,10 @@
 #include "exfuns.h"
 #include "usb_usr_process.h"
 #endif
-//}
-//#endif //__cplusplus
+
+#ifdef CPLUSPLUS_HANDLE_ZK
+}
+#endif 
 
 void BSPinit()
 {

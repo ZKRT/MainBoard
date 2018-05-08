@@ -5,7 +5,7 @@
   * @version V1.0
   * @date    9-May-2017
   * @brief
-	*					 + (1) init
+  *          + (1) init
   ******************************************************************************
   * @attention
   *
@@ -27,7 +27,7 @@
 //can message handle
 typedef struct
 {
-    u8 dev_support_en[DEVICE_NUMBER];  //0-disable, 1-enable 是否支持
+	u8 dev_support_en[DEVICE_NUMBER];  //0-disable, 1-enable 是否支持
 //
 
 } can_msg_handle_st;
