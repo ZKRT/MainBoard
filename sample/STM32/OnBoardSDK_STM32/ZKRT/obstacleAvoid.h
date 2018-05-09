@@ -125,8 +125,7 @@ g_distance_value[4]: Guidance VBUS ④ Port 左
   * @}
   */
 //避障控制状态
-enum OBSTACLE_CONTROL_STATE
-{
+enum OBSTACLE_CONTROL_STATE {
   OCS_NO_CONTROL = 0,                       //不控制，释放控制权予遥控
   OCS_LIMITING_VEL  = 1,                    //限速控制，遥控器没有权限
   OCS_HOVER = 2,                            //控制悬停，遥控器没有权限
@@ -141,8 +140,7 @@ enum OBSTACLE_CONTROL_STATE
 //  XYS_RC
 //};
 /* Exported typedef ------------------------------------------------------------*/
-typedef struct
-{
+typedef struct {
   unsigned char g_distance_char[CAMERA_PAIR_NUM * 2];   //每个超声波数据的char值
   unsigned short g_distance_value[CAMERA_PAIR_NUM];     //5个超声波数据值，short数据类型，单位cm。
   unsigned short
@@ -160,8 +158,7 @@ typedef struct
 } obstacleData_st;
 
 //dji控制需要考虑的机体参数结构体
-typedef struct
-{
+typedef struct {
   double roll;
   double pitch;
   float xnow;
@@ -174,8 +171,7 @@ typedef struct
   float fiter_angle_ob;
 } dji_flight_status;
 //避障控制结构体，4个方向需要定义一个数组结构体
-typedef struct
-{
+typedef struct {
   uint8_t state;  //避障控制状态
   uint8_t last_state;  //避障控制状态上一次
   uint8_t opposite;              //对立面，如前的对立面是后，左的对立面是右
@@ -183,8 +179,7 @@ typedef struct
 //  uint8_t adjoin2;               //相邻2
 } obstacleControl_st;
 //避障控制结构体
-typedef struct
-{
+typedef struct {
   obstacleControl_st control[4];
   uint8_t x_state; //x轴控制状态 OBSTACLE_X_Y_STATE
   uint8_t y_state; //y轴控制状态 OBSTACLE_X_Y_STATE

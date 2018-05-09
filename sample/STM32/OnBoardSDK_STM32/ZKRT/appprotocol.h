@@ -42,8 +42,7 @@
 
 //#define TN_HEARTBEAT                  1
 //type num enum
-typedef enum
-{
+typedef enum {
     TN_None = 0,
     TN_HEARTBEAT,
     TN_GETDEVINFO,
@@ -76,8 +75,7 @@ typedef enum
 ////heartbeat1
 //device online status bit number  ---same as DEVICE_TYPE_XX
 //device online status value bit
-typedef struct
-{
+typedef struct {
     u8 temperuture : 1;
     u8 obstacle : 1;
     u8 control : 1;
@@ -95,15 +93,13 @@ typedef struct
     u8 reserved4 : 8;
 } dos_valuebit;
 //device online status union
-typedef union
-{
+typedef union {
     u8 value[3];
     dos_valuebit valuebit;
 } devicestatus_un;
 //feedback
 //feedback value bit
-typedef struct
-{
+typedef struct {
     u8 throw1_s : 1;
     u8 throw2_s : 1;
     u8 throw3_s : 1;
@@ -115,14 +111,12 @@ typedef struct
     u8 reserved3 : 8;
 } feedback_valuebit;
 //feedback union
-typedef union
-{
+typedef union {
     u8 value[3];
     feedback_valuebit valuebit;
 } feedback_un;
 //heartbeat1 struct
-typedef struct
-{
+typedef struct {
     u8 t1_status;
     u16 t1;
     u8 t2_status;
@@ -143,8 +137,7 @@ typedef struct
     u8 voltage;
 } zd_heartv1_st;
 ////heartbeat2
-typedef struct
-{
+typedef struct {
     u16 ob_distse_v[5];     //障碍物距离
     u8 avoid_ob_enabled;    //避障使能
     u16 avoid_ob_distse;    //避障生效距离
@@ -162,37 +155,32 @@ typedef struct
     u8 reserved[1];         //备用
 } zd_heartv2_st;
 //the device relevant of heartbeat protocol in version3.3
-typedef struct
-{
+typedef struct {
     devicestatus_un dev_online_s;
     feedback_un feedback_s;
 } hb_devinfo_st;
 //the temperature relevant of heartbeat protocol in version3.3
-typedef struct
-{
+typedef struct {
     u16 t_value;
     u8 t_status;
     u16 t_low;
     u16 t_high;
 } hb_temper_st;
 //the obstacle avoidance relevant of heartbeat protocol in version3.3
-typedef struct
-{
+typedef struct {
     u16 ob_distse_v[5];     //障碍物距离
     u8 avoid_ob_enabled;    //避障使能
     u16 avoid_ob_distse;    //避障生效距离
     u16 avoid_ob_velocity;  //避障速度
 } hb_obstacle_st;
 //the gas relevant of heartbeat protocol in version3.3
-typedef struct
-{
+typedef struct {
     u8 ch_num;
     u16 ch_status;
     u32 gas_value[MAX_CHANNEL_GAS];  //max channel num is 8
 } hb_gas_st;
 //the heartbeat protocol in version3.3
-typedef struct
-{
+typedef struct {
     hb_devinfo_st dev;
     hb_temper_st temper;
     hb_obstacle_st obstacle;
@@ -200,29 +188,25 @@ typedef struct
 } zd_heartv3_3_st;
 ///////////////////////////////app to uav zkrt data struct
 ////command=normal command, device type=temperture
-typedef struct
-{
+typedef struct {
     short t_low;
     short t_high;
     u8 reserved[26];
 } tempture_comnor_plst;
 ////command=normal command, device type=mainboard
-typedef struct
-{
+typedef struct {
     u8 ctrl_num;
     u8 ctrl_data[ZK_DATA_MAX_LEN - 1];
 } comnor_mainboard_plst;
 //ostabcle control
-typedef struct
-{
+typedef struct {
     u8 enable;
     u16 enbale_distance; //cm
     short vel;           //m/s, but /10, example: when vel = 101, the actul vel is 10.1m/s
     u8 reserved[24];
 } ostacle_mb_plst;
 //undercarriage control
-typedef struct
-{
+typedef struct {
     u8 enable;
     short autodown_angle;    //value/10, example: when autodown_angle = 101, the actul value is 10.1 degree
     short autoup_angle; //value/10, example: when autoup_angle = 101, the actul value is 10.1 degree
@@ -232,37 +216,32 @@ typedef struct
 } undercarriage_mb_plst;
 ///////////////////////////////uav to subdev zkrt data struct
 ///////////////////////////////subdev to uav zkrt data struct
-//////common command
-typedef struct
-{
+///////////////////////////////////////////////////////////common command
+typedef struct {
     u8 type_num;
     u8 type_data[ZK_DATA_MAX_LEN - 1];
 } common_data_plst;
 //heartbeat data
-typedef struct
-{
+typedef struct {
     u32 hb_flag;
     u8 hb_data[ZK_DATA_MAX_LEN - THHB_FIXED_LEN];
 } common_hbd_plst;
 //throw heartbeat
-typedef struct
-{
+typedef struct {
 //  hb_header_ccplst hbh;
     u8 v1;
     u8 v2;
     u8 v3;
 } throw_hbccplst;
 //irradiate heartbeat
-typedef struct
-{
+typedef struct {
 //  hb_header_ccplst hbh;
     u8 value;
 } irradiate_hbccplst;
 //3Dmodeling heartbeat
 typedef irradiate_hbccplst threemodel_hbccplst;
 //gas heartbeat
-typedef struct
-{
+typedef struct {
 //  hb_header_ccplst hbh;
     u8 num;
     u8 status;
@@ -285,13 +264,12 @@ typedef struct
 } gas_hbccplst;
 typedef hb_gas_st gas_v3_3_hbccplst;
 //dev info data
-typedef struct
-{
-	u8 status;
-	u8 model[10];
-	u8 hw_version[6];
-	u8 sw_version[6];
-}common_get_devinfo_plst;
+typedef struct {
+    u8 status;
+    u8 model[10];
+    u8 hw_version[6];
+    u8 sw_version[6];
+} common_get_devinfo_plst;
 ///////////////////////////////app to subdev zkrt data struct
 ////command=specify command
 //respond flag
@@ -300,28 +278,24 @@ typedef struct
 
 #define RES_HEADER_LEN  2  //equal to control num+status
 //type num enum
-typedef enum
-{
+typedef enum {
     NONE_GASCN = 0,
     GETCHNUM_GASCN = 1,
     GETCHINFO_GASCN,
     MAX_GASCN
 } gas_ctrlnume;
 //gas respond status enum
-typedef enum
-{
+typedef enum {
     S_Success_Gas,
     S_Fail_Gas,
     S_FailNoDev_Gas,
     S_FailNoChannel_Gas
 } ResStatusEnumGas;
-typedef struct
-{
+typedef struct {
     u8 control_num;
     u8 other_data[ZK_DATA_MAX_LEN - 1];
 } send_comspec_plst;
-typedef struct
-{
+typedef struct {
     u8 control_num;
     u8 status;
     u8 other_data[ZK_DATA_MAX_LEN - 2];
@@ -329,17 +303,14 @@ typedef struct
 //////send and respond sub
 ////device type=gas type
 //get gas channel num  --not send, have respond
-typedef struct
-{
+typedef struct {
     u8 ch_num;
 } rgetchnum_gas_comspecplst;
 //get gas channel info
-typedef struct
-{
+typedef struct {
     u8 ch;
 } getchinfo_gas_comspecplst;
-typedef struct
-{
+typedef struct {
     u8 ch;
     u8 reseved[2];
     u32 value;

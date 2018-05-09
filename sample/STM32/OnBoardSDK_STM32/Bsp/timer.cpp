@@ -17,8 +17,7 @@ uint32_t tick = 0; //tick is the time stamp,which record how many ms since u ini
 //extern unsigned char Rx_buff[];
 extern TerminalCommand myTerminal;
 
-void Timer1Config()
-{
+void Timer1Config() {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_TIM1, ENABLE);
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -43,8 +42,7 @@ void Timer1Config()
     TIM_Cmd(TIM1, DISABLE);
 
 }
-void Timer2Config()
-{
+void Timer2Config() {
     TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStructure;
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -69,21 +67,17 @@ void Timer2Config()
     TIM_Cmd(TIM2, DISABLE);
 
 }
-void SystickConfig()
-{
-    if (SysTick_Config(SystemCoreClock / 1000)) //1000 ticks per second.
-    {
+void SystickConfig() {
+    if (SysTick_Config(SystemCoreClock / 1000)) { //1000 ticks per second.
         while (1)
             ;  //run here when error.
     }
 }
 
 
-void delay_nms(uint16_t time)
-{
+void delay_nms(uint16_t time) {
     u32 i = 0;
-    while (time--)
-    {
+    while (time--) {
         i = 30000;
         while (i--)
             ;

@@ -2,11 +2,11 @@
 #define __USART_H
 #include "sys.h"
 
-//#define USART_BUFFER_SIZE 295 
+//#define USART_BUFFER_SIZE 295
 
 //extern uint16_t usart1_tx_buffer_tail;
 //extern uint16_t usart1_tx_buffer_head;
-//																		
+//
 
 //void uart_init(void);
 

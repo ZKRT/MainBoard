@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    commonzkrt.h 
+  * @file    commonzkrt.h
   * @author  ZKRT
   * @version V0.0.1
   * @date    23-December-2016
@@ -13,7 +13,7 @@
   *
   ******************************************************************************
   */
-  
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __COMMONZKRT_H
 #define __COMMONZKRT_H
@@ -25,11 +25,11 @@
 /* Exported types ------------------------------------------------------------*/
 /** @defgroup something
   * @{
-  */ 
-  
+  */
+
 /**
   * @}
-  */ 
+  */
 /* Exported constants --------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */
 void printf_uchar(unsigned char *data, u16 length);
@@ -39,7 +39,7 @@ uint16_t CRC16_Cal(uint8_t* ptr, uint8_t len);
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}

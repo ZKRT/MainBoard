@@ -48,8 +48,7 @@ u8 timer_up_seq = 0;             //上传数据包序列
   * @parm   none
   * @retval none
   */
-void heartbeat_parm_init(void)
-{
+void heartbeat_parm_init(void) {
 //	//undercarriage data
 //	zkrt_heartv2.uce_state = 0;
 //	if(undercarriage_data.run_state ==uped_udcaie_rs)
@@ -89,8 +88,7 @@ void heartbeat_parm_init(void)
   * @parm   none
   * @retval 0-不需要发包，1-需要发包
   */
-u8 zkrt_heartbeat_pack(u8* data, u8* datalen)
-{
+u8 zkrt_heartbeat_pack(u8* data, u8* datalen) {
 	u8 send_flag = 0;
 
 //	//定时做心跳包V2包组包，心跳包V1包沿用旧代码，在其它地方有处理
@@ -106,17 +104,14 @@ u8 zkrt_heartbeat_pack(u8* data, u8* datalen)
   * @parm   none
   * @retval 0-不需要发包，1-需要发包
   */
-static u8 zkrt_heartbeat_timer_pack(u8* data, u8* datalen)
-{
+static u8 zkrt_heartbeat_timer_pack(u8* data, u8* datalen) {
 	u8 sendflag = 0;
 	/*需要定时上传的数据：hbv1, hbv2*/
-	if (hb_timer.timer_msg_upflag)
-	{
+	if (hb_timer.timer_msg_upflag) {
 		sendflag = 1;
 		hb_timer.timer_msg_upflag = 0;
 
-		switch (timer_up_seq)
-		{
+		switch (timer_up_seq) {
 		case Hbv1_Seq:
 			timer_up_seq = Hbv1_Seq;
 			hb_timer.timer_msg_timecnt = TIMER_MSG_TIMEOUT;
@@ -204,8 +199,7 @@ static u8 zkrt_heartbeat_timer_pack(u8* data, u8* datalen)
   * @parm   none
   * @retval none
   */
-static void hbv2_pack(void)
-{
+static void hbv2_pack(void) {
 //	if(hb_timer.timer_hbv2_packflag)
 //	{
 //		//obstacle data copy
@@ -227,8 +221,7 @@ static void hbv2_pack(void)
   * @parm   none
   * @retval none
   */
-static void hb_tmr_task(void)
-{
+static void hb_tmr_task(void) {
 //	if(hb_timer.timer_hbv2_packcnt>0)
 //	{
 //		hb_timer.timer_hbv2_packcnt--;
@@ -237,11 +230,9 @@ static void hb_tmr_task(void)
 //			hb_timer.timer_hbv2_packflag =1;
 //		}
 //	}
-	if (hb_timer.timer_msg_timecnt > 0)
-	{
+	if (hb_timer.timer_msg_timecnt > 0) {
 		hb_timer.timer_msg_timecnt--;
-		if (!hb_timer.timer_msg_timecnt)
-		{
+		if (!hb_timer.timer_msg_timecnt) {
 			hb_timer.timer_msg_upflag = 1;
 		}
 	}

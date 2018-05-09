@@ -25,9 +25,8 @@
 /* Exported constants --------------------------------------------------------*/
 
 //can message handle
-typedef struct
-{
-	u8 dev_support_en[DEVICE_NUMBER];  //0-disable, 1-enable 是否支持
+typedef struct {
+  u8 dev_support_en[DEVICE_NUMBER];  //0-disable, 1-enable 是否支持
 //
 
 } can_msg_handle_st;

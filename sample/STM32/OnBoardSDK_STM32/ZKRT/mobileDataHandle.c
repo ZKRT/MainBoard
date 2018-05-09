@@ -25,9 +25,6 @@ extern void sendToMobile(uint8_t *data, uint8_t len);
 static void mobile_data_handle(void);
 static void copydataformmobile(const u8* sdata, u8 sdatalen);
 
-#ifdef CanSend2SubModule_TEST
-zkrt_packet_t cansdebug;
-#endif
 /**
  * @brief msg_handle_init
  * @param
@@ -50,21 +47,35 @@ void mobile_data_process(void) {
 		msg_handlest.datalen_recvapp = 0;
 	}
 #ifdef CanSend2SubModule_TEST
-	if (can_send_debug - TimingDelay > 10000) {
+	if (can_send_debug - TimingDelay > 3000) {
+		int index;
+		printf("CanSend2SubModule_TEST\n");
 		can_send_debug        = TimingDelay;
-		cansdebug.start_code  = 0xEB;
-		cansdebug.ver         = 1;
-		cansdebug.session_ack = 0;
-		cansdebug.padding_enc = 0;
-		cansdebug.cmd         = 0x20;
-		cansdebug.length      = 30;
-		cansdebug.seq         = 0;
-		cansdebug.UAVID[3]    = 0x0d;  //device uavid
-		cansdebug.data[0]     = (u8)(TimingDelay & 0xff);
-		cansdebug.end_code    = 0xbe;
-		cansdebug.crc         = crc_calculate(((const uint8_t*)(&cansdebug)), 47);
-		CAN1_send_message_fun((uint8_t *)(&cansdebug), _TOTAL_LEN,
-		                      (cansdebug.UAVID[3]));/*通过CAN总线发送数据*/
+		msg_handlest.sendpacket_app.start_code  = _START_CODE;
+		msg_handlest.sendpacket_app.ver         = _VERSION;
+		msg_handlest.sendpacket_app.session_ack = 0;
+		msg_handlest.sendpacket_app.padding_enc = 0;
+		msg_handlest.sendpacket_app.cmd         = APP_TO_UAV;
+		msg_handlest.sendpacket_app.command         = ZK_COMMAND_COMMON;
+		msg_handlest.sendpacket_app.length      = 1;
+		msg_handlest.sendpacket_app.seq         = 0;
+		msg_handlest.sendpacket_app.UAVID[3]    = DEVICE_TYPE_GAS;  //device uavid
+		msg_handlest.sendpacket_app.data[0]     = 2;
+		msg_handlest.sendpacket_app.end_code    = _END_CODE;
+		msg_handlest.datalen_sendapp = zkrt_final_encode(msg_handlest.data_send_app, &msg_handlest.sendpacket_app);
+		CAN1_send_message_fun((uint8_t *)msg_handlest.data_send_app,  msg_handlest.datalen_sendapp,
+		                      (msg_handlest.sendpacket_app.UAVID[3]));/*通过CAN总线发送数据*/
+
+#ifdef GetDevVersionBSA_TEST
+		memcpy(main_dji_rev, &msg_handlest.sendpacket_app, sizeof(zkrt_packet_t));
+		msg_handlest.datalen_recvapp = main_dji_rev->length + ZK_FIXED_LEN;
+		mobile_data_handle();
+		for (index = 0; index < msg_handlest.datalen_sendapp; index++) {
+			printf("%x ", msg_handlest.data_send_app[index]);
+		}
+		printf("\n");
+		msg_handlest.datalen_recvapp = 0;
+#endif
 	}
 #endif
 }

@@ -48,8 +48,7 @@
 /* Exported typedef ------------------------------------------------------------*/
 
 //起落架运行状态值
-enum udcaie_run_state
-{
+enum udcaie_run_state {
   downed_udcaie_rs = -1,      //降落稳态  //初始状态
   downing_udcaie_rs = -2 ,      //正在降落状态
   uping_udcaie_rs = 1,         //正在升起状态

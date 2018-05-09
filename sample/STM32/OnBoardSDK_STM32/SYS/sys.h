@@ -1,20 +1,20 @@
 #ifndef __SYS_H
-#define __SYS_H	 
+#define __SYS_H
 
 /* Includes ------------------------------------------------------------------*/
 #include "hw_config.h"
 #include "port.h"
 #include "commonzkrt.h"
 
-/* Exported macro --------------------------------------------------------*/		
+/* Exported macro --------------------------------------------------------*/
 #define _Send_Normal  1
 //#define _Send_test    2
-							
-/* Exported constants --------------------------------------------------------*/							
+
+/* Exported constants --------------------------------------------------------*/
 //IO口操作宏定义
-#define BITBAND(addr, bitnum) ((addr & 0xF0000000)+0x2000000+((addr &0xFFFFF)<<5)+(bitnum<<2)) 
-#define MEM_ADDR(addr)  *((volatile unsigned long  *)(addr)) 
-#define BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum)) 
+#define BITBAND(addr, bitnum) ((addr & 0xF0000000)+0x2000000+((addr &0xFFFFF)<<5)+(bitnum<<2))
+#define MEM_ADDR(addr)  *((volatile unsigned long  *)(addr))
+#define BIT_ADDR(addr, bitnum)   MEM_ADDR(BITBAND(addr, bitnum))
 //IO口地址映射
 #define GPIOA_ODR_Addr    (GPIOA_BASE+20) //0x40020014
 #define GPIOB_ODR_Addr    (GPIOB_BASE+20) //0x40020414 
@@ -35,7 +35,7 @@
 #define GPIOG_IDR_Addr    (GPIOG_BASE+16) //0x40021810 
 #define GPIOH_IDR_Addr    (GPIOH_BASE+16) //0x40021C10 
 #define GPIOI_IDR_Addr    (GPIOI_BASE+16) //0x40022010 
- 
+
 //IO口操作,只对单一的IO口!
 //确保n的值小于16!
 #define PAout(n)   BIT_ADDR(GPIOA_ODR_Addr,n)  //输出 
@@ -65,7 +65,7 @@
 #define PIout(n)   BIT_ADDR(GPIOI_ODR_Addr,n)  //输出 
 #define PIin(n)    BIT_ADDR(GPIOI_IDR_Addr,n)  //输入
 
-#define MAVLINK_TX_INIT_VAL 0XFFFFFFFF 	
+#define MAVLINK_TX_INIT_VAL 0XFFFFFFFF
 
 #if defined _TEMPTURE_IO_
 #define TEMPTURE_LOW_EXTRA         -550
@@ -84,27 +84,27 @@
 #define GLO_TEMPTURE_HIGH_INIT     4800
 
 /* definition of return value */
-#define	RETURN_FAILURE             0
+#define RETURN_FAILURE             0
 #define RETURN_SUCCESS_RES         1
 #define RETURN_SUCCESS_NONE        2
 
 //! This is the default status printing mechanism
-#define ZKRT_LOG(title, fmt, ...)                                  				\
+#define ZKRT_LOG(title, fmt, ...)                                         \
   if ((title))                                                            \
   {                                                                       \
-    int len = (sprintf(zkrt_log_buf, "%s %s,line %d: " fmt,    						\
+    int len = (sprintf(zkrt_log_buf, "%s %s,line %d: " fmt,               \
         (title) ? (title) : "NONE", __func__, __LINE__, ##__VA_ARGS__));  \
-    if ((len != -1) && (len < sizeof(zkrt_log_buf)))                                      	\
+    if ((len != -1) && (len < sizeof(zkrt_log_buf)))                                        \
       printf("%s", zkrt_log_buf);                                         \
     else                                                                  \
-      printf("ERROR: log printer inner fault\n");           							\
+      printf("ERROR: log printer inner fault\n");                         \
   }
-#define LOG_PRINTF_UCHAR	//开启打印16进制数
-#define LOG_NOTICE_IDATA  //重要提示，在产品代码考虑打印的log数据		
-//#define LOG_NOTICE_DATA   //普通提示	 //zkrt_need_mask
+#define LOG_PRINTF_UCHAR  //开启打印16进制数
+#define LOG_NOTICE_IDATA  //重要提示，在产品代码考虑打印的log数据    
+//#define LOG_NOTICE_DATA   //普通提示   //zkrt_need_mask
 #define LOG_ERROR_DATA
-#define LOG_DEBUG_DATA //zkrt_need_mask //zkrt_debug
-//#define LOG_WARNING_DATA //zkrt_need_mask	
+//#define LOG_DEBUG_DATA //zkrt_need_mask //zkrt_debug
+//#define LOG_WARNING_DATA //zkrt_need_mask
 #ifdef LOG_DEBUG_DATA
 #define LOG_DEBUG "DEBUG"
 #else
@@ -139,7 +139,7 @@
 extern volatile uint32_t TimingDelay;
 extern volatile uint32_t usart1_tx_flag;
 extern volatile uint32_t usart1_rx_flag;
-extern volatile uint32_t u433m_tx_flag;		
+extern volatile uint32_t u433m_tx_flag;
 extern volatile uint32_t u433m_rx_flag;
 extern volatile uint32_t can_tx_flag;
 extern volatile uint32_t can_rx_flag;
@@ -172,9 +172,9 @@ extern char zkrt_log_buf[300];
 /* Exported functions ------------------------------------------------------- */
 void RCC_Configuration(void);
 void delay_init(void);
-void delay_us(uint16_t nus);					//最多传入999us
-void delay_ms(uint16_t nms);					//最多传入65535ms
+void delay_us(uint16_t nus);          //最多传入999us
+void delay_ms(uint16_t nms);          //最多传入65535ms
 void NVICX_init(uint8_t pre_prrty, uint8_t sub_prrty);
-void DMAX_init(DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel, uint32_t peripheral_addr, uint32_t memory_addr,uint32_t direction, uint16_t buff_size, uint32_t peripheral_size, uint32_t memory_size, uint32_t dma_mode, uint32_t dma_prrty);
+void DMAX_init(DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel, uint32_t peripheral_addr, uint32_t memory_addr, uint32_t direction, uint16_t buff_size, uint32_t peripheral_size, uint32_t memory_size, uint32_t dma_mode, uint32_t dma_prrty);
 
 #endif

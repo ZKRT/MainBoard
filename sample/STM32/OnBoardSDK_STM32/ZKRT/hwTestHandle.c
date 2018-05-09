@@ -132,10 +132,8 @@ extern u8 AppState;
 *   @brief  hwtest_1s_task
   * @retval none
   */
-static void hwtest_1s_task(void)
-{
-	if (hwtest_timeout)
-	{
+static void hwtest_1s_task(void) {
+	if (hwtest_timeout) {
 		hwtest_timeout--;
 	}
 }
@@ -143,8 +141,7 @@ static void hwtest_1s_task(void)
 *   @brief  hwtest_init
   * @retval none
   */
-void hwtest_init(void)
-{
+void hwtest_init(void) {
 	t_ostmr_insertTask(hwtest_1s_task, 1000, OSTMR_PERIODIC);
 }
 /**
@@ -155,8 +152,7 @@ void hwtest_init(void)
   * @param  resbuflen
   * @retval RETURN_SUCCESS_RES: need send respond msg, RETURN_SUCCESS_NONE: no need send respond msg, RETURN_FAILURE: data parse failed, no need send respond msg
   */
-u8 hwtest_data_handle(u8 *buf, u16 buflen, u8 *resbuf, u16 *resbuflen)
-{
+u8 hwtest_data_handle(u8 *buf, u16 buflen, u8 *resbuf, u16 *resbuflen) {
 	char ret = RETURN_FAILURE;
 	u16 datalen;
 	u16 endcode_index;
@@ -190,8 +186,7 @@ u8 hwtest_data_handle(u8 *buf, u16 buflen, u8 *resbuf, u16 *resbuflen)
 	}
 
 	//check cmd number
-	if (buf[3] > MAX_CMDN_HWT)
-	{
+	if (buf[3] > MAX_CMDN_HWT) {
 		ZKRT_LOG(LOG_ERROR, "cmd number\n");
 		return ret;
 	}
@@ -234,8 +229,7 @@ u8 hwtest_data_handle(u8 *buf, u16 buflen, u8 *resbuf, u16 *resbuflen)
   * @{
   */
 //通讯测试，返回设备名称
-char connect_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char connect_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	u8 *outdata = (u8 *)out_arg;
 	ZKRT_LOG(LOG_NOTICE, "connect_hwtf\n");
 	outdata[0] = RESULT_OK_HWT;
@@ -244,8 +238,7 @@ char connect_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_RES;
 }
 //led test fun
-char led_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char led_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 //	u8 *indata = (u8 *)in_arg;
 	u8 *outdata = (u8 *)out_arg;
 	ZKRT_LOG(LOG_NOTICE, "led test\n");
@@ -259,8 +252,7 @@ char led_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_RES;
 }
 //uart test fun
-char uart_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char uart_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	int i;
 	char ret;
 	char data1 = 0;
@@ -301,8 +293,7 @@ char uart_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_RES;
 }
 //can test fun
-char can_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char can_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	int i;
 	char ret;
 	char data1 = 0;
@@ -339,8 +330,7 @@ char can_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_RES;
 }
 //pwm test fun
-char pwm_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char pwm_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	u8 *outdata = (u8 *)out_arg;
 	ZKRT_LOG(LOG_NOTICE, "pwm_hwtf\n");
 
@@ -354,8 +344,7 @@ char pwm_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_RES;
 }
 //ad test fun
-char ad_temp_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char ad_temp_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	int i, j;
 	char uploadcnt;
 	u16 t1, t2;
@@ -381,10 +370,8 @@ char ad_temp_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	//ad temp test
 	ostmr_wait(5); //delay x*100 ms
 
-	for (i = 0; i < uploadcnt; i++)
-	{
-		for (j = 0; j < 10; j++)
-		{
+	for (i = 0; i < uploadcnt; i++) {
+		for (j = 0; j < 10; j++) {
 			ostmr_wait(1);
 			ADC_SoftwareStartConv(ADC1);
 		}
@@ -405,8 +392,7 @@ char ad_temp_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_NONE;
 }
 //ds18b20 test fun
-char ds18b20_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char ds18b20_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	int i;
 //	char ret;
 	u16 t1, t2;
@@ -432,8 +418,7 @@ char ds18b20_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	DS18B20_Init();
 	//temp test
 	ostmr_wait(10); //delay x*100 ms
-	for (i = 0; i < uploadcnt; i++)
-	{
+	for (i = 0; i < uploadcnt; i++) {
 		ostmr_wait(10);
 		t1 = DS18B20_Get_Temp(DS18B20_NUM1);
 		t2 = DS18B20_Get_Temp(DS18B20_NUM2);
@@ -452,8 +437,7 @@ char ds18b20_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_NONE;
 }
 //iic test fun
-char iic_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char iic_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	char ret;
 
 	u8 *outdata = (u8 *)out_arg;
@@ -469,8 +453,7 @@ char iic_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_RES;
 }
 //usb test fun
-char usb_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char usb_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	char ret;
 	u8 *outdata = (u8 *)out_arg;
 	ZKRT_LOG(LOG_NOTICE, "usb_hwtf\n");
@@ -479,17 +462,14 @@ char usb_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 //	f_mount(fs[2],"2:",1); 	//挂载U盘
 //  USBH_Init(&USB_OTG_Core,USB_OTG_FS_CORE_ID,&USB_Host,&USBH_MSC_cb,&USR_Callbacks);  //初始化USB主机
 	//usb test
-	while (1)
-	{
+	while (1) {
 		usb_user_prcs();
-		if (AppState == USH_USR_FS_TEST)
-		{
+		if (AppState == USH_USR_FS_TEST) {
 			ret = usbfd_test();
 			ZKRT_LOG(LOG_NOTICE, "usbfd_test, ret = %d\n", ret);
 			break;
 		}
-		if (!hwtest_timeout)
-		{
+		if (!hwtest_timeout) {
 			ZKRT_LOG(LOG_NOTICE, "usb test timeout!\n");
 			ret = RESULT_FAIL_HWT;
 			break;
@@ -501,8 +481,7 @@ char usb_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_RES;
 }
 //sbus test fun
-char sbus_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char sbus_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 //	int i;
 	char ret;
 
@@ -520,8 +499,7 @@ char sbus_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_RES;
 }
 //flash test fun
-char flash_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char flash_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	char ret;
 	u8 *outdata = (u8 *)out_arg;
 	ZKRT_LOG(LOG_NOTICE, "flash_hwtf\n");
@@ -534,8 +512,7 @@ char flash_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 	return RETURN_SUCCESS_RES;
 }
 //external ram test fun
-char external_ram_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
-{
+char external_ram_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len) {
 	char ret;
 	u8 *outdata = (u8 *)out_arg;
 	ZKRT_LOG(LOG_NOTICE, "external_ram_hwtf\n");
@@ -555,8 +532,7 @@ char external_ram_hwtf(void *in_arg, void *out_arg, u16 *out_arg_len)
 /** @fungroup  every uart test funciton
   * @{
   */
-char uart3_test(void) //test uart
-{
+char uart3_test(void) { //test uart
 	int i;
 	int recv_pos;
 	char value;
@@ -570,8 +546,7 @@ char uart3_test(void) //test uart
 		test_recv_buf[i] = 0xff;
 	ostmr_wait(30); //delay x*100 ms //modify by yanly
 	recv_pos = 0;
-	while (usart3_rx_check() == 1)
-	{
+	while (usart3_rx_check() == 1) {
 		value = usart3_rx_byte();
 //		printf("%x ", value);
 		test_recv_buf[recv_pos] = value;
@@ -579,22 +554,17 @@ char uart3_test(void) //test uart
 		if (recv_pos >= TEST_BUFFER_SIZE)
 			break;
 	}
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
-		if (test_recv_buf[i] == test_send_buf[i])
-		{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
+		if (test_recv_buf[i] == test_send_buf[i]) {
 			ret = RESULT_OK_HWT;
-		}
-		else
-		{
+		} else {
 			ret = RESULT_FAIL_HWT;
 			break;
 		}
 	}
 	return ret;
 }
-char uart1_test(void) //flight uart
-{
+char uart1_test(void) { //flight uart
 	int i;
 	int recv_pos;
 	char value;
@@ -608,8 +578,7 @@ char uart1_test(void) //flight uart
 		test_recv_buf[i] = 0xff;
 	ostmr_wait(10); //delay x*100 ms
 	recv_pos = 0;
-	while (usart1_rx_check() == 1)
-	{
+	while (usart1_rx_check() == 1) {
 		value = usart1_rx_byte();
 //		printf("%x ", value);
 		test_recv_buf[recv_pos] = value;
@@ -617,22 +586,17 @@ char uart1_test(void) //flight uart
 		if (recv_pos >= TEST_BUFFER_SIZE)
 			break;
 	}
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
-		if (test_recv_buf[i] == test_send_buf[i])
-		{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
+		if (test_recv_buf[i] == test_send_buf[i]) {
 			ret = RESULT_OK_HWT;
-		}
-		else
-		{
+		} else {
 			ret = RESULT_FAIL_HWT;
 			break;
 		}
 	}
 	return ret;
 }
-char uart6_test(void) //433M uart
-{
+char uart6_test(void) { //433M uart
 	int i;
 	int recv_pos;
 	char value;
@@ -646,8 +610,7 @@ char uart6_test(void) //433M uart
 		test_recv_buf[i] = 0xff;
 	ostmr_wait(10); //delay x*100 ms
 	recv_pos = 0;
-	while (usart6_rx_check() == 1)
-	{
+	while (usart6_rx_check() == 1) {
 		value = usart6_rx_byte();
 //		printf("%x ", value);
 		test_recv_buf[recv_pos] = value;
@@ -655,14 +618,10 @@ char uart6_test(void) //433M uart
 		if (recv_pos >= TEST_BUFFER_SIZE)
 			break;
 	}
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
-		if (test_recv_buf[i] == test_send_buf[i])
-		{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
+		if (test_recv_buf[i] == test_send_buf[i]) {
 			ret = RESULT_OK_HWT;
-		}
-		else
-		{
+		} else {
 			ret = RESULT_FAIL_HWT;
 			break;
 		}
@@ -676,8 +635,7 @@ char uart6_test(void) //433M uart
 /** @fungroup  every can test funciton
   * @{
   */
-char can1_test(void)
-{
+char can1_test(void) {
 	int i;
 	int recv_pos;
 	char value;
@@ -691,8 +649,7 @@ char can1_test(void)
 	ostmr_wait(10); //delay x*100 ms
 	recv_pos = 0;
 
-	while (CAN1_rx_check(CAN1_TEST_STDID) == 1)
-	{
+	while (CAN1_rx_check(CAN1_TEST_STDID) == 1) {
 		value = CAN1_rx_byte(CAN1_TEST_STDID);
 //		printf("%x ", value);
 		test_recv_buf[recv_pos] = value;
@@ -701,14 +658,10 @@ char can1_test(void)
 			break;
 	}
 
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
-		if (test_recv_buf[i] == test_send_buf[i])
-		{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
+		if (test_recv_buf[i] == test_send_buf[i]) {
 			ret = RESULT_OK_HWT;
-		}
-		else
-		{
+		} else {
 			ret = RESULT_FAIL_HWT;
 			break;
 		}
@@ -717,8 +670,7 @@ char can1_test(void)
 	return ret;
 }
 #ifdef USE_CAN2_FUN
-char can2_test(void)
-{
+char can2_test(void) {
 	int i;
 	int recv_pos;
 	char value;
@@ -732,8 +684,7 @@ char can2_test(void)
 	ostmr_wait(10); //delay x*100 ms
 	recv_pos = 0;
 
-	while (CAN2_rx_check(CAN2_TEST_STDID) == 1)
-	{
+	while (CAN2_rx_check(CAN2_TEST_STDID) == 1) {
 		value = CAN2_rx_byte(CAN2_TEST_STDID);
 //		printf("%x ", value);
 		test_recv_buf[recv_pos] = value;
@@ -742,14 +693,10 @@ char can2_test(void)
 			break;
 	}
 
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
-		if (test_recv_buf[i] == test_send_buf[i])
-		{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
+		if (test_recv_buf[i] == test_send_buf[i]) {
 			ret = RESULT_OK_HWT;
-		}
-		else
-		{
+		} else {
 			ret = RESULT_FAIL_HWT;
 			break;
 		}
@@ -767,8 +714,7 @@ char can2_test(void)
   * @param  None
 * @retval ret: test result
   */
-char pwm_output_test(void)
-{
+char pwm_output_test(void) {
 	short pwmval = 1100;
 	char change = 1; //0-递增，1-递减
 	ostmr_wait(1);
@@ -778,8 +724,7 @@ char pwm_output_test(void)
 	PWM3_OUT(pwmval);
 	PWM4_OUT(pwmval);
 	hwtest_timeout = 30; //30s timeout
-	while (1) //实现比较值从1100~1900递增，到1900后从1900~1100递减，循环
-	{
+	while (1) { //实现比较值从1100~1900递增，到1900后从1900~1100递减，循环
 		delay_ms(1);
 		if (change)
 			pwmval += 1;
@@ -794,8 +739,7 @@ char pwm_output_test(void)
 		PWM2_OUT(pwmval);
 		PWM3_OUT(pwmval);
 		PWM4_OUT(pwmval);
-		if (!hwtest_timeout)
-		{
+		if (!hwtest_timeout) {
 			ZKRT_LOG(LOG_NOTICE, "pwm timeout\n");
 			break;
 		}
@@ -808,8 +752,7 @@ char pwm_output_test(void)
   * @retval ret: test result, RESULT_OK_HWT, RESULT_FAIL_HWT, RESULT_UNCONFIRM_HWT
   */
 
-char sbus_test(void)
-{
+char sbus_test(void) {
 	int i;
 	int recv_pos;
 	char value;
@@ -823,8 +766,7 @@ char sbus_test(void)
 		test_recv_buf[i] = 0xff;
 	ostmr_wait(10); //delay x*100 ms
 	recv_pos = 0;
-	while (uart4_rx_check() == 1)
-	{
+	while (uart4_rx_check() == 1) {
 		value = uart4_rx_byte();
 //		printf("%x ", value);
 		test_recv_buf[recv_pos] = value;
@@ -832,14 +774,10 @@ char sbus_test(void)
 		if (recv_pos >= TEST_BUFFER_SIZE)
 			break;
 	}
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
-		if (test_recv_buf[i] == test_send_buf[i])
-		{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
+		if (test_recv_buf[i] == test_send_buf[i]) {
 			ret = RESULT_OK_HWT;
-		}
-		else
-		{
+		} else {
 			ret = RESULT_FAIL_HWT;
 			break;
 		}
@@ -851,25 +789,21 @@ char sbus_test(void)
   * @param  None
   * @retval ret: test result, RESULT_OK_HWT, RESULT_FAIL_HWT, RESULT_UNCONFIRM_HWT
   */
-char iic_24cxx_test(void)
-{
+char iic_24cxx_test(void) {
 	char ret;
 	int i;
 	hwtest_timeout = 30; //30s
 	//check connect
-	while (AT24CXX_Check()) //检测不到24c02
-	{
+	while (AT24CXX_Check()) { //检测不到24c02
 		ZKRT_LOG(LOG_ERROR, "24C02 Check Failed!\n");
 		ostmr_wait(10); //wait 1s
-		if (!hwtest_timeout)
-		{
+		if (!hwtest_timeout) {
 			ZKRT_LOG(LOG_NOTICE, "iic test timeout!\n");
 			ret = RESULT_FAIL_HWT;
 			return ret;
 		}
 	}
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
 		test_send_buf[i] = i;
 		test_recv_buf[i] = 0;
 	}
@@ -878,14 +812,10 @@ char iic_24cxx_test(void)
 	//read
 	AT24CXX_Read(0, (u8*)test_recv_buf, TEST_BUFFER_SIZE);
 	//check
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
-		if (test_recv_buf[i] == test_send_buf[i])
-		{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
+		if (test_recv_buf[i] == test_send_buf[i]) {
 			ret = RESULT_OK_HWT;
-		}
-		else
-		{
+		} else {
 			ret = RESULT_FAIL_HWT;
 			break;
 		}
@@ -897,28 +827,24 @@ char iic_24cxx_test(void)
   * @param  None
   * @retval ret: test result, RESULT_OK_HWT, RESULT_FAIL_HWT, RESULT_UNCONFIRM_HWT
   */
-char usbfd_test(void)
-{
+char usbfd_test(void) {
 	u32 i;
 	u8 res;
 	u32 _bw;
 	char ret = RESULT_FAIL_HWT;
 	//open
 	res = f_open(&testfile_fp, "2:zkrt_usbfd_test_file", FA_CREATE_ALWAYS | FA_READ | FA_WRITE);
-	if (res != FR_OK)
-	{
+	if (res != FR_OK) {
 		ZKRT_LOG(LOG_ERROR, "f_open failed!\n");
 		f_close(&testfile_fp);
 		return ret;
 	}
 	//write
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
 		test_send_buf[i] = i;
 	}
 	res = f_write(&testfile_fp, test_send_buf, TEST_BUFFER_SIZE, &_bw);
-	if (res != FR_OK)
-	{
+	if (res != FR_OK) {
 		ZKRT_LOG(LOG_ERROR, "f_write failed!\n");
 		f_close(&testfile_fp);
 		return ret;
@@ -928,17 +854,14 @@ char usbfd_test(void)
 	memset(test_recv_buf, 0, TEST_BUFFER_SIZE);
 	f_lseek(&testfile_fp, 0);
 	res = f_read(&testfile_fp, test_recv_buf, TEST_BUFFER_SIZE, &_bw);
-	if (res != FR_OK)
-	{
+	if (res != FR_OK) {
 		ZKRT_LOG(LOG_ERROR, "f_read failed!\n");
 		f_close(&testfile_fp);
 		return ret;
 	}
 	//check
-	for (i = 0; i < TEST_BUFFER_SIZE; i++)
-	{
-		if (test_recv_buf[i] != test_send_buf[i])
-		{
+	for (i = 0; i < TEST_BUFFER_SIZE; i++) {
+		if (test_recv_buf[i] != test_send_buf[i]) {
 			ZKRT_LOG(LOG_ERROR, "check failed!\n");
 			f_close(&testfile_fp);
 			return ret;
@@ -953,8 +876,7 @@ char usbfd_test(void)
   * @param  None
   * @retval ret: test result, RESULT_OK_HWT, RESULT_FAIL_HWT, RESULT_UNCONFIRM_HWT
   */
-char flash_test(void)
-{
+char flash_test(void) {
 	char ret = RESULT_FAIL_HWT;
 	uint32_t i;
 	uint32_t handle_addr = ADDR_FLASH_SECTOR_7;
@@ -962,12 +884,10 @@ char flash_test(void)
 	//erase
 	STMFLASH_Erase(FLASH_Sector_7);
 	//check erase result
-	for (i = 0; i < SIZE_FLASH_SECTOR_7 / 4; i++)
-	{
+	for (i = 0; i < SIZE_FLASH_SECTOR_7 / 4; i++) {
 		addr_value = STMFLASH_ReadWord(handle_addr);
 		//sub check
-		if (addr_value != 0xffffffff) //erase result failed
-		{
+		if (addr_value != 0xffffffff) { //erase result failed
 			ret = RESULT_FAIL_HWT;
 			ZKRT_LOG(LOG_ERROR, "erase check failed\n");
 			return ret;
@@ -980,10 +900,8 @@ char flash_test(void)
 	handle_addr = ADDR_FLASH_SECTOR_7;
 	FLASH_Unlock();
 	FLASH_DataCacheCmd(DISABLE);
-	for (i = 0; i < SIZE_FLASH_SECTOR_7 / 4; i++)
-	{
-		if (FLASH_ProgramWord(handle_addr,  0xAA55AA55) != FLASH_COMPLETE)
-		{
+	for (i = 0; i < SIZE_FLASH_SECTOR_7 / 4; i++) {
+		if (FLASH_ProgramWord(handle_addr,  0xAA55AA55) != FLASH_COMPLETE) {
 			ret = RESULT_FAIL_HWT;
 			FLASH_DataCacheCmd(ENABLE);	//FLASH擦除结束,开启数据缓存
 			FLASH_Lock();//上锁
@@ -996,12 +914,10 @@ char flash_test(void)
 	FLASH_Lock();//上锁
 	//check write result
 	handle_addr = ADDR_FLASH_SECTOR_7;
-	for (i = 0; i < SIZE_FLASH_SECTOR_7 / 4; i++)
-	{
+	for (i = 0; i < SIZE_FLASH_SECTOR_7 / 4; i++) {
 		addr_value = STMFLASH_ReadWord(handle_addr);
 		//sub check
-		if (addr_value != 0xAA55AA55)
-		{
+		if (addr_value != 0xAA55AA55) {
 			ret = RESULT_FAIL_HWT;
 			ZKRT_LOG(LOG_ERROR, "write check failed\n");
 			return ret;
@@ -1018,8 +934,7 @@ char flash_test(void)
   * @param  None
   * @retval ret: test result, RESULT_OK_HWT, RESULT_FAIL_HWT, RESULT_UNCONFIRM_HWT
   */
-char esram_test(void)
-{
+char esram_test(void) {
 	char ret = RESULT_FAIL_HWT;
 	uint32_t i;
 	u8 u8value;
@@ -1182,19 +1097,16 @@ char esram_test(void)
 	//erase
 	handle_addr = 0;
 	addr_value = 0;
-	for (i = 0; i < IS62WV51216_SIZE / 4; i++)
-	{
+	for (i = 0; i < IS62WV51216_SIZE / 4; i++) {
 		FSMC_SRAM_WriteBuffer((u8*)&addr_value, handle_addr, 4);
 		handle_addr += 4;
 	}
 	addr_value = 0xffffffff;
 	//check erase result
-	for (i = 0; i < IS62WV51216_SIZE / 4; i++)
-	{
+	for (i = 0; i < IS62WV51216_SIZE / 4; i++) {
 		FSMC_SRAM_ReadBuffer((u8*)&addr_value, handle_addr, 4);
 		//sub check
-		if (addr_value != 0) //erase result failed
-		{
+		if (addr_value != 0) { //erase result failed
 			ret = RESULT_FAIL_HWT;
 			ZKRT_LOG(LOG_ERROR, "erase check failed\n");
 			return ret;
@@ -1206,8 +1118,7 @@ char esram_test(void)
 	//write
 	handle_addr = 0;
 	u8value = 0;
-	for (i = 0; i < IS62WV51216_SIZE; i += 4)
-	{
+	for (i = 0; i < IS62WV51216_SIZE; i += 4) {
 		value_arry[0] = u8value;
 		value_arry[1] = u8value + 1;
 		value_arry[2] = u8value + 2;
@@ -1220,12 +1131,10 @@ char esram_test(void)
 //	addr_value = 0;
 	handle_addr = 0;
 	u8value = 0;
-	for (i = 0; i < IS62WV51216_SIZE; i += 4)
-	{
+	for (i = 0; i < IS62WV51216_SIZE; i += 4) {
 		FSMC_SRAM_ReadBuffer((u8*)value_arry, handle_addr, 4);
 		//sub check
-		if ((value_arry[0] != u8value) || (value_arry[1] != u8value + 1) || (value_arry[2] != u8value + 2) || (value_arry[3] != u8value + 3))
-		{
+		if ((value_arry[0] != u8value) || (value_arry[1] != u8value + 1) || (value_arry[2] != u8value + 2) || (value_arry[3] != u8value + 3)) {
 			ret = RESULT_FAIL_HWT;
 			ZKRT_LOG(LOG_ERROR, "write check failed\n");
 			return ret;

@@ -48,44 +48,43 @@ extern zkrt_packet_t *main_dji_rev;
 
 
 extern "C" void DMAX_init(DMA_Stream_TypeDef *dma_stream, uint32_t dma_channel,
-                          uint32_t peripheral_addr, uint32_t memory_addr,uint32_t direction,
+                          uint32_t peripheral_addr, uint32_t memory_addr, uint32_t direction,
                           uint16_t buff_size, uint32_t peripheral_size, uint32_t memory_size, uint32_t dma_mode,
                           uint32_t dma_prrty);
 extern "C" void NVICX_init(uint8_t pre_prrty, uint8_t sub_prrty);
 #if 1
 /***********************************************************************
-		         中科瑞泰消防无人机函数定义
+                 中科瑞泰消防无人机函数定义
 
-		函数 名称：大疆串口初始化函数
-	       函数 功能：
-		函数 入参：
-		函数返回值：
-		说     明：
+        函数 名称：大疆串口初始化函数
+           函数 功能：
+        函数 入参：
+        函数返回值：
+        说     明：
 
 ************************************************************************/
 #if 1
-void USART1_Config(void)
-{
+void USART1_Config(void) {
     /*************对GPIO的配置*****************/
     GPIO_InitTypeDef GPIO_InitStructure;
     USART_InitTypeDef USART_InitStructure;
 
     //时钟配置
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA,ENABLE); //使能GPIOA时钟
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1,ENABLE);//使能USART1时钟
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); //使能GPIOA时钟
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE); //使能USART1时钟
 
     //USART端口配置
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10; //PA9、PA10
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用功能
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;	//速度50MHz
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;  //速度50MHz
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; //推挽复用输出
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; //上拉
-    GPIO_Init(GPIOA,&GPIO_InitStructure); //初始化琍PA9，PA10
+    GPIO_Init(GPIOA, &GPIO_InitStructure); //初始化琍PA9，PA10
 
 
     //复用映射配置
-    GPIO_PinAFConfig(GPIOA,GPIO_PinSource9, GPIO_AF_USART1);//GPIOA9 复用为USART1
-    GPIO_PinAFConfig(GPIOA,GPIO_PinSource10,GPIO_AF_USART1);//GPIOA10复用为USART1
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1); //GPIOA9 复用为USART1
+    GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1); //GPIOA10复用为USART1
 
     //USART1的初始化设置
     USART_InitStructure.USART_BaudRate = 230400;
@@ -104,8 +103,7 @@ void USART1_Config(void)
     while (USART_GetFlagStatus(USART1, USART_FLAG_TXE) != SET)
         ;
 }
-void USARTxNVIC_Config()
-{
+void USARTxNVIC_Config() {
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_PPRIORITY_DJIUSART;
     NVIC_InitStructure.NVIC_IRQChannelSubPriority = NVIC_SUBPRIORITY_DJIUSART;
@@ -115,8 +113,7 @@ void USARTxNVIC_Config()
     NVIC_Init(&NVIC_InitStructure);
 }
 
-void Usart_DJI_Config()
-{
+void Usart_DJI_Config() {
     USART1_Config();
     USARTxNVIC_Config();
 }
@@ -128,14 +125,11 @@ extern "C" {
 #endif //__cplusplus
 
 void
-USART1_IRQHandler(void)
-{
-    if (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == SET)
-    {
+USART1_IRQHandler(void) {
+    if (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == SET) {
         isACKProcessed = false;
         isFrame = v->protocolLayer->byteHandler(USART_ReceiveData(USART1));
-        if (isFrame == true)
-        {
+        if (isFrame == true) {
             rFrame = v->protocolLayer->getReceivedFrame();
 
             //! Trigger default or user defined callback

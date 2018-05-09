@@ -34,8 +34,7 @@ undercarriage_st undercarriage_data;
   * @parm   none
   * @retval none
   */
-void undercarriage_init(void)
-{
+void undercarriage_init(void) {
 //io config
 	GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -75,10 +74,8 @@ void undercarriage_init(void)
   * @parm   none
   * @retval none
   */
-void undercarriage_process(void)
-{
-	if (undercarriage_data.state_bya3height + undercarriage_data.run_state == 1) //允许变化
-	{
+void undercarriage_process(void) {
+	if (undercarriage_data.state_bya3height + undercarriage_data.run_state == 1) { //允许变化
 		undercarriage_data.run_state = undercarriage_data.state_bya3height - 1;
 
 //		if(undercarriage_data.state_bya3height == downed_udcaie_rs) //上升时间和下降时间不同  //整体时间增加了，所以暂时去掉这个逻辑
@@ -89,38 +86,31 @@ void undercarriage_process(void)
 		ZKRT_LOG(LOG_INOTICE, "undercarriage state changed\r\n");
 	}
 
-	switch (undercarriage_data.run_state)
-	{
+	switch (undercarriage_data.run_state) {
 	case downed_udcaie_rs:
 		break;
 	case downing_udcaie_rs:
-		if (undercarriage_data.run_timeoutflag)
-		{
+		if (undercarriage_data.run_timeoutflag) {
 			undercarriage_data.run_timeoutflag = 0;
 			UDCAIE_LEFT_STOP;
 			UDCAIE_RIGHT_STOP;
 			undercarriage_data.run_state = downed_udcaie_rs;
 			undercarriage_data.uce_angle = UCE_DOWNED_ANGLE;
 			ZKRT_LOG(LOG_INOTICE, "undercarriage downing over\n");
-		}
-		else
-		{
+		} else {
 			UDCAIE_LEFT_DOWN;
 			UDCAIE_RIGHT_DOWN;
 		}
 		break;
 	case uping_udcaie_rs:
-		if (undercarriage_data.run_timeoutflag)
-		{
+		if (undercarriage_data.run_timeoutflag) {
 			undercarriage_data.run_timeoutflag = 0;
 			UDCAIE_LEFT_STOP;
 			UDCAIE_RIGHT_STOP;
 			undercarriage_data.run_state = uped_udcaie_rs;
 			undercarriage_data.uce_angle = UCE_UPED_ANGLE;
 			ZKRT_LOG(LOG_INOTICE, "undercarriage upping over\n");
-		}
-		else
-		{
+		} else {
 			UDCAIE_LEFT_UP;
 			UDCAIE_RIGHT_UP;
 		}
@@ -135,10 +125,8 @@ void undercarriage_process(void)
   * @parm   none
   * @retval none
   */
-void undercarriage_timer_task(void)
-{
-	if (undercarriage_data.run_timeout)
-	{
+void undercarriage_timer_task(void) {
+	if (undercarriage_data.run_timeout) {
 		undercarriage_data.run_timeout--;
 		if (!undercarriage_data.run_timeout)
 			undercarriage_data.run_timeoutflag = 1;

@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    versionzkrt.h 
+  * @file    versionzkrt.h
   * @author  ZKRT
   * @version V0.0.1
   * @date    13-December-2016
-  * @brief   
+  * @brief
   *          + (1) init
   ******************************************************************************
   * @attention
@@ -13,7 +13,7 @@
   *
   ******************************************************************************
   */
-  
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __VERSIONZKRT_H
 #define __VERSIONZKRT_H
@@ -24,15 +24,15 @@
 /* Exported types ------------------------------------------------------------*/
 /** @defgroup something
   * @{
-  */ 
-  
+  */
+
 /**
   * @}
-  */ 
+  */
 /* Exported constants --------------------------------------------------------*/
 
-#define  PRODUCT_NAME						  "MainBoard"
-#define  PRODUCT_ID	                          DEV_MODEL_MB
+#define  PRODUCT_NAME             "MainBoard"
+#define  PRODUCT_ID                           DEV_MODEL_MB
 #define  PRODUCT_VERSION                      DEV_SW_MB
 #define  PRODUCT_HWVERSION                    DEV_HW_MB
 /* Exported functions ------------------------------------------------------- */
@@ -41,7 +41,7 @@
 
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}

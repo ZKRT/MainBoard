@@ -11,13 +11,11 @@ static u8 temperature_value_check(short *value);
   * @param  None
   * @retval None 1-value readed,  0-value not readed
   */
-char read_temperature(void)
-{
+char read_temperature(void) {
 	short *t1 = &zkrt_devinfo.temperature1;
 	short *t2 = &zkrt_devinfo.temperature2;
 #ifdef _TEMPTURE_ADC_
-	if (adc_start_count - TimingDelay >= 160)
-	{
+	if (adc_start_count - TimingDelay >= 160) {
 		adc_start_count = TimingDelay;
 		ADC_SoftwareStartConv(ADC1); 		/*启动ADC*/
 	}
@@ -59,30 +57,21 @@ char read_temperature(void)
   * @param  None
   * @retval None 温度值的有效状态
   */
-static u8 temperature_value_check(short *value)
-{
+static u8 temperature_value_check(short *value) {
 	u8 status = TEMP_NOMAL;
 	short tv = *value;
 	short tempture_low = zkrt_devinfo.temperature_low;
 	short tempture_high = zkrt_devinfo.temperature_high;
 
-	if (tv <= TEMPTURE_LOW_EXTRA)
-	{
+	if (tv <= TEMPTURE_LOW_EXTRA) {
 		status = TEMP_INVALID;
-	}
-	else if (tv >= TEMPTURE_HIGH_EXTRA)
-	{
+	} else if (tv >= TEMPTURE_HIGH_EXTRA) {
 		status = TEMP_INVALID;
-	}
-	else if (tv < tempture_low)
-	{
+	} else if (tv < tempture_low) {
 		status = TEMP_OVER_LOW;
-	}
-	else if (tv > tempture_high)
-	{
+	} else if (tv > tempture_high) {
 		status = TEMP_OVER_HIGH;
-	}
-	else
+	} else
 		status = TEMP_NOMAL;
 
 	return status;

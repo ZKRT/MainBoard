@@ -41,10 +41,9 @@ extern "C" {
 
 #ifdef CPLUSPLUS_HANDLE_ZK
 }
-#endif 
+#endif
 
-void BSPinit()
-{
+void BSPinit() {
     SystickConfig();
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
     b_ostmr_init();                                         //fast timer
@@ -55,8 +54,8 @@ void BSPinit()
     led_init();
 #ifdef USE_EXTRAM_FUN
     FSMC_SRAM_Init();
-    mymem_init(SRAMIN);		                                  //初始化内部内存池
-    mymem_init(SRAMEX);		                                  //初始化外部内存池
+    mymem_init(SRAMIN);                                       //初始化内部内存池
+    mymem_init(SRAMEX);                                       //初始化外部内存池
 #endif
     IIC_Init();
     STMFLASH_Init();
@@ -70,13 +69,13 @@ void BSPinit()
     DS18B20_Init();
 #endif
 #ifdef _TEMPTURE_ADC_
-//	ADC1_Init();	 //zkrt_notice : HWV4.0没有ADC检测，此处暂时直接屏蔽，不用关宏定义
+//  ADC1_Init();     //zkrt_notice : HWV4.0没有ADC检测，此处暂时直接屏蔽，不用关宏定义
 #endif
 #ifdef USE_LWIP_FUN
     lwip_comm_init();
 #endif
 #ifdef USE_USB_FUN
-    exfuns_init();			                                   //为fatfs相关变量申请内存
-    USBH_Init(&USB_OTG_Core,USB_OTG_FS_CORE_ID,&USB_Host,&USBH_MSC_cb,&USR_Callbacks);  //初始化USB主机
+    exfuns_init();                                             //为fatfs相关变量申请内存
+    USBH_Init(&USB_OTG_Core, USB_OTG_FS_CORE_ID, &USB_Host, &USBH_MSC_cb, &USR_Callbacks); //初始化USB主机
 #endif
 }

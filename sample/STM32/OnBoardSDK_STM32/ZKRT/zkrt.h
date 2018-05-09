@@ -9,7 +9,7 @@
 //start code
 #define _START_CODE                 0XEB
 //version
-#define _VERSION                    0x01   
+#define _VERSION                    0x01
 //end code
 #define _END_CODE                   0XBE
 
@@ -96,8 +96,7 @@
 
 //packet max num
 #pragma pack(push, 1)
-typedef struct
-{
+typedef struct {
 	uint8_t start_code;
 	uint8_t ver;
 	uint8_t session_ack;
@@ -109,13 +108,11 @@ typedef struct
 	uint8_t UAVID[6];
 	uint8_t command;
 } zkrtpacket_header;
-typedef struct
-{
+typedef struct {
 	uint16_t crc;      //[Start Code~Data[n]]
 	uint8_t end_code;
 } zkrtpacket_tailer;
-typedef struct _zkrt_packet_t
-{
+typedef struct _zkrt_packet_t {
 	uint8_t start_code; 		        //字节0，帧起始码，0XEB
 	uint8_t ver;		   						  //字节1，协议版本
 	uint8_t session_ack;	          //字节2，会话ID，0无需应答，1有应答；帧标识：0数据帧，1命令帧
@@ -134,8 +131,7 @@ typedef struct _zkrt_packet_t
 #pragma pack(pop)
 
 //get zkrt packet in can buffer relevant handle struct
-typedef struct
-{
+typedef struct {
 	u8 recv_ok;       //1-receive complete, 0-receive not complete
 	u8 curser_state;  //handle index state
 	u8 app_index;

@@ -168,7 +168,7 @@ void dji_process(void) {
 		ACK::ErrorCode ack = v->broadcast->setBroadcastFreqDefaults(20);	    //(3)
 		delay_nms(50);
 		//Broadcast Callback set
-//			v->broadcast->setUserBroadcastCallback(djiBroadcastCallback, &dji_broaddata);  //zkrt_test zkrt_debug
+//			v->broadcast->setUserBroadcastCallback(djiBroadcastCallback, &dji_broaddata);  //zkrt_test
 //			delay_nms(10);
 		// Mobile Callback set                                                     //(4)
 		v->moc->setFromMSDKCallback(parseFromMobileCallback_v2, (UserData)&msg_handlest);

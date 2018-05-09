@@ -77,16 +77,14 @@
 #pragma pack(pop)
 
 //定时上传序列，心跳包周期上传时间是 TIMER_MSG_TIMEOUT，不同心跳包间隔时间是 TIMER_MSG_NEXT_TIMEOUT
-enum TimerMsgUpSeq
-{
+enum TimerMsgUpSeq {
   Hbv1_Seq = 0,
   Hbv2_Seq,
   TMU_End_Seq
 };
 
 //定时上传结构体
-typedef struct
-{
+typedef struct {
 #define TIMER_HBV2PACK_TIMEOUT            100
 #define TIMER_MSG_TIMEOUT                 700
 #define TIMER_MSG_NEXT_TIMEOUT            100

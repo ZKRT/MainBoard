@@ -1,5 +1,5 @@
 #ifndef __HW_CONFIG_H
-#define __HW_CONFIG_H 
+#define __HW_CONFIG_H
 
 #define USE_IIC                 1
 #define USE_SRAM                1

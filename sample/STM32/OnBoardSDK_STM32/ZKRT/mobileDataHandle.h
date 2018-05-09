@@ -4,14 +4,13 @@
 #include "zkrt.h"
 
 //message protocol handle flag and buffer struct
-typedef struct
-{
-    zkrt_packet_t recvpacket_app;  //with app
+typedef struct {
+	zkrt_packet_t recvpacket_app;  //with app
 	zkrt_packet_t sendpacket_app;  //with app
-    u8 data_recv_app[ZK_MAX_LEN];
-    u8 data_send_app[ZK_MAX_LEN];
-    u8 datalen_recvapp;
-    u8 datalen_sendapp;
+	u8 data_recv_app[ZK_MAX_LEN];
+	u8 data_send_app[ZK_MAX_LEN];
+	u8 datalen_recvapp;
+	u8 datalen_sendapp;
 //u8 data[ZK_MAX_LEN];
 } msg_handle_st;
 

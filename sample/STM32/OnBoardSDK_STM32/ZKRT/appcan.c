@@ -36,8 +36,7 @@ extern void sendToMobile(uint8_t *data, uint8_t len);
 	* @param  None
 	* @retval None
 	*/
-void appcan_init(void)
-{
+void appcan_init(void) {
 	canmsg_hst.dev_support_en[DEVICE_TYPE_CAMERA - 1] = 1;
 	canmsg_hst.dev_support_en[DEVICE_TYPE_GAS - 1] = 1;
 	canmsg_hst.dev_support_en[DEVICE_TYPE_THROW - 1] = 1;
@@ -51,8 +50,7 @@ void appcan_init(void)
 	* @param  None
 	* @retval None
 	*/
-void appcan_prcs(void)
-{
+void appcan_prcs(void) {
 	//recv handle
 	app_can_recv_handle();
 }
@@ -61,16 +59,13 @@ void appcan_prcs(void)
 	* @param
 	* @retval
 	*/
-static u8 zkrt_decode_type(u8 dev_type)
-{
+static u8 zkrt_decode_type(u8 dev_type) {
 	uint8_t value;
 	recv_zkrt_packet_handlest *recv_handle = &canrecv_hdlest[dev_type];
 
-	while (CAN1_rx_check(dev_type) == 1)
-	{
+	while (CAN1_rx_check(dev_type) == 1) {
 		value = CAN1_rx_byte(dev_type);
-		if (zkrt_decode_char_v2(recv_handle, value) == 1)
-		{
+		if (zkrt_decode_char_v2(recv_handle, value) == 1) {
 			return 1;
 		}
 	}
@@ -81,16 +76,14 @@ static u8 zkrt_decode_type(u8 dev_type)
 	* @param
 	* @retval
 	*/
-static void zkrt_common_data_parse(const u8* data, u8 datalen, u8 dev_type)
-{
+static void zkrt_common_data_parse(const u8* data, u8 datalen, u8 dev_type) {
 	common_data_plst *cda = (common_data_plst*)data;
 	common_hbd_plst *chbda = (common_hbd_plst*)cda->type_data;
 
 	if (dev_type > DEVICE_NUMBER - 1)
 		return;
 
-	switch (cda->type_num)
-	{
+	switch (cda->type_num) {
 	case TN_HEARTBEAT:
 
 		if (chbda->hb_flag != TNHB_FLAG)
@@ -107,16 +100,12 @@ static void zkrt_common_data_parse(const u8* data, u8 datalen, u8 dev_type)
 	* @param  None
 	* @retval None
 	*/
-static void app_can_recv_handle(void)
-{
+static void app_can_recv_handle(void) {
 	int i;
 	zkrt_packet_t *packet = NULL;
-	for (i = 0; i < DEVICE_NUMBER; i++) //循环检测子模块通信状态
-	{
-		if (canmsg_hst.dev_support_en[i])
-		{
-			if (zkrt_decode_type(i))
-			{
+	for (i = 0; i < DEVICE_NUMBER; i++) { //循环检测子模块通信状态
+		if (canmsg_hst.dev_support_en[i]) {
+			if (zkrt_decode_type(i)) {
 				packet = &canrecv_hdlest[i].packet;
 				//check cmd
 				if ((packet->cmd != UAV_TO_APP) && (packet->cmd != SUBDEV_TO_UAV) && (packet->cmd != UAV_TO_APP_SUPER))
@@ -128,24 +117,36 @@ static void app_can_recv_handle(void)
 				if (packet->UAVID[ZK_DINDEX_DEVTYPE] > DEVICE_NUMBER)
 					continue;
 				//check message direction and handle
-				if ((packet->cmd == UAV_TO_APP) || (packet->cmd == UAV_TO_APP_SUPER))
-				{
+				if ((packet->cmd == UAV_TO_APP) || (packet->cmd == UAV_TO_APP_SUPER)) {
 					//send packet to app
 					msg_handlest.datalen_sendapp = zkrt_packet2_data(msg_handlest.data_send_app, packet);
 					sendToMobile(msg_handlest.data_send_app, msg_handlest.datalen_sendapp);
 					ZKRT_LOG(LOG_DEBUG, "len=%d\n", msg_handlest.datalen_sendapp);
-				}
-				else if (packet->cmd == SUBDEV_TO_UAV)
-				{
-					//check command
-					if (packet->command == ZK_COMMAND_COMMON)
-					{
-						zkrt_common_data_parse(packet->data, packet->length, i);
+#ifdef CanSend2SubModule_TEST
+#ifdef GetDevVersion_TEST
+					if ((packet->command == ZK_COMMAND_COMMON) && (packet->data[0] == 2)) {
+						common_get_devinfo_plst *tempdevinfo = (common_get_devinfo_plst *)&packet->data[1];
+						printf("=======\n");
+						printf("=======\n");
+						printf("=======\n");
+						printf("length: %d, ", packet->length);
+						printf("status: %d, ", tempdevinfo->status);
+						printf("model: %s, ", tempdevinfo->model);
+						printf("sw: %s, ", tempdevinfo->sw_version);
+						printf("hw: %s \n", tempdevinfo->hw_version);
+						printf("=======\n");
+						printf("=======\n");
+						printf("=======\n");
 					}
-					else
+#endif
+#endif
+				} else if (packet->cmd == SUBDEV_TO_UAV) {
+					//check command
+					if (packet->command == ZK_COMMAND_COMMON) {
+						zkrt_common_data_parse(packet->data, packet->length, i);
+					} else
 						continue;
-				}
-				else
+				} else
 					continue;
 			}
 		}
@@ -163,8 +164,7 @@ static char irradiate_chbptf(const void *data, u8 len, u8 type);
 static char megaphone_chbptf(const void *data, u8 len, u8 type);
 static char threedmodeling_chbptf(const void *data, u8 len, u8 type);
 static char multicamera_chbptf(const void *data, u8 len, u8 type);
-const COMMON_HB_PTOCOL_FUN cmon_hb_ptcol_fun[] =   //INDEX IS DEVICE TYPE -1
-{
+const COMMON_HB_PTOCOL_FUN cmon_hb_ptcol_fun[] = { //INDEX IS DEVICE TYPE -1
 	none_chbptf,
 	none_chbptf,
 	none_chbptf,
@@ -186,8 +186,7 @@ const COMMON_HB_PTOCOL_FUN cmon_hb_ptcol_fun[] =   //INDEX IS DEVICE TYPE -1
 	* @note
 	* @retval
 	*/
-static char none_chbptf(const void *data, u8 len, u8 type)
-{
+static char none_chbptf(const void *data, u8 len, u8 type) {
 	return 0;
 }
 /**
@@ -196,8 +195,7 @@ static char none_chbptf(const void *data, u8 len, u8 type)
 	* @note
 	* @retval
 	*/
-static char signlecamera_chbptf(const void *data, u8 len, u8 type)
-{
+static char signlecamera_chbptf(const void *data, u8 len, u8 type) {
 	if (len != 0)
 		return 0;
 
@@ -214,8 +212,7 @@ static char signlecamera_chbptf(const void *data, u8 len, u8 type)
 	* @note
 	* @retval
 	*/
-static char gas_chbptf(const void *data, u8 len, u8 type)
-{
+static char gas_chbptf(const void *data, u8 len, u8 type) {
 	gas_v3_3_hbccplst* hbd = (gas_v3_3_hbccplst*)data;
 
 	if (len != sizeof(gas_v3_3_hbccplst))
@@ -236,8 +233,7 @@ static char gas_chbptf(const void *data, u8 len, u8 type)
 	* @note
 	* @retval
 	*/
-static char throw_chbptf(const void *data, u8 len, u8 type)
-{
+static char throw_chbptf(const void *data, u8 len, u8 type) {
 	throw_hbccplst* hbd = (throw_hbccplst*)data;
 
 	if (len != sizeof(throw_hbccplst))
@@ -260,8 +256,7 @@ static char throw_chbptf(const void *data, u8 len, u8 type)
 	* @note
 	* @retval
 	*/
-static char irradiate_chbptf(const void *data, u8 len, u8 type)
-{
+static char irradiate_chbptf(const void *data, u8 len, u8 type) {
 	irradiate_hbccplst* hbd = (irradiate_hbccplst*)data;
 
 	if (len != sizeof(irradiate_hbccplst))
@@ -282,8 +277,7 @@ static char irradiate_chbptf(const void *data, u8 len, u8 type)
 	* @note
 	* @retval
 	*/
-static char megaphone_chbptf(const void *data, u8 len, u8 type)
-{
+static char megaphone_chbptf(const void *data, u8 len, u8 type) {
 	if (len != 0)
 		return 0;
 	//online value
@@ -299,8 +293,7 @@ static char megaphone_chbptf(const void *data, u8 len, u8 type)
 	* @note
 	* @retval
 	*/
-static char threedmodeling_chbptf(const void *data, u8 len, u8 type)
-{
+static char threedmodeling_chbptf(const void *data, u8 len, u8 type) {
 	threemodel_hbccplst* hbd = (threemodel_hbccplst*)data;
 	if (len != sizeof(threemodel_hbccplst))
 		return 0;
@@ -320,8 +313,7 @@ static char threedmodeling_chbptf(const void *data, u8 len, u8 type)
 	* @note
 	* @retval
 	*/
-static char multicamera_chbptf(const void *data, u8 len, u8 type)
-{
+static char multicamera_chbptf(const void *data, u8 len, u8 type) {
 	if (len != 0)
 		return 0;
 

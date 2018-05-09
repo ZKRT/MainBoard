@@ -43,8 +43,7 @@ const MB_SELF_MSG_FUN mb_self_handle_fun[MAX_MBDH_NUM] = {
   * @parm   data
   * @retval none
   */
-void avoid_osstacle_ptl_hf(u8 *data)
-{
+void avoid_osstacle_ptl_hf(u8 *data) {
 	u16 temp_distse, temp_vel;
 
 	temp_distse = ((data[2]) << 8) + (data[1]);
@@ -66,8 +65,7 @@ void avoid_osstacle_ptl_hf(u8 *data)
 	GuidanceObstacleData.ob_velocity = temp_vel;
 
 	if ((GuidanceObstacleData.ob_enabled != flash_buffer.avoid_ob_enabled) || (GuidanceObstacleData.ob_distance != flash_buffer.avoid_ob_distse)
-	        || (GuidanceObstacleData.ob_velocity != flash_buffer.avoid_ob_velocity))
-	{
+	        || (GuidanceObstacleData.ob_velocity != flash_buffer.avoid_ob_velocity)) {
 		flash_buffer.avoid_ob_enabled  = GuidanceObstacleData.ob_enabled;
 		flash_buffer.avoid_ob_distse   = GuidanceObstacleData.ob_distance;
 		flash_buffer.avoid_ob_velocity = GuidanceObstacleData.ob_velocity;
@@ -80,8 +78,7 @@ void avoid_osstacle_ptl_hf(u8 *data)
   * @parm   data
   * @retval none
   */
-void undercarriage_ptl_hf(u8 *data)
-{
+void undercarriage_ptl_hf(u8 *data) {
 //	u8 uce_adjust = 0; //0-stop, 1-uce down, 2-uce up;
 //	u8 uce_control = 0;
 //	zkrt_heartv2.uce_autoenabled = data[0];
@@ -143,16 +140,15 @@ void undercarriage_ptl_hf(u8 *data)
   * @param  None
   * @retval None
   */
-u8 common_data_handle(const zkrt_packet_t *spacket, zkrt_packet_t *rpacket)
-{
+u8 common_data_handle(const zkrt_packet_t *spacket, zkrt_packet_t *rpacket) {
 	u8 res                                = 1;
 	common_data_plst *scommon             = (common_data_plst *)(spacket->data);
 	common_data_plst *rcommon             = (common_data_plst*)(rpacket->data);
 	common_get_devinfo_plst *rother;
 
+	memcpy(rpacket, spacket, ZK_HEADER_LEN);
 	//differnet msg handle by type num
-	switch (scommon->type_num)
-	{
+	switch (scommon->type_num) {
 	case TN_GETDEVINFO:
 		rother                                = (common_get_devinfo_plst *)(rpacket->data + 1);
 		rother->status                        = 0;
@@ -170,9 +166,7 @@ u8 common_data_handle(const zkrt_packet_t *spacket, zkrt_packet_t *rpacket)
 		break;
 	}
 	//packet common handle
-	if (res == 1)
-	{
-		memcpy(rpacket, spacket, ZK_HEADER_LEN);
+	if (res == 1) {
 		rcommon->type_num                     = scommon->type_num;
 		rpacket->cmd                          = UAV_TO_APP;
 		rpacket->end_code                     = _END_CODE;
