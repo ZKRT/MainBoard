@@ -148,7 +148,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>ST-LINKIII-KEIL_SWO</Key>
-          <Name>-U48FF70067087564848410967 -O8398 -S1 -C0 -A0 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO18 -TC10000000 -TP21 -TDS8004 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO15 -FD20000000 -FC1000 -FN1 -FF0STM32F4xx_1024.FLM -FS08000000 -FL0100000 -FP0($$Device:STM32F407VE$Flash\STM32F4xx_1024.FLM)</Name>
+          <Name>-U48FF70067087564848410967 -O8398 -S1 -C0 -A0 -N00("ARM CoreSight SW-DP") -D00(2BA01477) -L00(0) -TO18 -TC10000000 -TP21 -TDS8004 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO31 -FD20000000 -FC1000 -FN1 -FF0STM32F4xx_1024.FLM -FS08000000 -FL0100000 -FP0($$Device:STM32F407VE$Flash\STM32F4xx_1024.FLM)</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -160,25 +160,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>403</LineNumber>
+          <LineNumber>98</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134328140</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>E:\User\妗岄潰\浜у搧\妯″潡浠ｇ爜鐩稿叧\绠＄悊鏉跨増鏈?ZKRT_DJI\MainBoard\sample\STM32\OnBoardSDK_STM32\ZKRT\zkrt.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\MainBoard\../ZKRT/zkrt.c\403</Expression>
-        </Bp>
-        <Bp>
-          <Number>1</Number>
-          <Type>0</Type>
-          <LineNumber>71</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>134329146</Address>
+          <Address>134328612</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -187,7 +171,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>E:\User\妗岄潰\浜у搧\妯″潡浠ｇ爜鐩稿叧\绠＄悊鏉跨増鏈?ZKRT_DJI\MainBoard\sample\STM32\OnBoardSDK_STM32\ZKRT\mobileDataHandle.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\MainBoard\../ZKRT/mobileDataHandle.c\71</Expression>
+          <Expression>\\MainBoard\../ZKRT/mobileDataHandle.c\98</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -218,6 +202,11 @@
         </Ww>
         <Ww>
           <count>5</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>main_dji_rev</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
           <WinNumber>1</WinNumber>
           <ItemText>main_dji_rev</ItemText>
         </Ww>

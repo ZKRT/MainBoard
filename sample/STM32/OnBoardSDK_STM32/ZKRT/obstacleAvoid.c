@@ -750,7 +750,11 @@ uint8_t obstacle_check_per_dirc(dji_flight_status *dfs, uint16_t distance, uint8
 	rc_to_dir = is_rc_goto_dir(direction);
 
 	if (rc_to_dir) { //¸¨ÖúRC¿ØÖÆÂß¼­:Ö»ÔÚRCÍùÕÏ°­Îï·½Ïò²Ù×ÝÊ±²Å´¥·¢¸¨ÖúÂß¼­
+#ifdef OBSTACLE_LIMITVEL_CTRL_OFF
+		if (distance >= GuidanceObstacleData.ob_distance) { //ÆÁ±ÎÏÞËÙÂß¼­
+#else
 		if (distance >= OBSTACLE_ENABLED_DISTANCE) {
+#endif
 			c_state = GuidanceObstacleData.constant_speed_time_flag[direction - 1];
 		} else {
 			if (distance < GuidanceObstacleData.ob_distance) {
@@ -758,9 +762,12 @@ uint8_t obstacle_check_per_dirc(dji_flight_status *dfs, uint16_t distance, uint8
 				GuidanceObstacleData.constant_speed_time_flag[direction - 1] = OCS_HOVER;
 				GuidanceObstacleData.constant_speed_time[direction - 1] = 2;
 			} else {
+#ifdef OBSTACLE_LIMITVEL_CTRL_OFF		
+#else		
 				c_state = OCS_LIMITING_VEL;
 				GuidanceObstacleData.constant_speed_time_flag[direction - 1] = OCS_LIMITING_VEL;
 				GuidanceObstacleData.constant_speed_time[direction - 1] = 2;
+#endif	
 			}
 		}
 	}

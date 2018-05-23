@@ -24,7 +24,7 @@
 //version and model string //zkrt_notice
 #define DEV_MODEL_MB              "OMU"
 #define DEV_HW_MB                 "000400"
-#define DEV_SW_MB                 "000601"
+#define DEV_SW_MB                 "000602"
 
 #define DEV_MODEL_BSA             "M-GDBSA"
 //hw and sw is same as mb
