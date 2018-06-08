@@ -96,6 +96,9 @@ void STMFLASH_Init(void)
 	{
 		flash_buffer._start_cod = 0XFEDCBA98;
 		flash_buffer._end_cod = 0X76543210;
+		//bootloader data
+		flash_buffer.api_enabled = API_VALID;
+		flash_buffer.program_mode = API_MODE;
 		//tempture data
 		flash_buffer._tempture_low  = GLO_TEMPTURE_LOW_INIT;
 		flash_buffer._tempture_high = GLO_TEMPTURE_HIGH_INIT;
@@ -149,5 +152,11 @@ void stmflash_process(void)
 		flash_buffer._tempture_low  = zkrt_devinfo.temperature_low;				//步骤二：保存该变量到缓存里
 		flash_buffer._tempture_high = zkrt_devinfo.temperature_high;
 		STMFLASH_Write();											//步骤三：编写flash
+	}
+	if(flash_buffer.program_mode == BOOT_MODE)
+	{
+		//重启
+		__set_FAULTMASK(1);
+		NVIC_SystemReset();
 	}
 }

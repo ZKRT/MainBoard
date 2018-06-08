@@ -35,10 +35,30 @@
 #define SIZE_FLASH_SECTOR_10    ((uint32_t)ADDR_FLASH_SECTOR_11-ADDR_FLASH_SECTOR_10)
 #define SIZE_FLASH_SECTOR_11    SIZE_FLASH_SECTOR_10
 
+/* stm32f4x series end address*/
+#define STM32F407ZET6_END_ADDRESS     (ADDR_FLASH_SECTOR_8 -1)  //512K
+
+/*Bootloader flash address*/
+#define BOOT_ADDRESS                  ADDR_FLASH_SECTOR_0
+#define BOOT_FLASH_END_ADDRESS        (uint32_t)0x0801FFFF  
+#define BOOT_FLASH_SIZE               (BOOT_FLASH_END_ADDRESS - BOOT_ADDRESS + 1) //128K
+
+/* user config info address*/
+#define USER_CONFIG_ADDRESS           ADDR_FLASH_SECTOR_7
+#define USER_CONFIG_END_ADDRESS       STM32F407ZET6_END_ADDRESS
+#define USER_CONFIG_SIZE              (USER_CONFIG_END_ADDRESS - USER_CONFIG_ADDRESS + 1)
+
+/* Define the address from where user application will be loaded.*/
+#define APPLICATION_ADDRESS           ADDR_FLASH_SECTOR_5  
+#define USER_FLASH_END_ADDRESS        (ADDR_FLASH_SECTOR_7-1)   
+#define USER_FLASH_SIZE               (USER_FLASH_END_ADDRESS - APPLICATION_ADDRESS + 1)  //256K
+
 #pragma pack(push, 1)
 typedef struct _flash_type	
 {
 	uint32_t _start_cod;
+	u32 api_enabled;
+	u32 program_mode;		
 	short _tempture_low;
 	short _tempture_high;
   u8 avoid_ob_enabled;    //±‹’œ πƒ‹   

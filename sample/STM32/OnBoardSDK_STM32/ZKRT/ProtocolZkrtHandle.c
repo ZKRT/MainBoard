@@ -161,6 +161,15 @@ u8 common_data_handle(const zkrt_packet_t *spacket, zkrt_packet_t *rpacket) {
 		memcpy(rother->sw_version, DEV_SW_MB, 6);
 		rpacket->length                       = sizeof(common_get_devinfo_plst) + 1;
 		break;
+	case TN_JUMPBOOTMODE:
+		if(scommon->type_data[0] == BOOT_MODE)
+			
+		{
+			flash_buffer.program_mode = BOOT_MODE;
+			STMFLASH_Write();
+		}
+		rcommon->type_data[0] = TNS_OK;
+		break;
 	default:
 		res                                   = 0;
 		break;
@@ -171,7 +180,7 @@ u8 common_data_handle(const zkrt_packet_t *spacket, zkrt_packet_t *rpacket) {
 		rpacket->cmd                          = UAV_TO_APP;
 		rpacket->end_code                     = _END_CODE;
 	}
-	return 1;
+	return res;
 }
 
 //////////////////////////////////////////////////////////////////special command

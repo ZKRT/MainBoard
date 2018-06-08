@@ -24,7 +24,7 @@
 //version and model string //zkrt_notice
 #define DEV_MODEL_MB              "OMU"
 #define DEV_HW_MB                 "000400"
-#define DEV_SW_MB                 "000602"
+#define DEV_SW_MB                 "000700"
 
 #define DEV_MODEL_BSA             "M-GDBSA"
 //hw and sw is same as mb
@@ -32,6 +32,13 @@
 //check msg type
 #define IS_LOCALMSG(TYPE)         (((TYPE) == DEVICE_TYPE_TEMPERATURE)    || \
                                   ((TYPE) == DEVICE_TYPE_MAINBOARD))
+
+//api_enabled
+#define API_INVALID        0
+#define API_VALID          1
+//program_mode
+#define BOOT_MODE          1
+#define API_MODE           2
 
 /* Exported constants --------------------------------------------------------*/
 //////////////////////////////////////////////////////special define
@@ -46,9 +53,24 @@ typedef enum {
     TN_None = 0,
     TN_HEARTBEAT,
     TN_GETDEVINFO,
+    TN_JUMPBOOTMODE,
+    TN_GETBOOTINFO,
+    TN_FWUPDATESTART,
+    TN_FWUPDATEING,
+    TN_FWUPDATEOK,
+    TN_FWUPDATECANCEL,
     TN_MAX
 } TypeNumEnum;
-
+//common respond status
+typedef enum {
+    TNS_OK = 0,
+    TNS_FAIL,
+    TNS_FAIL_UPDATE,
+    TNS_FAIL_FWSIZE, //固件超过允许的大小
+	TNS_FAIL_SEQ, //序列号出错，可能丢包
+	TNS_FAIL_INVALID_FW,//无效的固件包,可能没有发送准备升级命令
+	TNS_FAIL_FWWRITE //写失败
+} CommonRespondState;
 //hb flag
 #define TNHB_FLAG                     0xaabbccdd
 #define THHB_FIXED_LEN                5
@@ -270,6 +292,10 @@ typedef struct {
     u8 hw_version[6];
     u8 sw_version[6];
 } common_get_devinfo_plst;
+//jump_boot_mode_comnf
+typedef struct {
+    u8 mode;
+} common_jumpbootmode_plst;
 ///////////////////////////////app to subdev zkrt data struct
 ////command=specify command
 //respond flag
