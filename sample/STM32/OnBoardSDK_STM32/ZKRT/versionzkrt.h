@@ -31,7 +31,7 @@
   */
 /* Exported constants --------------------------------------------------------*/
 
-#define  PRODUCT_NAME             "MainBoard"
+#define  PRODUCT_NAME             "MainBoard-NuclearRD"
 #define  PRODUCT_ID                           DEV_MODEL_MB
 #define  PRODUCT_VERSION                      DEV_SW_MB
 #define  PRODUCT_HWVERSION                    DEV_HW_MB

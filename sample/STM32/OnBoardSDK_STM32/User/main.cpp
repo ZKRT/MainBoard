@@ -60,7 +60,7 @@ extern "C" {
 #ifdef CPLUSPLUS_HANDLE_ZK
 }
 #endif
-
+#include "NuclearRadiationDetection.h"
 /*-----------------------NEW DJI_LIB VARIABLE-----------------------------*/
 using namespace DJI::OSDK;
 
@@ -119,7 +119,9 @@ int main() {
 #ifdef USE_PELCOD_FUN
 	pelcod_init();
 #endif
+	nuclear_radiation_detect_init();
 	while (1) {
+		nuclear_radiation_detect_prcs();
 		appgas_prcs();
 #ifdef USE_DJI_FUN
 		dji_process();                        //¥ÛΩÆSDK¥¶¿Ì
@@ -560,5 +562,11 @@ void sys_ctrl_timetask(void) {
 //				GuidanceObstacleData.obstacle_time_flag[temp_sct_i] = 0;
 //			}
 //		}
+	}
+	if(nuclear_r_d_s.peroid_upload_cnt)
+	{
+		nuclear_r_d_s.peroid_upload_cnt--;
+		if(!nuclear_r_d_s.peroid_upload_cnt)
+			nuclear_r_d_s.peroid_upload_flag = 1;
 	}
 }

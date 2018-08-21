@@ -63,7 +63,9 @@ void appgas_init(void) {
     //parameter init
     dev_gasinfo = &zkrt_devinfo.devself->gas;
     //
+#ifdef USE_BAOSHIAN_FUN	
     baoshian_init();
+#endif
 }
 /**
   * @brief
@@ -71,8 +73,10 @@ void appgas_init(void) {
   * @retval None
   */
 void appgas_prcs(void) {
+#ifdef USE_BAOSHIAN_FUN	
     if (gr_handle.gas_online_flag == 0)
         baoshian_prcs();
+#endif	
     app_gas_value_update();
 }
 /**

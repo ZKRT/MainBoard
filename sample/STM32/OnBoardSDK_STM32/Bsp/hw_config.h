@@ -34,6 +34,7 @@
 #define USE_IIC_FUN
 #define USE_DJI_FUN
 #define USE_OBSTACLE_AVOID_FUN
+//#define USE_BAOSHIAN_FUN
 //#define USE_UNDERCARRIAGE_FUN         //暂时屏蔽，新硬件版本4.0控制脚有改动，待做
 #define USE_SESORINTEGRATED             //使用集成板功能：采集温度和距离数据
 //#define USE_UART3_TEST_FUN              //使用调试串口3进行功能性测试
@@ -44,7 +45,7 @@
 //#define USE_LWIP_FUN
 //#define USE_PELCOD_FUN
 //#define HWTEST_FUN
-//#define CPLUSPLUS_HANDLE_ZK           //不同电脑编译不通过时尝试切换
+#define CPLUSPLUS_HANDLE_ZK           //不同电脑编译不通过时尝试切换
 //#define OBSTACLE_LIMITVEL_CTRL_OFF    //避障速度限制模式关闭
 //unit test debug
 //#define CanSend2SubModule_TEST
