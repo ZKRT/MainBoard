@@ -70,21 +70,22 @@ void USART1_Config(void) {
     USART_InitTypeDef USART_InitStructure;
 
     //时钟配置
-    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE); //使能GPIOA时钟
+    RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA|RCC_AHB1Periph_GPIOB, ENABLE); //使能GPIOA时钟
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE); //使能USART1时钟
 
     //USART端口配置
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9 | GPIO_Pin_10; //PA9、PA10
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9; 
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;//复用功能
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;  //速度50MHz
     GPIO_InitStructure.GPIO_OType = GPIO_OType_PP; //推挽复用输出
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP; //上拉
-    GPIO_Init(GPIOA, &GPIO_InitStructure); //初始化琍PA9，PA10
-
+    GPIO_Init(GPIOA, &GPIO_InitStructure); 
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7;
+    GPIO_Init(GPIOB, &GPIO_InitStructure); 
 
     //复用映射配置
     GPIO_PinAFConfig(GPIOA, GPIO_PinSource9, GPIO_AF_USART1); //GPIOA9 复用为USART1
-    GPIO_PinAFConfig(GPIOA, GPIO_PinSource10, GPIO_AF_USART1); //GPIOA10复用为USART1
+    GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_USART1); //GPIOA10复用为USART1
 
     //USART1的初始化设置
     USART_InitStructure.USART_BaudRate = 230400;

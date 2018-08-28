@@ -59,14 +59,14 @@
   * ...
   *
   ******************************************************************************  
-  */ 
-	
+  */
+
 /* Includes ------------------------------------------------------------------*/
 #include "led.h"
 #include "ostmr.h"
 
 /* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/ 
+/* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 #ifndef USE_LED_FUN
@@ -82,7 +82,6 @@ char led_none;
   */
 void led_mstask(void)
 {
-	
 }
 /**
   * @brief  led_init.
@@ -92,38 +91,34 @@ void led_mstask(void)
 void led_init(void)
 {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA| RCC_AHB1Periph_GPIOB| RCC_AHB1Periph_GPIOC| RCC_AHB1Periph_GPIOD| RCC_AHB1Periph_GPIOF| RCC_AHB1Periph_GPIOG, ENABLE);
-	
- 	GPIO_InitStructure.GPIO_Mode=GPIO_Mode_OUT;
+
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOD | RCC_AHB1Periph_GPIOF | RCC_AHB1Periph_GPIOG, ENABLE);
+
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd   = GPIO_PuPd_NOPULL;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	
-	delay_ms(500);										
-	
+
+	delay_ms(500);
+
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14 | GPIO_Pin_15;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_7 | GPIO_Pin_8;
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_7 | GPIO_Pin_8;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
-	
+
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11;
 	GPIO_Init(GPIOF, &GPIO_InitStructure);
-	
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8;
-	GPIO_Init(GPIOG, &GPIO_InitStructure);		  
-	
+
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8;
+	GPIO_Init(GPIOG, &GPIO_InitStructure);
+
 	GPIO_SetBits(GPIOB, GPIO_Pin_14 | GPIO_Pin_15);
-	GPIO_SetBits(GPIOC, GPIO_Pin_12);
-	GPIO_SetBits(GPIOD, GPIO_Pin_7|GPIO_Pin_8);
+	GPIO_SetBits(GPIOD, GPIO_Pin_7 | GPIO_Pin_8);
 	GPIO_SetBits(GPIOF, GPIO_Pin_11);
-	GPIO_SetBits(GPIOG, GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8);
-	
-//	t_ostmr_insertTask();
+	GPIO_SetBits(GPIOG, GPIO_Pin_5 | GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_8);
+
+	//	t_ostmr_insertTask();
 }
 
 /**
@@ -133,28 +128,28 @@ void led_init(void)
   */
 void led_test(void)
 {
-	char i =0;
-//all high	
-//	_RUN_LED = 1;
-//	_ALARM_LED = 1;
-//	_HS_LED = 1;
-//	_FLIGHT_UART_TX_LED = 1;
-//	_FLIGHT_UART_RX_LED = 1;
-//	_433M_UART_TX_LED = 1;
-//	_433M_UART_RX_LED = 1;
-//	_CAN_RX_LED = 1;
-//	_CAN_TX_LED = 1;	
-//all low
-//	_RUN_LED = 0;
-//	_ALARM_LED = 0;
-//	_HS_LED = 0;
-//	_FLIGHT_UART_TX_LED = 0;
-//	_FLIGHT_UART_RX_LED = 0;
-//	_433M_UART_TX_LED = 0;
-//	_433M_UART_RX_LED = 0;
-//	_CAN_RX_LED = 0;
-//	_CAN_TX_LED = 0;	
-	while(i<30)
+	char i = 0;
+	//all high
+	//	_RUN_LED = 1;
+	//	_ALARM_LED = 1;
+	//	_HS_LED = 1;
+	//	_FLIGHT_UART_TX_LED = 1;
+	//	_FLIGHT_UART_RX_LED = 1;
+	//	_OBSTACLE_AVOIDANCE_TX_LED = 1;
+	//	_OBSTACLE_AVOIDANCE_RX_LED = 1;
+	//	_CAN_RX_LED = 1;
+	//	_CAN_TX_LED = 1;
+	//all low
+	//	_RUN_LED = 0;
+	//	_ALARM_LED = 0;
+	//	_HS_LED = 0;
+	//	_FLIGHT_UART_TX_LED = 0;
+	//	_FLIGHT_UART_RX_LED = 0;
+	//	_OBSTACLE_AVOIDANCE_TX_LED = 0;
+	//	_OBSTACLE_AVOIDANCE_RX_LED = 0;
+	//	_CAN_RX_LED = 0;
+	//	_CAN_TX_LED = 0;
+	while (i < 30)
 	{
 		i++;
 		delay_ms(500);
@@ -163,12 +158,12 @@ void led_test(void)
 		_HS_LED = !_HS_LED;
 		_FLIGHT_UART_TX_LED = !_FLIGHT_UART_TX_LED;
 		_FLIGHT_UART_RX_LED = !_FLIGHT_UART_RX_LED;
-		_433M_UART_TX_LED = !_433M_UART_TX_LED;
-		_433M_UART_RX_LED = !_433M_UART_RX_LED;
-		_CAN_RX_LED  =!_CAN_RX_LED;
-		_CAN_TX_LED = !_CAN_TX_LED;	
-		PFout(9) = ! PFout(9);
-		PFout(10) = ! PFout(10);
+		_OBSTACLE_AVOIDANCE_TX_LED = !_OBSTACLE_AVOIDANCE_TX_LED;
+		_OBSTACLE_AVOIDANCE_RX_LED = !_OBSTACLE_AVOIDANCE_RX_LED;
+		_CAN_RX_LED = !_CAN_RX_LED;
+		_CAN_TX_LED = !_CAN_TX_LED;
+		PFout(9) = !PFout(9);
+		PFout(10) = !PFout(10);
 	}
 	GPIO_ResetBits(GPIOF, GPIO_Pin_10 | GPIO_Pin_9);
 	_RUN_LED = 1;
@@ -176,10 +171,10 @@ void led_test(void)
 	_HS_LED = 1;
 	_FLIGHT_UART_TX_LED = 1;
 	_FLIGHT_UART_RX_LED = 1;
-	_433M_UART_TX_LED = 1;
-	_433M_UART_RX_LED = 1;
+	_OBSTACLE_AVOIDANCE_TX_LED = 1;
+	_OBSTACLE_AVOIDANCE_RX_LED = 1;
 	_CAN_RX_LED = 1;
-	_CAN_TX_LED = 1;	
+	_CAN_TX_LED = 1;
 }
 /**
   * @brief  led_process. led灯控制
@@ -188,53 +183,53 @@ void led_test(void)
   */
 void led_process(void)
 {
-  if(MAVLINK_TX_INIT_VAL - TimingDelay >= 5000)  //5s延时到之后一直处理以下逻辑
+	if (MAVLINK_TX_INIT_VAL - TimingDelay >= 5000) //5s延时到之后一直处理以下逻辑
 	{
-		if((mavlink_send_flag-TimingDelay) >= 800)
+		if ((mavlink_send_flag - TimingDelay) >= 800)
 		{
 			mavlink_send_flag = TimingDelay;
 		}
 	}
 	//run led control
-	if ((mavlink_send_flag-TimingDelay) < 50)  //与发送心跳包共用一个标记mavlink_send_flag，在心跳包处理里置mavlink_send_flag
+	if ((mavlink_send_flag - TimingDelay) < 50) //与发送心跳包共用一个标记mavlink_send_flag，在心跳包处理里置mavlink_send_flag
 	{
 		_RUN_LED = 0;
 	}
-	else if ((mavlink_send_flag-TimingDelay) < 800)
+	else if ((mavlink_send_flag - TimingDelay) < 800)
 	{
 		_RUN_LED = 1;
 	}
 	//flight led control
-	if ((usart1_tx_flag-TimingDelay) > 50)
+	if ((usart1_tx_flag - TimingDelay) > 50)
 	{
 		_FLIGHT_UART_TX_LED = 1;
 	}
-	if ((usart1_rx_flag-TimingDelay) > 50)
+	if ((usart1_rx_flag - TimingDelay) > 50)
 	{
 		_FLIGHT_UART_RX_LED = 1;
 	}
 	//can led control
-	if ((can_rx_flag-TimingDelay)  > 50)
+	if ((can_rx_flag - TimingDelay) > 50)
 	{
 		_CAN_RX_LED = 1;
 	}
-	if ((can_tx_flag-TimingDelay)  > 50)
+	if ((can_tx_flag - TimingDelay) > 50)
 	{
 		_CAN_TX_LED = 1;
-	}	
+	}
 	//433m led control
-	if ((u433m_tx_flag-TimingDelay) > 50)
+	if ((obstacle_avoidance_tx_flag - TimingDelay) > 50)
 	{
-		_433M_UART_TX_LED = 1;
+		_OBSTACLE_AVOIDANCE_TX_LED = 1;
 	}
-	if ((u433m_rx_flag-TimingDelay) > 50)
+	if ((obstacle_avoidance_rx_flag - TimingDelay) > 50)
 	{
-		_433M_UART_RX_LED = 1;
+		_OBSTACLE_AVOIDANCE_RX_LED = 1;
 	}
-}	
+}
 /**
   * @}
-  */ 
+  */
 
 /**
   * @}

@@ -44,7 +44,7 @@
 //#define USE_LWIP_FUN
 //#define USE_PELCOD_FUN
 //#define HWTEST_FUN
-//#define CPLUSPLUS_HANDLE_ZK           //不同电脑编译不通过时尝试切换
+#define CPLUSPLUS_HANDLE_ZK           //不同电脑编译不通过时尝试切换
 //#define OBSTACLE_LIMITVEL_CTRL_OFF    //避障速度限制模式关闭
 //unit test debug
 //#define CanSend2SubModule_TEST

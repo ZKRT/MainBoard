@@ -15,11 +15,9 @@
 #define _ALARM_LED                                   PBout(15)
 #define _HS_LED                                      PBout(14)
 #define _FLIGHT_UART_TX_LED                          PGout(8)  
-#define _FLIGHT_UART_RX_LED                          PCout(12)
-#define _TEST_UART_TX_LED                            PAout(15)
-#define _TEST_UART_RX_LED                            PDout(6)
-#define _433M_UART_TX_LED                            PDout(8)
-#define _433M_UART_RX_LED                            PDout(7)
+#define _FLIGHT_UART_RX_LED                          PGout(5)
+#define _OBSTACLE_AVOIDANCE_TX_LED                   PDout(8)
+#define _OBSTACLE_AVOIDANCE_RX_LED                   PDout(7)
 #define _CAN_TX_LED                                  PGout(6) 
 #define _CAN_RX_LED                                  PGout(7)
 #else
@@ -30,8 +28,8 @@
 #define _FLIGHT_UART_RX_LED                          led_none
 #define _TEST_UART_TX_LED                            led_none
 #define _TEST_UART_RX_LED                            led_none
-#define _433M_UART_TX_LED                            led_none
-#define _433M_UART_RX_LED                            led_none
+#define _OBSTACLE_AVOIDANCE_TX_LED                   led_none
+#define _OBSTACLE_AVOIDANCE_RX_LED                   led_none
 #define _CAN_TX_LED                                  led_none
 #define _CAN_RX_LED                                  led_none
 #endif

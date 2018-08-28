@@ -217,8 +217,8 @@ u8 hwtest_data_handle(u8 *buf, u16 buflen, u8 *resbuf, u16 *resbuflen) {
 	_HS_LED = 1;
 	_FLIGHT_UART_TX_LED = 1;
 	_FLIGHT_UART_RX_LED = 1;
-	_433M_UART_TX_LED = 1;
-	_433M_UART_RX_LED = 1;
+	_OBSTACLE_AVOIDANCE_TX_LED = 1;
+	_OBSTACLE_AVOIDANCE_RX_LED = 1;
 	_CAN_RX_LED = 1;
 	_CAN_TX_LED = 1;
 

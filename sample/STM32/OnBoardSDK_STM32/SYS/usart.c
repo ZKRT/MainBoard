@@ -466,8 +466,8 @@
 //
 //  DMA_ClearITPendingBit(DMA2_Stream6,DMA_IT_TCIF6);
 //#ifndef HWTEST_FUN
-//  _433M_UART_TX_LED = 0;
-//  u433m_tx_flag = TimingDelay;
+//  _OBSTACLE_AVOIDANCE_TX_LED = 0;
+//  obstacle_avoidance_tx_flag = TimingDelay;
 //#endif
 //}
 //uint8_t usart6_rx_check(void)
@@ -477,10 +477,10 @@
 //  else
 //  {
 //#ifndef HWTEST_FUN
-//    if(u433m_rx_flag >= TimingDelay+1000)  //zkrt_notice: 数据接收太快，灯频闪，所以这里改为延时1s才亮
+//    if(obstacle_avoidance_rx_flag >= TimingDelay+1000)  //zkrt_notice: 数据接收太快，灯频闪，所以这里改为延时1s才亮
 //    {
-//      _433M_UART_RX_LED = 0;
-//      u433m_rx_flag = TimingDelay;
+//      _OBSTACLE_AVOIDANCE_RX_LED = 0;
+//      obstacle_avoidance_rx_flag = TimingDelay;
 //    }
 //#endif
 //    return 1;
@@ -615,7 +615,7 @@ static void uart_gpio_init(void) {
   NVIC_Init(&NVIC_InitStructure);
 
   //clk config
-  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD, ENABLE);
+  RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA |RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOC | RCC_AHB1Periph_GPIOD, ENABLE);
   RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2 | RCC_APB1Periph_USART3 | RCC_APB1Periph_UART4, ENABLE);
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART6, ENABLE);
 
@@ -624,17 +624,20 @@ static void uart_gpio_init(void) {
   GPIO_PinAFConfig(GPIOD, GPIO_PinSource6, GPIO_AF_USART2);
   GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_USART3);
   GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_USART3);
-  GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_UART4);
-  GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_UART4);
-  GPIO_PinAFConfig(GPIOC, GPIO_PinSource10, GPIO_AF_USART6);
-  GPIO_PinAFConfig(GPIOC, GPIO_PinSource11, GPIO_AF_USART6);
+  GPIO_PinAFConfig(GPIOA, GPIO_PinSource0, GPIO_AF_UART4);
+  GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_UART4);
+  GPIO_PinAFConfig(GPIOC, GPIO_PinSource6, GPIO_AF_USART6);
+  GPIO_PinAFConfig(GPIOC, GPIO_PinSource7, GPIO_AF_USART6);
 
-  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7 | GPIO_Pin_10 | GPIO_Pin_11 ;
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_6 | GPIO_Pin_7;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
   GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
 
   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11;
   GPIO_Init(GPIOB, &GPIO_InitStructure);

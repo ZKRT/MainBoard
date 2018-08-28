@@ -72,8 +72,8 @@ void delay_us(uint16_t nus) {
 volatile uint32_t TimingDelay = 0XFFFFFFFF;
 volatile uint32_t usart1_tx_flag = 0XFFFFFFFF;
 volatile uint32_t usart1_rx_flag = 0XFFFFFFFF;
-volatile uint32_t u433m_tx_flag = 0XFFFFFFFF;
-volatile uint32_t u433m_rx_flag = 0XFFFFFFFF;
+volatile uint32_t obstacle_avoidance_tx_flag = 0XFFFFFFFF;
+volatile uint32_t obstacle_avoidance_rx_flag = 0XFFFFFFFF;
 volatile uint32_t can_tx_flag = 0XFFFFFFFF;
 volatile uint32_t can_rx_flag = 0XFFFFFFFF;
 volatile uint32_t mavlink_send_flag = 0XFFFFFFFF;

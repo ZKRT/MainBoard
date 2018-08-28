@@ -56,14 +56,10 @@ uint8_t CAN1_Mode_Init(uint8_t mode)
 	GPIO_InitTypeDef 			 GPIO_InitStructure; 
 	CAN_InitTypeDef        CAN_InitStructure;
 	CAN_FilterInitTypeDef  CAN_FilterInitStructure;
-	
-	//使能相关时钟
-//	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);   //old pin config, modify by yanly for(2)
+
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE); 
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_CAN1, ENABLE);
 
-	//初始化GPIO
-//	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_11| GPIO_Pin_12; //old pin config, modify by yanly for(2)
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_9| GPIO_Pin_8;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
@@ -332,10 +328,10 @@ uint8_t CAN2_rx_check(uint8_t can2_rx_type)
 		return 0;
 	else 
 	{
-		if(u433m_rx_flag >= TimingDelay+500)  //zkrt_notice: 数据接收太快，灯频闪，所以这里改为延时1s才亮
+		if(obstacle_avoidance_rx_flag >= TimingDelay+500)  //zkrt_notice: 数据接收太快，灯频闪，所以这里改为延时1s才亮
 		{	
-			_433M_UART_RX_LED = 0;
-			u433m_rx_flag = TimingDelay;
+			_OBSTACLE_AVOIDANCE_RX_LED = 0;
+			obstacle_avoidance_rx_flag = TimingDelay;
 		}
 		return 1;
 	}	
