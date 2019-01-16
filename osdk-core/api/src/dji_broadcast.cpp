@@ -598,20 +598,20 @@ DataBroadcast::setFreqDefaults(uint8_t* freq)
   freq[11] = FREQ_10HZ;
   freq[12] = FREQ_1HZ;
   freq[13] = FREQ_1HZ;
-//in zkrt_notice default freq	
+//in zkrt_notice default freq	//tianjinjiafang
   freq[0]  = FREQ_0HZ;
   freq[1]  = FREQ_50HZ;
-  freq[2]  = FREQ_0HZ;
+  freq[2]  = FREQ_50HZ;
   freq[3]  = FREQ_50HZ;
-  freq[4]  = FREQ_0HZ;
+  freq[4]  = FREQ_50HZ;
   freq[5]  = FREQ_50HZ;
   freq[6]  = FREQ_0HZ; // Don't send GPS details
   freq[7]  = FREQ_0HZ; // Don't send RTK
-  freq[8]  = FREQ_0HZ; // Don't send Mag
+  freq[8]  = FREQ_50HZ; // Don't send Mag
   freq[9]  = FREQ_50HZ;
   freq[10] = FREQ_50HZ;
   freq[11] = FREQ_10HZ;
-  freq[12] = FREQ_0HZ;
+  freq[12] = FREQ_50HZ;
   freq[13] = FREQ_50HZ;
 }
 

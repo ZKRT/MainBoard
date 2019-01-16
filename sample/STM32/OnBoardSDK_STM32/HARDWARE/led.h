@@ -24,6 +24,7 @@
 #define _OBSTACLE_AVOIDANCE_RX_LED                   PDout(7)
 #define _CAN_TX_LED                                  led_none //PGout(6) 
 #define _CAN_RX_LED                                  PDout(8)
+#define _UART3_TX_LED								 _CAN_RX_LED
 #else
 #define _RUN_LED                                     led_none
 #define _ALARM_LED                                   led_none

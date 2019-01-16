@@ -78,11 +78,11 @@ extern "C" {
 // int fputc(int ch, FILE *f)
 PUTCHAR_PROTOTYPE
 {
-  while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
-    ;
-  USART_SendData(USART3, (uint8_t)ch);
+//  while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
+//    ;
+//  USART_SendData(USART3, (uint8_t)ch);  //tianjinjiafang
 
-  return (ch);
+//  return (ch);
 }
 #ifdef __cplusplus
 }

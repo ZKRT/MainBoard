@@ -111,7 +111,7 @@ int main() {
 #ifdef USE_UNDERCARRIAGE_FUN
 	undercarriage_init();
 #endif
-	appdev_init();
+	appdev_init(); 
 	appcan_init();
 	appgas_init();
 	heartbeat_parm_init();   //put at last

@@ -59,7 +59,8 @@ void dji_flight_ctrl(void);
 void djizkrt_timer_task(void);
 void get_flight_data_and_handle(void);
 void heartbeat_ctrl(void);
-
+unsigned char calc_checksum_v2(unsigned char* data, int size);//tianjinjiafang
+int send_uart3_data(char*buf, int len);
 /* Private variables ---------------------------------------------------------*/
 
 /*----------ZKRT VARIABLE----------*/
@@ -285,6 +286,7 @@ void dji_flight_ctrl(void) {
 	v->control->flightCtrl(flightData_zkrtctrl);
 	ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n");
 }
+Usart3Info my_uart3_info;
 /**
   * @brief  get_flight_data_and_handle
   * @param  None
@@ -300,7 +302,7 @@ void get_flight_data_and_handle(void) {
 	Telemetry::GlobalPosition globalPosition;   //do
 //  Telemetry::RC             rc;
 //  Telemetry::Vector3f       velocity;
-//  Telemetry::Quaternion     quaternion;
+	Telemetry::Quaternion     quaternion;
 //	Telemetry::SDKInfo        sdkinfo;
 
 //	status         = v->broadcast->getStatus();
@@ -337,6 +339,28 @@ void get_flight_data_and_handle(void) {
 //  printf("body vel x=%f, y=%f\n", x_body, y_body);
 //	//这个是机体坐标系速度 x-前正后负，y-右正左负
 
+
+////////////////////////////////////////////////////////////////pack usart3 data for //tianjinjiafang
+	memset(&my_uart3_info, 0x00, sizeof(Usart3Info));
+	my_uart3_info.start = 0xeb;
+	my_uart3_info.reserved = 0;
+	my_uart3_info.len = sizeof(Usart3Info)-7;
+	my_uart3_info.q = v->broadcast->getQuaternion();
+	my_uart3_info.acce = v->broadcast->getAcceleration();
+	my_uart3_info.v = v->broadcast->getVelocity();
+	my_uart3_info.angular = v->broadcast->getAngularRate();
+	my_uart3_info.g = v->broadcast->getGlobalPosition();
+	my_uart3_info.m = v->broadcast->getMag();
+	my_uart3_info.check = calc_checksum_v2((uint8_t *)&my_uart3_info, sizeof(Usart3Info)-2);
+	my_uart3_info.end = 0xbe;
+//	printf("my_uart3_info len: %d\n", sizeof(Usart3Info));
+//	printf("getQuaternion: %f,%f,%f,%f\n", my_uart3_info.q.q0, my_uart3_info.q.q1,my_uart3_info.q.q2,my_uart3_info.q.q3);
+//	printf("getGlobalPosition: %f,%f,%f,%f\n", my_uart3_info.g.latitude, my_uart3_info.g.altitude, my_uart3_info.g.longitude, my_uart3_info.g.height);
+//	printf("getMag: %d,%d,%d\n", my_uart3_info.m.x, my_uart3_info.m.y,my_uart3_info.m.z);
+	send_uart3_data((char *)&my_uart3_info, sizeof(Usart3Info));
+/////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////handle
 	if (!undercarriage_data.uce_autoenabled)
 		return;
 
@@ -471,6 +495,59 @@ float get_limit_vy(uint8_t dir) {
 
 	return lv;
 }
+//////////////////////////////////////////////////////////////////////////////////// 天津甲方要求功能，发送DJI INFO to usart3 //tianjinjiafang
+int send_uart3_data(char*buf, int len)
+{
+  char* p = (char*)buf;
+
+  if (NULL == buf)
+  {
+    return 0;
+  }
+
+  int sent_byte_count = 0;
+  while (len--)
+  {
+    while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
+      ;
+    USART_SendData(USART3, *p++);
+    ++sent_byte_count;
+  }
+  
+  _UART3_TX_LED = 0;
+  can_rx_flag = TimingDelay; //as uart3 tx led is use of can rx led
+  
+  return sent_byte_count;	
+}
+
+// static
+unsigned char calc_checksum_v2(unsigned char* data, int size) {
+	short i;
+	unsigned int total = 0;
+	for(i = 0; i < size; i++)
+		total += data[i];
+
+	return total;
+}
+//uint8_t sendapiosbdata[16];
+//void send_ostacle_data_to_api_usart_hb(void) {
+//	if (zkrt_heartbeat_pack(NULL, NULL)) 
+//	{
+//		sendapiosbdata[0] = 0xeb;
+//		sendapiosbdata[1] = 0;
+//		sendapiosbdata[2] = 0;
+//		sendapiosbdata[3] = 0x09;
+//		sendapiosbdata[4] = 0x00;
+//		sendapiosbdata[5] = GuidanceObstacleData.online_flag;
+//		memcpy(sendapiosbdata+6, &GuidanceObstacleData.g_distance_value[GE_DIR_FRONT], 2);
+//		memcpy(sendapiosbdata+8, &GuidanceObstacleData.g_distance_value[GE_DIR_BACK], 2);
+//		memcpy(sendapiosbdata+10, &GuidanceObstacleData.g_distance_value[GE_DIR_LEFT], 2);
+//		memcpy(sendapiosbdata+12, &GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT], 2);
+//		sendapiosbdata[14] = calc_checksum_v2(sendapiosbdata, 14);
+//		sendapiosbdata[15] = 0xbe;
+//		send_uart3_data((char*)sendapiosbdata, sizeof(sendapiosbdata));
+//	}
+//}
 /**
   * @}
   */

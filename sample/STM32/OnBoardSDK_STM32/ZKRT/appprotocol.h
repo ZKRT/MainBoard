@@ -22,9 +22,9 @@
 /* Exported macro ------------------------------------------------------------*/
 
 //version and model string //zkrt_notice
-#define DEV_MODEL_MB              "BZYT"
+#define DEV_MODEL_MB              "BT-TJ"
 #define DEV_HW_MB                 "000101"
-#define DEV_SW_MB                 "000700"
+#define DEV_SW_MB                 "000100"
 
 #define DEV_MODEL_BSA             "M-GDBSA"
 //hw and sw is same as mb

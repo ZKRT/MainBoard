@@ -577,6 +577,22 @@ typedef struct LegacyGPSInfo
   Vector3f          velocityNED; /*!< cm/s */
 } LegacyGPSInfo; // pack(1)
 
+
+///////////////////////////////////////add by yanly //tianjinjiafang
+typedef struct Usart3Info
+{
+	uint8_t start;
+	uint16_t reserved;
+	uint16_t len;
+	Quaternion q;
+	Vector3f acce;
+	Vector3f v;
+	Vector3f angular;
+	GlobalPosition g;
+	Mag m;
+	uint8_t check;
+	uint8_t end;
+} Usart3Info;
 #pragma pack()
 
 extern TopicInfo TopicDataBase[];
