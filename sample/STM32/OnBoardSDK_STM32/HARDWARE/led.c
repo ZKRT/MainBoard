@@ -198,7 +198,7 @@ void led_process(void)
 		_RUN_LED = 1;
 	}
 	//flight led control
-	if ((usart1_tx_flag - TimingDelay) > 50)
+	if ((usart1_tx_flag - TimingDelay) > 30)
 	{
 		_FLIGHT_UART_TX_LED = 1;
 	}

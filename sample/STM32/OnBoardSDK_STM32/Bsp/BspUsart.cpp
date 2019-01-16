@@ -88,7 +88,7 @@ void USART1_Config(void) {
     GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_USART1); //GPIOA10复用为USART1
 
     //USART1的初始化设置
-    USART_InitStructure.USART_BaudRate = 230400;
+    USART_InitStructure.USART_BaudRate = 115200;
     USART_InitStructure.USART_WordLength = USART_WordLength_8b;
     USART_InitStructure.USART_StopBits = USART_StopBits_1;
     USART_InitStructure.USART_Parity = USART_Parity_No;
@@ -128,18 +128,7 @@ extern "C" {
 void
 USART1_IRQHandler(void) {
     if (USART_GetFlagStatus(USART1, USART_FLAG_RXNE) == SET) {
-        isACKProcessed = false;
-        isFrame = v->protocolLayer->byteHandler(USART_ReceiveData(USART1));
-        if (isFrame == true) {
-            rFrame = v->protocolLayer->getReceivedFrame();
-
-            //! Trigger default or user defined callback
-            v->processReceivedData(rFrame);
-
-            //! Reset
-            isFrame        = false;
-            isACKProcessed = true;
-        }
+		return;
     }
 }
 

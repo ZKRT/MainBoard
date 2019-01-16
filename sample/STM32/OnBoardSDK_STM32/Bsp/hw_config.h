@@ -31,7 +31,7 @@
 //#define USE_UART1_DMA
 #define USE_CAN2_FUN
 #define USE_LED_FUN
-#define USE_IIC_FUN
+//#define USE_IIC_FUN
 #define USE_DJI_FUN
 #define USE_OBSTACLE_AVOID_FUN
 //#define USE_UNDERCARRIAGE_FUN         //暂时屏蔽，新硬件版本4.0控制脚有改动，待做

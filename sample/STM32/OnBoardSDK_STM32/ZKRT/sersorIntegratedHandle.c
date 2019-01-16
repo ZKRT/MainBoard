@@ -59,16 +59,16 @@ void app_sersor_integrated_prcs(void) {
 			GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = si_data_t->back_D;
 			GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = si_data_t->front_D;
 #endif
-			//过滤, 飞机倾斜角度过大时
-			djif_status.fiter_angle_ob = get_filter_ang_ob();
-			if (djif_status.roll > djif_status.fiter_angle_ob)
-				GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = DISTANCE_2HIGH_BY_ANGLE;
-			if (djif_status.roll < -djif_status.fiter_angle_ob)
-				GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = DISTANCE_2HIGH_BY_ANGLE;
-			if (djif_status.pitch > djif_status.fiter_angle_ob)
-				GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = DISTANCE_2HIGH_BY_ANGLE;
-			if (djif_status.pitch < -djif_status.fiter_angle_ob)
-				GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = DISTANCE_2HIGH_BY_ANGLE;
+//			//过滤, 飞机倾斜角度过大时
+//			djif_status.fiter_angle_ob = get_filter_ang_ob();
+//			if (djif_status.roll > djif_status.fiter_angle_ob)
+//				GuidanceObstacleData.g_distance_value[GE_DIR_RIGHT] = DISTANCE_2HIGH_BY_ANGLE;
+//			if (djif_status.roll < -djif_status.fiter_angle_ob)
+//				GuidanceObstacleData.g_distance_value[GE_DIR_LEFT] = DISTANCE_2HIGH_BY_ANGLE;
+//			if (djif_status.pitch > djif_status.fiter_angle_ob)
+//				GuidanceObstacleData.g_distance_value[GE_DIR_BACK] = DISTANCE_2HIGH_BY_ANGLE;
+//			if (djif_status.pitch < -djif_status.fiter_angle_ob)
+//				GuidanceObstacleData.g_distance_value[GE_DIR_FRONT] = DISTANCE_2HIGH_BY_ANGLE;
 
 			zkrt_devinfo.temperature1 = si_data_t->body_T;
 			zkrt_devinfo.temperature2 = si_data_t->body_T;

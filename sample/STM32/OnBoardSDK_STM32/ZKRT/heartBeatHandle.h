@@ -86,7 +86,7 @@ enum TimerMsgUpSeq {
 //定时上传结构体
 typedef struct {
 #define TIMER_HBV2PACK_TIMEOUT            100
-#define TIMER_MSG_TIMEOUT                 700
+#define TIMER_MSG_TIMEOUT                 50
 #define TIMER_MSG_NEXT_TIMEOUT            100
 
   volatile u8 timer_hbv2_packflag; //组包定时标记
@@ -100,7 +100,7 @@ typedef struct {
 /* Exported functions ------------------------------------------------------- */
 void heartbeat_parm_init(void);
 u8 zkrt_heartbeat_pack(u8* data, u8* datalen);
-
+void send_ostacle_data_to_api_usart_hb(void);
 extern timer_upload_st hb_timer; //心跳包定时结构体
 //extern zd_heartv2_st zkrt_heartv2;  //定时发送心跳包v2的数据体缓存
 //extern zd_heartv1_st zkrt_heartv1;
