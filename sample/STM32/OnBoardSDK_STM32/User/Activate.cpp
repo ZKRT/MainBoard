@@ -18,10 +18,9 @@ extern Vehicle* v;
 void
 userActivate() {
   //! At your DJI developer account look for: app_key and app ID
-  static char key_buf[65] = "ac5100a048cc4c4a08ce23200481d058d7455e69b8668fc0e49f29bd856c185a"; /*"your app_key"*/
-
+  static char key_buf[65] = "84b4e585486fe21768f09930f79a68a2edfa6d80431d6426461d844e685b3902";//"ac5100a048cc4c4a08ce23200481d058d7455e69b8668fc0e49f29bd856c185a"; /*"your app_key"*/
   DJI::OSDK::Vehicle::ActivateData user_act_data;
-  user_act_data.ID = 1031967; /*your app ID here*/
+  user_act_data.ID = 1065209;//1031967; /*your app ID here*/
 
   user_act_data.encKey = key_buf;
 
