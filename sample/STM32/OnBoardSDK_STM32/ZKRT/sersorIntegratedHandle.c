@@ -45,7 +45,7 @@ void app_sersor_integrated_prcs(void) {
 		guidance_parmdata_init();
 		obstacle_control_parm_init();
 		GuidanceObstacleData.online_timing = TimingDelay;
-		ZKRT_LOG(LOG_INOTICE, "sensor intergrated board not online!\n");
+//		ZKRT_LOG(LOG_INOTICE, "sensor intergrated board not online!\n");
 	}
 
 	//parse can2 message

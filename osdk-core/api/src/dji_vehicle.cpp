@@ -224,11 +224,11 @@ Vehicle::functionalSetUp()
     return 1;
   }
 
-  if (!initVirtualRC())
-  {
-    DERROR("Failed to initiaze VirtualRC!\n");
-    return 1;
-  }
+//  if (!initVirtualRC())
+//  {
+//    DERROR("Failed to initiaze VirtualRC!\n");
+//    return 1;
+//  }
 
 #ifdef ADVANCED_SENSING
   if (advancedSensingEnabled)

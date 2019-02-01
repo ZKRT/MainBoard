@@ -152,6 +152,7 @@ int dji_init(void) {
   * @param  None
   * @retval None
   */
+//uint8_t subcribed_nuclear = 0; //zkrt_nuclear
 void dji_process(void) {
 	switch (djisdk_state.run_status) {
 	case init_none_djirs:
@@ -165,7 +166,7 @@ void dji_process(void) {
 			delay_nms(500);
 		}
 		// Re-set Broadcast frequencies to their default values
-		ACK::ErrorCode ack = v->broadcast->setBroadcastFreqDefaults(20);	    //(3)
+		ACK::ErrorCode ack = v->broadcast->setBroadcastFreqDefaults(2);	    //(3)
 		delay_nms(50);
 		//Broadcast Callback set
 //			v->broadcast->setUserBroadcastCallback(djiBroadcastCallback, &dji_broaddata);  //zkrt_test
@@ -183,7 +184,11 @@ void dji_process(void) {
 	case avtivated_ok_djirs:
 		dji_flight_ctrl();  //飞行控制
 		get_flight_data_and_handle(); //飞行数据处理
-		heartbeat_ctrl();  //心跳包定时处理
+		heartbeat_ctrl();  //心跳包定时处理 
+//		if(!subcribed_nuclear){v
+//			subcribed_nuclear = 1;
+//			setUpSubscription(v); //zkrt_nuclear 采用订阅方式获取GPS数据
+//		}
 		break;
 	default:
 		break;
@@ -256,12 +261,15 @@ void dji_flight_ctrl(void) {
 	rc             = v->broadcast->getRC();
 	sdkinfo        = v->broadcast->getSDKInfo();
 
+	//检查遥控器模式
 	if (rc.mode <= 0)
 		return;
 
+	//检查飞行状态
 	if (status.flight != 2)
 		return;
 
+	//检测OES是否需要飞控控制权
 	if (!djisdk_state.oes_fc_controled) {
 		if (sdkinfo.deviceStatus == 2) {
 			v->releaseCtrlAuthority();
@@ -269,21 +277,26 @@ void dji_flight_ctrl(void) {
 		}
 		return;
 	}
-
-	if ((djisdk_state.oes_fc_controled) && ((fc_timercnt == 0))) //周期发送飞行控制命令
-		//zkrt_notice: 文档建议是20ms周期控制，依文档所说来控制。https://developer.dji.com/cn/onboard-sdk/documentation/application-development-guides/programming-guide.html
-	{
-		fc_timercnt = FCC_TIMEROUT;
-	} else
-		return;
-
+	//检查当前OES的控制权
 	if (sdkinfo.deviceStatus != 2) {
 		v->obtainCtrlAuthority();
 		ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
 	}
-//	ZKRT_LOG(LOG_DEBUG, "x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag);
-	v->control->flightCtrl(flightData_zkrtctrl);
-	ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n");
+	//检查是否需要有基础飞行操作
+	if((djisdk_state.oes_fc_controled&(1 << fc_tempctrl_b))
+		||(djisdk_state.oes_fc_controled&(1 << fc_obstacle_b)))
+	{
+	//检查飞行周期
+		if ((djisdk_state.oes_fc_controled) && ((fc_timercnt == 0))) //周期发送飞行控制命令
+			//zkrt_notice: 文档建议是20ms周期控制，依文档所说来控制。https://developer.dji.com/cn/onboard-sdk/documentation/application-development-guides/programming-guide.html
+		{
+			fc_timercnt = FCC_TIMEROUT;
+		} else
+			return;	
+	//	ZKRT_LOG(LOG_DEBUG, "x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag);
+		v->control->flightCtrl(flightData_zkrtctrl);
+		ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n");
+	}
 }
 /**
   * @brief  get_flight_data_and_handle

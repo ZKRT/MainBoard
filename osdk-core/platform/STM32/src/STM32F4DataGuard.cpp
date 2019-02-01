@@ -27,6 +27,8 @@
  */
 
 #include "STM32F4DataGuard.h"
+#include "stdio.h" //zkrt_notice
+#include <STM32F4SerialDriver.h>
 
 using namespace DJI::OSDK;
 
@@ -131,4 +133,6 @@ STM32F4DataGuard::nonBlockWait()
 void
 STM32F4DataGuard::wait(int timeoutInSeconds)
 {
+	unsigned short ms = timeoutInSeconds*1000;
+	STM32F4::delay_nms(ms);
 }

@@ -2,6 +2,8 @@
 #define NUCLEARRADIATIONDETECTION_H
 #include "sys.h"
 
+//zkrt_nuclear : this indicate add the funciton
+
 typedef struct
 {
 #define NRD_P_U_CNT 1	//1s

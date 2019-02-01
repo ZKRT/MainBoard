@@ -17,7 +17,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "hw_config.h"
 #include "main.h"
-
+#include "MissionSample.h"
 #ifdef CPLUSPLUS_HANDLE_ZK
 extern "C" {
 #endif

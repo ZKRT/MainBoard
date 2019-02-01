@@ -231,6 +231,15 @@ void led_process(void)
 	{
 		_433M_UART_RX_LED = 1;
 	}
+	//
+	if ((h2x_led_flag-TimingDelay) > 50)
+	{
+		_HS_LED = 1;
+	}
+	if ((alarm_led_flag-TimingDelay) > 50)
+	{
+		_ALARM_LED = 1;
+	}	
 }	
 /**
   * @}

@@ -162,7 +162,7 @@
           <Type>0</Type>
           <LineNumber>98</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134328612</Address>
+          <Address>134332160</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -172,6 +172,38 @@
           <Filename>E:\User\妗岄潰\浜у搧\妯″潡浠ｇ爜鐩稿叧\绠＄悊鏉跨増鏈?ZKRT_DJI\MainBoard\sample\STM32\OnBoardSDK_STM32\ZKRT\mobileDataHandle.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\MainBoard\../ZKRT/mobileDataHandle.c\98</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>116</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134240018</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>E:\User\妗岄潰\浜у搧\妯″潡浠ｇ爜鐩稿叧\绠＄悊鏉跨増鏈?ZKRT_DJI\MainBoard\sample\STM32\OnBoardSDK_STM32\User\NuclearRadiationDetection.cpp</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\\../User/NuclearRadiationDetection.cpp\116</Expression>
+        </Bp>
+        <Bp>
+          <Number>2</Number>
+          <Type>0</Type>
+          <LineNumber>282</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134223074</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>E:\User\妗岄潰\浜у搧\妯″潡浠ｇ爜鐩稿叧\绠＄悊鏉跨増鏈?ZKRT_DJI\MainBoard\sample\STM32\OnBoardSDK_STM32\User\djiCtrl.cpp</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\MainBoard\../User/djiCtrl.cpp\282</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>

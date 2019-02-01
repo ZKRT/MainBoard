@@ -78,7 +78,7 @@ extern "C" {
 // int fputc(int ch, FILE *f)
 PUTCHAR_PROTOTYPE
 {
-  while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)
+  while (USART_GetFlagStatus(USART3, USART_FLAG_TC) == RESET)  //zkrt_notice
     ;
   USART_SendData(USART3, (uint8_t)ch);
 

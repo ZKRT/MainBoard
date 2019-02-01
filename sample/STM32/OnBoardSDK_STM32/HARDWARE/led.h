@@ -22,6 +22,8 @@
 #define _433M_UART_RX_LED                            PDout(7)
 #define _CAN_TX_LED                                  PGout(6) 
 #define _CAN_RX_LED                                  PGout(7)
+#define _U2_TX_LED								     _HS_LED    //zkrt_nuclear
+#define _U2_RX_LED                                   _ALARM_LED
 #else
 #define _RUN_LED                                     led_none
 #define _ALARM_LED                                   led_none

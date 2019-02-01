@@ -36,7 +36,8 @@ enum dji_run_state {
 //dji 飞控控制状态标记，高温和避障控制时置位
 enum dji_oes_fc_controlbit {
   fc_tempctrl_b = 0,      //高温控制位号
-  fc_obstacle_b           //避障控制位号
+  fc_obstacle_b,          //避障控制位号
+  fc_mission_b,           //航向任务控制位 	
 };
 
 

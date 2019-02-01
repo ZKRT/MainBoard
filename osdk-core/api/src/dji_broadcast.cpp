@@ -606,7 +606,7 @@ DataBroadcast::setFreqDefaults(uint8_t* freq)
   freq[3]  = FREQ_50HZ;
   freq[4]  = FREQ_0HZ;
   freq[5]  = FREQ_50HZ;
-  freq[6]  = FREQ_0HZ; 
+  freq[6]  = FREQ_50HZ; //zkrt_nuclear
   freq[7]  = FREQ_0HZ; 
   freq[8]  = FREQ_0HZ; 
   freq[9]  = FREQ_50HZ;
