@@ -178,6 +178,68 @@ typedef struct WayPointFinishData
   uint16_t reserved_2;
 } WayPointFinishData; // pack(1)
 
+//waypoint mission upload event push information
+typedef struct{
+    uint8_t incident_type;
+    uint8_t is_mission_valid;
+    uint16_t estimated_run_time;
+    uint16_t reserved;
+}cmd_mission_wp_upload_incident_t;
+//waypoint mission finish event push information
+typedef struct{
+    uint8_t incident_type;
+    uint8_t repeat;
+    uint16_t reserved_1;
+    uint16_t reserved_2;
+}cmd_mission_wp_finish_incident_t;
+//waypoint reached event push information
+typedef struct{
+    uint8_t incident_type;
+    uint8_t waypoint_index;
+    uint8_t current_status;
+    uint8_t reserved_1;
+    uint8_t reserved_2;
+}cmd_mission_wp_reached_incident_t;
+
+
+//waypoint mission push information
+typedef struct{
+    uint8_t mission_type; //mission type, should be NAVI_MISSION_WAYPOINT
+    uint8_t target_waypoint; //current target waypoint index
+    uint8_t current_status;//current status
+    uint8_t error_notification;//error notification
+    uint16_t reserved;//reserved
+
+} cmd_mission_waypoint_status_push_t;
+//hotpoint mission push information
+typedef struct{
+    uint8_t mission_type;// mission type, should be NAVI_MISSION_HOTPOINT
+    uint8_t mission_status;//mission status
+                        //0:init
+                        //1:running
+                        //2:paused
+    uint16_t hp_exec_radius; //distance to the hotpoint: cm
+    uint8_t reason;
+    uint8_t hp_exec_vel;//angular velocity in ground frame, degree * 10
+} cmd_mission_hotpoint_status_push_t;
+//follow me mission push information
+typedef struct{
+    uint8_t mission_type;// mission type, should be NAVI_MISSION_FOLLOWM
+    uint8_t reserved_1;
+    uint16_t reserved_2;
+    uint16_t reserved_3;
+}cmd_mission_folowme_status_push_t;
+//the other two status(NAVI_MODE_ATTI & NAVI_MISSION_IOC)
+typedef struct{
+    uint8_t mission_type;
+    uint8_t last_mission_type;
+    uint8_t is_broken :1;
+    uint8_t reserved_1 :7;
+    uint8_t reason;
+    uint8_t reserved_2;
+    uint8_t reserved_3;
+}cmd_mission_default_status_push_t;
+
 #pragma pack()
 // clang-format on
 } // OSDK

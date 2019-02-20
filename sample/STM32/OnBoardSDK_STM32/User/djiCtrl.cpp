@@ -252,6 +252,7 @@ void dji_process(void) {
   * @param  None
   * @retval None
   */
+char fc_mission_b_flag=0;
 void dji_flight_ctrl(void) {
 	Telemetry::Status         status;
 	Telemetry::RC             rc;
@@ -265,6 +266,16 @@ void dji_flight_ctrl(void) {
 	if (rc.mode <= 0)
 		return;
 
+	//检查是否航向任务
+	if(djisdk_state.oes_fc_controled&(1 << fc_mission_b)) 
+	{
+		if(!fc_mission_b_flag)
+		{
+			v->obtainCtrlAuthority();
+			fc_mission_b_flag = 1;
+		}
+	}
+	
 	//检查飞行状态
 	if (status.flight != 2)
 		return;
@@ -280,7 +291,7 @@ void dji_flight_ctrl(void) {
 	//检查当前OES的控制权
 	if (sdkinfo.deviceStatus != 2) {
 		v->obtainCtrlAuthority();
-		ZKRT_LOG(LOG_INOTICE, "oes setControl\n");
+		ZKRT_LOG(LOG_INOTICE, "sdkinfo.deviceStatus=%d, oes setControl\n", sdkinfo.deviceStatus);
 	}
 	//检查是否需要有基础飞行操作
 	if((djisdk_state.oes_fc_controled&(1 << fc_tempctrl_b))

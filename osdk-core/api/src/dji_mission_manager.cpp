@@ -38,6 +38,7 @@ MissionManager::MissionManager(Vehicle* vehiclePtr)
   , wpMission(NULL)
   , wayptCounter(0)
   , hotptCounter(0)
+  , wpMission_newed(0)
 {
 }
 
@@ -95,14 +96,38 @@ MissionManager::init(DJI_MISSION_TYPE type, VehicleCallBack callback,
   }
 }
 
+//ACK::ErrorCode
+//MissionManager::initWayptMission(int timeout, UserData wayptData)
+//{
+
+//  wpMissionArray[wayptCounter] = new WaypointMission(this->vehicle);
+//  wpMission                    = wpMissionArray[wayptCounter];
+//  wayptCounter++;
+
+//  // @todo timeout needs to be defined somewhere globally
+//  return wpMission->init((WayPointInitSettings*)wayptData, timeout);
+//}
+
+//void
+//MissionManager::initWayptMission(VehicleCallBack callback, UserData wayptData)
+//{
+//  wpMissionArray[wayptCounter] = new WaypointMission(this->vehicle);
+//  wpMission                    = wpMissionArray[wayptCounter];
+//  wayptCounter++;
+
+//  wpMission->init((WayPointInitSettings*)wayptData, callback, wayptData);
+//}
+//by yanly
 ACK::ErrorCode
-MissionManager::initWayptMission(int timeout, UserData wayptData)
+MissionManager::initWayptMission(int timeout, UserData wayptData) 
 {
-
-  wpMissionArray[wayptCounter] = new WaypointMission(this->vehicle);
-  wpMission                    = wpMissionArray[wayptCounter];
-  wayptCounter++;
-
+  if(wpMission_newed==0) 
+  {
+	  wpMissionArray[0] = new WaypointMission(this->vehicle);
+	  wpMission                    = wpMissionArray[0];
+	  wayptCounter =1;
+  }
+  wpMission_newed++;
   // @todo timeout needs to be defined somewhere globally
   return wpMission->init((WayPointInitSettings*)wayptData, timeout);
 }
@@ -110,10 +135,13 @@ MissionManager::initWayptMission(int timeout, UserData wayptData)
 void
 MissionManager::initWayptMission(VehicleCallBack callback, UserData wayptData)
 {
-  wpMissionArray[wayptCounter] = new WaypointMission(this->vehicle);
-  wpMission                    = wpMissionArray[wayptCounter];
-  wayptCounter++;
-
+  if(wpMission_newed==0) 
+  {
+	  wpMissionArray[0] = new WaypointMission(this->vehicle);
+	  wpMission                    = wpMissionArray[0];
+	  wayptCounter =1;
+  }
+  wpMission_newed++;
   wpMission->init((WayPointInitSettings*)wayptData, callback, wayptData);
 }
 
@@ -202,6 +230,6 @@ void
 MissionManager::printInfo()
 {
   DSTATUS("Mission Manager status: \n");
-  DSTATUS("There are %d waypt missions and %d hotpoint missions\n",
-          wayptCounter, hotptCounter);
+  DSTATUS("There are %d waypt missions and %d time mission and %d hotpoint missions\n",
+          wayptCounter, wpMission_newed, hotptCounter);
 }

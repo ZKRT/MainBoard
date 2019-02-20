@@ -147,7 +147,7 @@ static  void  _hwuartX_rxIntrSer(uint8_t ustate_item, osusartx_st * ustate, USAR
 	    ustate->_u1rxCnt = 0;
 	  }	
     ustate->_pu1RxPtr->pscommRcvContent[ustate->_u1rxCnt] = USART_ReceiveData(UsartInstance[ustate_item]);
-		if(ustate->_u1rxCnt >=sizeof(ustate->_u1RcvArea))  //add de bug by yanly
+		if(ustate->_u1rxCnt >=sizeof(ustate->_u1RcvArea)-1)  //by yanly190215 debug
 			ustate->_u1rxCnt=0;
 		else
 			ustate->_u1rxCnt++;

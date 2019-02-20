@@ -23,8 +23,8 @@
 #define USART_RX_DATA_SIZE          USART_DATA_SIZE
 
 #define UART0_FRM_TMR_RESTART       12       /*uart1 frame timer 12ms*/
-#define UART0_CHAR_TMR_RESTART      2        /*uart1 char timer 4ms*//*此时间应大于接收1字节数据所需时间,所以不同波特率
-                                                该值也应不一样.值为4时,bps须大于2400bps,值为2时,bps须大于4800*/  //zkrt_notice
+#define UART0_CHAR_TMR_RESTART      14        /*uart1 char timer 4ms*//*此时间应大于接收1字节数据所需时间,所以不同波特率
+                                                该值也应不一样.值为4时,bps须大于2400bps,值为2时,bps须大于4800*/  //zkrt_notice  //by yanly190215 debug
 
 #define UART_CHANNEL_IDLE			0					
 #define UART_CHANNEL_BUSY			1

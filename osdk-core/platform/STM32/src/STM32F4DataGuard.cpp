@@ -133,6 +133,6 @@ STM32F4DataGuard::nonBlockWait()
 void
 STM32F4DataGuard::wait(int timeoutInSeconds)
 {
-	unsigned short ms = timeoutInSeconds*1000;
-	STM32F4::delay_nms(ms);
+//	unsigned short ms = timeoutInSeconds*1000;  //zkrt_debug
+//	STM32F4::delay_nms(ms);
 }

@@ -154,11 +154,11 @@ public:
   Vehicle*         vehicle;
   WaypointMission* wpMission;
   HotpointMission* hpMission;
-
   //! counter to keep track of the amount of mission (protection mechanism in
   //! get_Pt())
   int wayptCounter;
   int hotptCounter;
+  int wpMission_newed; //add by yanly for dynamic wpMission only one
 
 private:
   //! @note no dynamic container, so fix the size of the mission container
@@ -166,6 +166,7 @@ private:
 
   WaypointMission* wpMissionArray[MAX_MISSION_SIZE];
   HotpointMission* hpMissionArray[MAX_MISSION_SIZE];
+
 };
 
 } // OSDK

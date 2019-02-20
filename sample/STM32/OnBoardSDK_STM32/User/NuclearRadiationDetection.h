@@ -6,11 +6,9 @@
 
 typedef struct
 {
-#define NRD_P_U_CNT 1	//1s
+#define NRD_P_U_CNT 1	//1s //zkrt_debug
 	unsigned char peroid_upload_flag;
 	unsigned char peroid_upload_cnt;
-//msg handle
-	unsigned char pc_cmd; //pc send cmd, this flag for action callback distingusih
 }nrd_st;
 //mission control timeout in dji sdk control
 #define NUCLEAR_MISSION_TIME 1
@@ -49,6 +47,7 @@ typedef struct{
 #define CMD_READ_SINGLE_WAYPOINT             0x0a
 #define CMD_SET_WAYPOINT_IDLE_VEL            0x0b
 #define CMD_GET_WYAPOINT_IDLE_VEL            0x0c
+#define CMD_TEST_1                           0x5A
 #define CMD_UPLOAD_GPS_DATA                  0xFE
 
 //len
