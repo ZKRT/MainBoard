@@ -106,28 +106,28 @@ static void nrd_recv_handle(void)
 	pc_control_datas.data = &buf[2];
 	if (pc_control_datas.start_code != START_CODE)
 	{ //check startcode
-		printf("[PC ERROR]startcode\n");//zkrt_debug
+		printf("[PC ERROR]startcode\n");
 		return;
 	}
 	cmdlen = cmd_len_of_pc_control_data(pc_control_datas.cmd);
 	if (cmdlen + FIXED_FRAME_LEN != buflen)
 	{ //check len
-		printf("[PC ERROR]buflen:%d,but need len:%d\n", buflen, cmdlen + FIXED_FRAME_LEN);//zkrt_debug
+		printf("[PC ERROR]buflen:%d,but need len:%d\n", buflen, cmdlen + FIXED_FRAME_LEN);
 		return;
 	}
 	memcpy(&pc_control_datas.check_code, buf + cmdlen + FRAME_HEAD_LEN, 2);
 	memcpy(&pc_control_datas.end_code, buf + cmdlen + FRAME_HEAD_LEN + 2, 2);
 	if (pc_control_datas.end_code != END_CODE)
 	{ //check endcode
-		printf("[PC ERROR]endcode\n");//zkrt_debug
+		printf("[PC ERROR]endcode\n");
 		return;
 	}
 	if (crc_calculate(buf, cmdlen + FRAME_HEAD_LEN) != pc_control_datas.check_code)
 	{ //check crc
-		printf("[PC ERROR]crc\n");//zkrt_debug
+		printf("[PC ERROR]crc\n");
 		return;
 	}
-	printf("recv pc cmd frame ok.[cmd:%d]\n", pc_control_datas.cmd); //zkrt_debug
+	printf("cmd:%d\n", pc_control_datas.cmd);
 	switch (pc_control_datas.cmd)
 	{
 	case CMD_SET_GOHOME:
@@ -162,25 +162,24 @@ static void nrd_recv_handle(void)
 
 //2callback handle	
 	{
-		
 		if(!djisdk_state.oes_fc_controled)
 		{
-			printf("v->obtainCtrlAuthority\n"); //zkrt_debug
+			printf("v->obtainCtrlAuthority\n");
 			v->obtainCtrlAuthority(1);
 			djisdk_state.oes_fc_controled |= 1 << fc_mission_b;
 		}
-		
 		WayPointInitSettings *fdata = (WayPointInitSettings *)pc_control_datas.data;
-//		printf("[indexNumber]%d,", fdata->indexNumber);
-//		printf("[maxVelocity]%f,", fdata->maxVelocity);
-//		printf("[idleVelocity]%f,", fdata->idleVelocity);
-//		printf("[finishAction]%d,", fdata->finishAction);
+		printf("N:%d,", fdata->indexNumber);
+		printf("MV:%f,", fdata->maxVelocity);
+		printf("IV:%f,", fdata->idleVelocity);
+		printf("FA:%d,", fdata->finishAction);
 //		printf("[executiveTimes]%d,", fdata->executiveTimes);
-//		printf("[RCLostAction]%d,", fdata->RCLostAction);
+		printf("RCLostAction:%d\n", fdata->RCLostAction);
 //		printf("[latitude]%f,", fdata->latitude);
 //		printf("[longitude]%f,", fdata->longitude);
 //		printf("[altitude]%f\n", fdata->altitude);		
 		v->missionManager->init(WAYPOINT, waypoint_mission_init_callback_pc, fdata);
+		v->missionManager->wpMission->setWaypointEventCallback(waypoint_event_callback, NULL);
 	}
 	break;
 	case CMD_SINGLE_WAYPOINT:
@@ -212,10 +211,10 @@ static void nrd_recv_handle(void)
 		}
 		else
 		{
-//			printf("[index]%d,", wp.index);
+			printf("ind:%d,", wp.index);
 //			printf("[latitude]%f,", wp.latitude);
 //			printf("[longitude]%f,", wp.longitude);
-//			printf("[altitude]%f,", wp.altitude);
+			printf("ALE:%f,\n", wp.altitude);
 //			printf("[hasAction]%d\n", wp.hasAction);		
 			v->missionManager->wpMission->uploadIndexData(&wp, waypoint_data_upload_callback_pc, NULL);
 		}
@@ -455,7 +454,7 @@ static void nrd_recv_handle(void)
 	}
 	
 	break;
-	case CMD_TEST_1:	//test code //zkrt_debug
+	case CMD_TEST_1:	//test code 
 //	{
 //		ACK::ErrorCode ack;
 //		float64_t increment = 0.000001;
@@ -673,7 +672,7 @@ static void nrd_period_send(void)
 //	t_osscomm_sendMessage(hb_buf, cmdlen + FIXED_FRAME_LEN, USART2); 
 //	h2x_led_flag = TimingDelay;
 //	_HS_LED = 0;
-	send_data_to_pc_zhjy(hb_buf, cmdlen + FIXED_FRAME_LEN); //zkrt_debug
+	send_data_to_pc_zhjy(hb_buf, cmdlen + FIXED_FRAME_LEN);
 	//reset timer flag
 	nuclear_r_d_s.peroid_upload_flag = 0;
 	nuclear_r_d_s.peroid_upload_cnt = NRD_P_U_CNT;
@@ -853,7 +852,7 @@ void waypoint_event_callback(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvContain
 		case NAVI_MISSION_WP_REACH_POINT:
 		{
 			cmd_mission_wp_reached_incident_t *event = (cmd_mission_wp_reached_incident_t *)recvFrame.recvData.raw_ack_array;
-			printf("[NAVI_MISSION_WP_REACH_POINT]waypoint_index:%d,current_status:%d\n", event->waypoint_index, event->current_status);
+//			printf("[NAVI_MISSION_WP_REACH_POINT]waypoint_index:%d,current_status:%d\n", event->waypoint_index, event->current_status);
 		}
 		break;
 	}
@@ -862,8 +861,8 @@ void waypoint_event_callback(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvContain
 void waypoint_mission_push_callback(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvContainer recvFrame, DJI::OSDK::UserData userData)
 {
 	cmd_mission_waypoint_status_push_t *event = (cmd_mission_waypoint_status_push_t *)recvFrame.recvData.raw_ack_array;
-	printf("[waypoint_mission_push_callback]mission_type:%d,target_waypoint:%d,current_status:%d,error_notification:%d\n", 
-	event->mission_type, event->target_waypoint, event->current_status, event->error_notification);
+//	printf("[waypoint_mission_push_callback]mission_type:%d,target_waypoint:%d,current_status:%d,error_notification:%d\n", 
+//	event->mission_type, event->target_waypoint, event->current_status, event->error_notification);
 }
 //missionManager init callback by pc
 void waypoint_mission_init_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvContainer recvFrame, DJI::OSDK::UserData userData)
@@ -873,7 +872,7 @@ void waypoint_mission_init_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::R
 	uint16_t cmdlen;
 	PcContrlDatas pcd_s;
 	//这里ack 只有一个字节
-	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); //zkrt_debug
+//	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin);
 	if (recvFrame.recvInfo.len - OpenProtocol::PackageMin == 1)
 	{
 		ack = recvFrame.recvData.missionACK;
@@ -884,7 +883,7 @@ void waypoint_mission_init_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::R
 	pcd_s.end_code = END_CODE;
 	cmdlen = cmd_len_of_respond_pc_control_data(pcd_s.cmd);
 	pcd_s.data[0] = ack;
-	printf("waypoint_mission_init_callback_pc,ack:%x\n", pcd_s.data[0]);
+//	printf("waypoint_mission_init_callback_pc,ack:%x\n", pcd_s.data[0]);
 	memcpy(send_pc_buf, &pcd_s.start_code, FRAME_HEAD_LEN);
 	pcd_s.check_code = crc_calculate(send_pc_buf, FRAME_HEAD_LEN + cmdlen);
 	memcpy(send_pc_buf + FRAME_HEAD_LEN + cmdlen, &pcd_s.check_code, FRAME_TAIL_LEN);
@@ -899,7 +898,7 @@ void waypoint_data_upload_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::Re
 	PcContrlDatas pcd_s;
 	pcd_s.data = &send_pc_buf[FRAME_HEAD_LEN];
 	
-	printf("recvFrame.recvInfo.len:%d, datalen:%d, waypointdatalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin, sizeof(WayPointSettings)); //zkrt_debug
+//	printf("recvFrame.recvInfo.len:%d, datalen:%d, waypointdatalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin, sizeof(WayPointSettings));
 	if (recvFrame.recvInfo.len - OpenProtocol::PackageMin >= 1)
 	{
 		ack = recvFrame.recvData.missionACK;
@@ -913,7 +912,7 @@ void waypoint_data_upload_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::Re
 	{
 		memcpy(pcd_s.data + 2, recvFrame.recvData.raw_ack_array+2, sizeof(WayPointSettings));
 	}
-	printf("waypoint_data_upload_callback_pc,ack:%x\n", ack); //zkrt_debug
+//	printf("waypoint_data_upload_callback_pc,ack:%x\n", ack); 
 	pcd_s.start_code = START_CODE;
 	pcd_s.cmd = CMD_SINGLE_WAYPOINT;
 	pcd_s.end_code = END_CODE;
@@ -932,13 +931,13 @@ void waypoint_start_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvCont
 	PcContrlDatas pcd_s;
 	pcd_s.data = &send_pc_buf[FRAME_HEAD_LEN];
 	
-	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); //zkrt_debug
+//	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin);
 	if (recvFrame.recvInfo.len - OpenProtocol::PackageMin >= 1)
 	{
 		ack = recvFrame.recvData.missionACK;
 		pcd_s.data[0] = ack;
 	}
-	printf("waypoint_start_callback_pc,ack:%x\n", ack); //zkrt_debug
+//	printf("waypoint_start_callback_pc,ack:%x\n", ack); 
 	pcd_s.start_code = START_CODE;
 	pcd_s.cmd = CMD_START_WAYPOINT;
 	pcd_s.end_code = END_CODE;
@@ -957,13 +956,13 @@ void waypoint_stop_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvConta
 	PcContrlDatas pcd_s;
 	pcd_s.data = &send_pc_buf[FRAME_HEAD_LEN];
 	
-	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); //zkrt_debug
+//	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin);
 	if (recvFrame.recvInfo.len - OpenProtocol::PackageMin >= 1)
 	{
 		ack = recvFrame.recvData.missionACK;
 		pcd_s.data[0] = ack;
 	}
-	printf("waypoint_stop_callback_pc,ack:%x\n", ack); //zkrt_debug
+//	printf("waypoint_stop_callback_pc,ack:%x\n", ack); 
 	pcd_s.start_code = START_CODE;
 	pcd_s.cmd = CMD_START_WAYPOINT;
 	pcd_s.end_code = END_CODE;
@@ -982,13 +981,13 @@ void waypoint_pause_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvCont
 	PcContrlDatas pcd_s;
 	pcd_s.data = &send_pc_buf[FRAME_HEAD_LEN];
 	
-	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); //zkrt_debug
+//	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin);
 	if (recvFrame.recvInfo.len - OpenProtocol::PackageMin >= 1)
 	{
 		ack = recvFrame.recvData.missionACK;
 		pcd_s.data[0] = ack;
 	}
-	printf("waypoint_pause_callback_pc,ack:%x\n", ack); //zkrt_debug
+//	printf("waypoint_pause_callback_pc,ack:%x\n", ack); 
 	pcd_s.start_code = START_CODE;
 	pcd_s.cmd = CMD_PAUSE_WAYPOINT;
 	pcd_s.end_code = END_CODE;
@@ -1007,13 +1006,13 @@ void waypoint_resume_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvCon
 	PcContrlDatas pcd_s;
 	pcd_s.data = &send_pc_buf[FRAME_HEAD_LEN];
 	
-	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); //zkrt_debug
+//	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); 
 	if (recvFrame.recvInfo.len - OpenProtocol::PackageMin >= 1)
 	{
 		ack = recvFrame.recvData.missionACK;
 		pcd_s.data[0] = ack;
 	}
-	printf("waypoint_resume_callback_pc,ack:%x\n", ack); //zkrt_debug
+//	printf("waypoint_resume_callback_pc,ack:%x\n", ack); 
 	pcd_s.start_code = START_CODE;
 	pcd_s.cmd = CMD_PAUSE_WAYPOINT;
 	pcd_s.end_code = END_CODE;
@@ -1032,13 +1031,13 @@ void nrd_gohome_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvContaine
 	PcContrlDatas pcd_s;
 	pcd_s.data = &send_pc_buf[FRAME_HEAD_LEN];
 	
-	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); //zkrt_debug
+//	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin);
 	if (recvFrame.recvInfo.len - OpenProtocol::PackageMin >= 1)
 	{
 		ack = recvFrame.recvData.commandACK;
 		pcd_s.data[0] = (uint8_t)ack;
 	}
-	printf("nrd_gohome_callback_pc,ack:%x\n", ack); //zkrt_debug
+//	printf("nrd_gohome_callback_pc,ack:%x\n", ack); 
 	pcd_s.start_code = START_CODE;
 	pcd_s.cmd = CMD_SET_GOHOME;
 	pcd_s.end_code = END_CODE;
@@ -1057,13 +1056,13 @@ void getwaypointsettings_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::Rec
 	uint16_t cmdlen;
 	pcd_s.data = &send_pc_buf[FRAME_HEAD_LEN];
 	
-	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); //zkrt_debug
+//	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin);
 	if (recvFrame.recvInfo.len - OpenProtocol::PackageMin >=1+sizeof(WayPointInitSettings))
 	{
 		ack = recvFrame.recvData.wpInitACK.ack;
 		pcd_s.data[0] = ack;
 		memcpy((void*)(pcd_s.data + 1), (void*)&recvFrame.recvData.wpInitACK.data, sizeof(WayPointInitSettings));
-		printf("getwaypointsettings_callback_pc,ack:%x\n", ack); //zkrt_debug
+//		printf("getwaypointsettings_callback_pc,ack:%x\n", ack);
 	}
 	else
 	{
@@ -1088,7 +1087,7 @@ void getwaypointindex_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvCo
 	uint16_t cmdlen;
 	pcd_s.data = &send_pc_buf[FRAME_HEAD_LEN];
 	
-	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); //zkrt_debug
+//	printf("recvFrame.recvInfo.len:%d, datalen:%d\n", recvFrame.recvInfo.len,recvFrame.recvInfo.len - OpenProtocol::PackageMin); 
 	if (recvFrame.recvInfo.len - OpenProtocol::PackageMin >=1+sizeof(WayPointSettings))
 	{
 		//从getIndexCallback接口能得知，接收数据没有多一个index字节，与我们自己的协议违背，这里自己补充
@@ -1096,7 +1095,7 @@ void getwaypointindex_callback_pc(DJI::OSDK::Vehicle *vehicle, DJI::OSDK::RecvCo
 		pcd_s.data[0] = ack;
 		pcd_s.data[1] = recvFrame.recvData.wpIndexACK.data.index;
 		memcpy((void*)(pcd_s.data + 2), (void*)&recvFrame.recvData.wpIndexACK.data, sizeof(WayPointSettings));
-		printf("getwaypointindex_callback_pc,ack:%x\n", ack); //zkrt_debug
+//		printf("getwaypointindex_callback_pc,ack:%x\n", ack); 
 	}
 	else
 	{
@@ -1127,7 +1126,7 @@ void wapointidlevel_callback_pc(Vehicle* vehicle, RecvContainer recvFrame,UserDa
 		ack = recvFrame.recvData.wpVelocityACK.ack;
 		pcd_s.data[0] = ack;
 		memcpy((void*)(pcd_s.data + 1), (void*)&recvFrame.recvData.wpVelocityACK.idleVelocity, 4);
-		printf("wapointidlevel_callback_pc,ack:%x\n", ack); //zkrt_debug		
+//		printf("wapointidlevel_callback_pc,ack:%x\n", ack); 	
 	}
 	else
 	{

@@ -6,7 +6,7 @@
 
 typedef struct
 {
-#define NRD_P_U_CNT 1	//1s //zkrt_debug
+#define NRD_P_U_CNT 1	//1s 
 	unsigned char peroid_upload_flag;
 	unsigned char peroid_upload_cnt;
 }nrd_st;

@@ -185,6 +185,7 @@ void dji_process(void) {
 		dji_flight_ctrl();  //飞行控制
 		get_flight_data_and_handle(); //飞行数据处理
 		heartbeat_ctrl();  //心跳包定时处理 
+		v->protocolLayer->sendPoll(); //add by yanly190220
 //		if(!subcribed_nuclear){v
 //			subcribed_nuclear = 1;
 //			setUpSubscription(v); //zkrt_nuclear 采用订阅方式获取GPS数据

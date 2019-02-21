@@ -464,7 +464,7 @@ WaypointMission::uploadIndexData(WayPointSettings* data,
 
   vehicle->protocolLayer->send(
     2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointAddPoint, &send,
-    sizeof(send), 1000, 4, true, cbIndex);
+    sizeof(send), 1000, 2, true, cbIndex); //modify by yanly
 
   return true;
 }
@@ -489,7 +489,7 @@ WaypointMission::uploadIndexData(WayPointSettings* data, int timeout)
 
   vehicle->protocolLayer->send(
     2, vehicle->getEncryption(), OpenProtocolCMD::CMDSet::Mission::waypointAddPoint, &wpData,
-    sizeof(wpData), 1000, 4, false, 2);
+    sizeof(wpData), 1000, 2, false, 2); //modify by yanly
 
   ack = *((ACK::WayPointIndex*)vehicle->waitForACK(
     OpenProtocolCMD::CMDSet::Mission::waypointAddPoint, timeout));

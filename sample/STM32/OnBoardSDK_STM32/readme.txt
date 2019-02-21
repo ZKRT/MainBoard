@@ -126,7 +126,9 @@ V04 TO V05》开始通信协议改版；
 修改_hwuartX_rxIntrSer关于_u1rxCnt的bug；
 修改dji_flight_ctrl关于航向控制权（初始化直接获取飞控权限，并且航向控制权不重置，所以等于一直拥有控制权）；
 
-
+20190221:
+解决了dji调用seesion为2的命令时，出现memory not enough问题；
+发布版本；
 
 
 

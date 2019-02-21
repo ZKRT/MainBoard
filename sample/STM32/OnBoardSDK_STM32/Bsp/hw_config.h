@@ -134,8 +134,8 @@
 #define NVIC_PPRIORITY_CAN2                         0
 #define NVIC_SUBPRIORITY_CAN2                                           4
 //dji usart nvic
-#define NVIC_PPRIORITY_DJIUSART                     1
-#define NVIC_SUBPRIORITY_DJIUSART                                     1
+#define NVIC_PPRIORITY_DJIUSART                     0 //modify by yanly
+#define NVIC_SUBPRIORITY_DJIUSART                                     2
 //uart2 nvic
 #define NVIC_PPRIORITY_U2                        1
 #define NVIC_SUBPRIORITY_U2                      2
