@@ -70,7 +70,7 @@ dji_sdk_status djisdk_state = {init_none_djirs, 0, 0xffffffff, 0, 0};  //dji sdk
 #define GETFDATA_TIMEROUT    10  //200ms
 volatile u16 fc_timercnt = FCC_TIMEROUT;//飞控周期控制时钟计数
 volatile u16 getfdata_timercnt = GETFDATA_TIMEROUT;//周期获取飞行数据时钟计数
-
+int init_dji_cnt=0; //>10 reset
 /* Private functions ---------------------------------------------------------*/
 /**
   * @brief  DJI init. 大疆SDK初始化
@@ -156,6 +156,7 @@ int dji_init(void) {
 void dji_process(void) {
 	switch (djisdk_state.run_status) {
 	case init_none_djirs:
+		init_dji_cnt++;
 		djisdk_state.run_status = set_avtivate_djirs;
 		djisdk_state.cmdres_timeout = TimingDelay;
 //>>>>>dji oes standby work start
@@ -179,6 +180,15 @@ void dji_process(void) {
 	case set_avtivate_djirs:
 		if (djisdk_state.cmdres_timeout - TimingDelay >= 5000) { //激活不成功时，每5秒重新激活一次
 			djisdk_state.run_status = init_none_djirs;
+			v->protocolLayer->sendPoll();
+			if(init_dji_cnt>5)
+			{
+				ZKRT_LOG(LOG_ERROR, "avtive dji faile exceed 10 times,reset program!\n");
+				__set_FAULTMASK(1);
+				NVIC_SystemReset();
+				delete (v);
+				return;				
+			}
 		}
 		break;
 	case avtivated_ok_djirs:
@@ -289,11 +299,7 @@ void dji_flight_ctrl(void) {
 		}
 		return;
 	}
-	//检查当前OES的控制权
-	if (sdkinfo.deviceStatus != 2) {
-		v->obtainCtrlAuthority();
-		ZKRT_LOG(LOG_INOTICE, "sdkinfo.deviceStatus=%d, oes setControl\n", sdkinfo.deviceStatus);
-	}
+
 	//检查是否需要有基础飞行操作
 	if((djisdk_state.oes_fc_controled&(1 << fc_tempctrl_b))
 		||(djisdk_state.oes_fc_controled&(1 << fc_obstacle_b)))
@@ -306,8 +312,16 @@ void dji_flight_ctrl(void) {
 		} else
 			return;	
 	//	ZKRT_LOG(LOG_DEBUG, "x=%f,y=%f\n,%x", flightData_zkrtctrl.x, flightData_zkrtctrl.y, flightData_zkrtctrl.flag);
-		v->control->flightCtrl(flightData_zkrtctrl);
-		ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n");
+		
+		if (sdkinfo.deviceStatus != 2) { //检查当前OES的控制权
+			v->obtainCtrlAuthority();
+			ZKRT_LOG(LOG_INOTICE, "sdkinfo.deviceStatus=%d, oes setControl\n", sdkinfo.deviceStatus);
+		}
+		else
+		{
+			v->control->flightCtrl(flightData_zkrtctrl);
+			ZKRT_LOG(LOG_NOTICE, "oes flight control=================\r\n");
+		}
 	}
 }
 /**

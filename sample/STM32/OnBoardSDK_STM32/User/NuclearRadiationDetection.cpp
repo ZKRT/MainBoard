@@ -162,11 +162,28 @@ static void nrd_recv_handle(void)
 
 //2callback handle	
 	{
-		if(!djisdk_state.oes_fc_controled)
+		Telemetry::SDKInfo sdkinfo = v->broadcast->getSDKInfo();
+		djisdk_state.oes_fc_controled |= 1 << fc_mission_b;
+		if(sdkinfo.deviceStatus !=2 ) //遥控器模式p档，没有控制权时
 		{
-			printf("v->obtainCtrlAuthority\n");
-			v->obtainCtrlAuthority(1);
-			djisdk_state.oes_fc_controled |= 1 << fc_mission_b;
+			if(v->broadcast->getRC().mode>0)
+			{
+				printf("obtain Ctrl Authority\n");
+				v->obtainCtrlAuthority();
+				delay_nms(1000);
+				if(sdkinfo.deviceStatus !=2) 
+				{
+					pc_control_datas.data[0] = DJI::OSDK::ErrorCode::MissionACK::Common::OBTAIN_CONTROL_REQUIRED;
+					need_transmit = 1;
+					break;
+				}
+			}
+			else
+			{
+				pc_control_datas.data[0] = DJI::OSDK::ErrorCode::MissionACK::Common::RC_NOT_IN_MODE_F;
+				need_transmit = 1;
+				break;
+			}
 		}
 		WayPointInitSettings *fdata = (WayPointInitSettings *)pc_control_datas.data;
 		printf("N:%d,", fdata->indexNumber);
@@ -179,7 +196,7 @@ static void nrd_recv_handle(void)
 //		printf("[longitude]%f,", fdata->longitude);
 //		printf("[altitude]%f\n", fdata->altitude);		
 		v->missionManager->init(WAYPOINT, waypoint_mission_init_callback_pc, fdata);
-		v->missionManager->wpMission->setWaypointEventCallback(waypoint_event_callback, NULL);
+		v->missionManager->wpMission->setWaypointEventCallback(waypoint_event_callback, NULL);			
 	}
 	break;
 	case CMD_SINGLE_WAYPOINT:
